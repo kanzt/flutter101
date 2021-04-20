@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter101/src/config/app_route.dart';
 import 'package:flutter101/src/pages/login/login_page.dart';
 
 /**
@@ -8,6 +9,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: AppRoute().route,
       debugShowCheckedModeBanner: false, // ระบุว่าไม่แสดงแถบ Ribbon debug
       title: 'Flutter Demo',
       theme: ThemeData(
