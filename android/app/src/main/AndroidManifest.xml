@@ -2,6 +2,7 @@
     package="com.example.flutter101">
    <application
         android:label="flutter101"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
