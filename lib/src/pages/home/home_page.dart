@@ -46,25 +46,35 @@ class _HomePageState extends State<HomePage> {
 
             final productList = snapshot.data;
 
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.8,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
-              ),
-              itemBuilder: (context, index) => LayoutBuilder(
-                builder: (context, constraint) => ShopListItem(
-                  constraint.maxHeight,
-                  productList[index],
-                  press: () {},
+            return RefreshIndicator(
+              onRefresh: () async {
+                /// เรียก setState เพื่อ re-render ใหม่
+                setState((){
+
+                });
+              },
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.8,
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
                 ),
+                itemBuilder: (context, index) => LayoutBuilder(
+                  builder: (context, constraint) => ShopListItem(
+                    constraint.maxHeight,
+                    productList[index],
+                    press: () {},
+                  ),
+                ),
+                itemCount: productList.length,
               ),
-              itemCount: productList.length,
             );
           }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, AppRoute.managementRoute);
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

@@ -1,6 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.flutter101">
+
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
+
+    <uses-permission android:name="android.permission.CAMERA"/>
    <application
+        android:requestLegacyExternalStorage="true"
         android:label="flutter101"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
