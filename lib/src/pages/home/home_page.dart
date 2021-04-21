@@ -49,9 +49,7 @@ class _HomePageState extends State<HomePage> {
             return RefreshIndicator(
               onRefresh: () async {
                 /// เรียก setState เพื่อ re-render ใหม่
-                setState((){
-
-                });
+                setState(() {});
               },
               child: GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -64,7 +62,15 @@ class _HomePageState extends State<HomePage> {
                   builder: (context, constraint) => ShopListItem(
                     constraint.maxHeight,
                     productList[index],
-                    press: () {},
+                    press: () async {
+                      /// (ส่งค่าข้ามหน้า) ส่งค่า ProductList ไปหน้า management
+                      await Navigator.pushNamed(context, AppRoute.managementRoute,
+                          arguments: productList[index]);
+
+                      setState(() {
+
+                      });
+                    },
                   ),
                 ),
                 itemCount: productList.length,
@@ -72,8 +78,10 @@ class _HomePageState extends State<HomePage> {
             );
           }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoute.managementRoute);
+        onPressed: () async {
+          /// สั่ง await รอ managementRoute ทำงานเสร็จ (pop หน้าออก) เพื่อที่เราจะได้ Redraw หน้านี้
+          await Navigator.pushNamed(context, AppRoute.managementRoute);
+          setState(() {});
         },
         tooltip: 'Increment',
         child: Icon(Icons.add),
