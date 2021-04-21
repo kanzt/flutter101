@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter101/src/config/app_route.dart';
+import 'package:flutter101/src/constants/app_setting.dart';
+import 'package:flutter101/src/constants/asset.dart';
 import 'package:flutter101/src/pages/login/background_theme.dart';
 import 'package:flutter101/src/view_models/sso_viewmodels.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatelessWidget {
 
@@ -34,7 +37,7 @@ class LoginPage extends StatelessWidget {
               // mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset('assets/images/cdgs_logo.png', width: 200),
+                Image.asset(Asset.logoImage, width: 200),
                 Stack(
                   alignment: Alignment.bottomCenter,
                   children: [
@@ -77,10 +80,16 @@ class LoginPage extends StatelessWidget {
                       width: 280,
                       height: 52,
                       child: TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             final username = _usernameController.text;
                             final password = _passwordController.text;
                             if(username == "user@user.com" && password == "1234"){
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              var token = "This is token";
+                              await prefs.setString(AppSetting.tokenSetting, token);
+                              await prefs.setString(AppSetting.usernameString, username);
+
+
                               // Navigator.pushNamed(context, AppRoute.homeRoute);
                               /// pushReplacementNamed ทำให้ไม่มีกดปุ่ม Back เมื่อไปยังหน้า HomePage แล้ว
                               Navigator.pushReplacementNamed(context, AppRoute.homeRoute);

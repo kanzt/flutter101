@@ -7,6 +7,8 @@ class SSOModel {
   final Color backgroundColor;
   final Color iconColor;
 
+  /// ถ้าหากเราสร้าง Object ที่ไม่มีการเปลี่ยนแปลงค่าเราสามารถใช้ keyword const ที่ constructor ได้ และอย่าลืมตั้ง property ของ class ทุกตัวเป็น final
+  /// https://dart.dev/codelabs/dart-cheatsheet#const-constructors
   const SSOModel({
     this.icon,
     this.onPressed,
