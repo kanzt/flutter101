@@ -33,6 +33,7 @@ dependencies:
   dio: ^3.0.10
   image_picker: ^0.6.7+21
   flushbar: ^1.10.4
+  google_maps_flutter: ^1.1.1
 
 dev_dependencies:
   flutter_test:
