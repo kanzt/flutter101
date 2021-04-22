@@ -45,10 +45,13 @@ dev_dependencies:
 # App ICON
 flutter_icons:
   # ชื่อบรรทัดถัดไปต้องตรงกับ android:icon ใน AndroidManifets.xml
-  # จากนั้นรันคำสั่งเพื่อ Generate icon flutter pub run flutter_launcher_icons:main
+  # จากนั้นรันคำสั่งเพื่อ Generate icon -> flutter pub run flutter_launcher_icons:main
+  # คำสั่ง build app -> flutter build apk
   android: "launcher_icon"
   ios: true
   image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "assets/icon/icon_background.png"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
