@@ -1,0 +1,24 @@
+name: example
+description: Custom refresh indicator example.
+publish_to: none
+
+version: 1.0.0
+
+environment:
+  sdk: '>=2.12.0-259.12.beta <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  custom_refresh_indicator:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/plane_indicator/
+    - assets/ice_cream_indicator/
