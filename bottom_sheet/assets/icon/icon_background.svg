@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="radial-gradient" cx="0.5" cy="0.5" r="0.745" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#5c5bae"/>
+      <stop offset="1" stop-color="#333276"/>
+    </radialGradient>
+    <clipPath id="clip-App_icon_Background">
+      <rect width="1024" height="1024"/>
+    </clipPath>
+  </defs>
+  <g id="App_icon_Background" data-name="App icon – Background" clip-path="url(#clip-App_icon_Background)">
+    <rect width="1024" height="1024" fill="#fff"/>
+    <rect id="Rectangle_2559" data-name="Rectangle 2559" width="1024" height="1024" fill="url(#radial-gradient)"/>
+  </g>
+</svg>
