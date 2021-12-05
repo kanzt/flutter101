@@ -38,6 +38,7 @@ class GroupScreen extends StatelessWidget {
 BottomNavigationBar buildBottomNavigationBar(
     BuildContext context, TabsRouter tabsRouter) {
   return BottomNavigationBar(
+    // here we switch between tabs
     onTap: tabsRouter.setActiveIndex,
     currentIndex: tabsRouter.activeIndex,
     items: [
