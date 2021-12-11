@@ -32,20 +32,24 @@ class PlayerListing extends StatelessWidget {
     );
   }
 
-  Widget buildPlayersList(List<Players>? players) {
-    return players != null ?
-      Expanded(
+  Widget buildPlayersList(List<Players> players) {
+    return Expanded(
       child: ListView.separated(
         itemBuilder: (BuildContext context, index) {
           Players player = players[index];
           return ListTile(
             leading: Image.network(
-              player.headshot!.imgUrl!,
+              player.headshot?.imgUrl ?? "",
               width: 70.0,
               height: 70.0,
             ),
-            title: Text(player.name ?? "", style: titleStyle),
-            subtitle: Text(player.club?.name ?? "", style: subTitleStyle),
+            trailing: Text(
+              player.rating.toString() + "  " + (player.position ?? ""),
+              style: titleStyle,
+            ),
+            isThreeLine: true,
+            title: Text((player.name ?? ""), style: titleStyle),
+            subtitle: Text((player.club?.name ?? "") + " | " + (player.league?.name ?? "") +" | " + (player.nation?.name ?? ""), style: subTitleStyle),
           );
         },
         separatorBuilder: (BuildContext context, index) {
@@ -56,6 +60,6 @@ class PlayerListing extends StatelessWidget {
         },
         itemCount: players.length,
       ),
-    ) : Container();
+    );
   }
 }

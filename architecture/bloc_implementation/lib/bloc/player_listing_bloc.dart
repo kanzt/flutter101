@@ -64,6 +64,15 @@ class PlayerListingBloc extends Bloc<PlayerListingEvent, PlayerListingState> {
     }
   }
 
+  /// Whether the bloc is closed.
+  ///
+  /// A bloc is considered closed once [close] is called.
+  /// Subsequent state changes cannot occur within a closed bloc.
+  @override
+  bool get isClosed {
+    return super.isClosed;
+  }
+}
   /// For flutter_bloc below 7.x
 // @override
 // Stream<PlayerListingEvent> transform(Stream<PlayerListingEvent> events) {
@@ -100,4 +109,3 @@ class PlayerListingBloc extends Bloc<PlayerListingEvent, PlayerListingState> {
 //     yield PlayerErrorState();
 //   }
 // }
-}
