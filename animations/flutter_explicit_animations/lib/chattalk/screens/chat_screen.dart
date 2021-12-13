@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:chattalk_explicit_animations/constants.dart';
+import 'package:chattalk_explicit_animations/chattalk/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 

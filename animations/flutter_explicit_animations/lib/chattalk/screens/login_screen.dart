@@ -1,6 +1,6 @@
-import 'package:chattalk_explicit_animations/components/rounded_button.dart';
-import 'package:chattalk_explicit_animations/constants.dart';
-import 'package:chattalk_explicit_animations/screens/chat_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/components/rounded_button.dart';
+import 'package:chattalk_explicit_animations/chattalk/screens/chat_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/constants.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {

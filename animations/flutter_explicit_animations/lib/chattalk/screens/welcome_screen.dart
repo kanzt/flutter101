@@ -1,3 +1,4 @@
+import 'package:chattalk_explicit_animations/basic_examples/screens/explicit_animation_example_screen.dart';
 import 'package:flutter/material.dart';
 import './registration_screen.dart';
 import './login_screen.dart';

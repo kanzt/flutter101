@@ -37,6 +37,9 @@ dependencies:
   animated_text_kit: ^4.2.1
   rxdart: ^0.27.3
 
+  # Spotify
+  google_fonts: ^2.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

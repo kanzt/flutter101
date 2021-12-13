@@ -1,12 +1,13 @@
+import 'package:chattalk_explicit_animations/chattalk/screens/chat_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/screens/login_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/screens/registration_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
-import './screens/welcome_screen.dart';
-import './screens/chat_screen.dart';
-import './screens/login_screen.dart';
-import './screens/registration_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(Chatalk());
+  runApp(const Chatalk());
 }
 
 class Chatalk extends StatelessWidget {
@@ -21,7 +22,7 @@ class Chatalk extends StatelessWidget {
         WelcomeScreen.id: (context) => const WelcomeScreen(),
         ChatScreen.id: (context) => const ChatScreen(),
         LoginScreen.id: (context) => const LoginScreen(),
-        RegistrationScreen.id: (context) => const RegistrationScreen()
+        RegistrationScreen.id: (context) => const RegistrationScreen(),
       },
     );
   }

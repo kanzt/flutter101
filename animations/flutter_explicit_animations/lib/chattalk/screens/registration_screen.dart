@@ -1,7 +1,7 @@
-import 'package:chattalk_explicit_animations/screens/chat_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/screens/chat_screen.dart';
+import 'package:chattalk_explicit_animations/chattalk/constants.dart';
 import 'package:flutter/material.dart';
 import '../components/rounded_button.dart';
-import '../constants.dart';
 
 class RegistrationScreen extends StatefulWidget {
   static const String id = 'registration';
