@@ -1,3 +1,4 @@
+import 'package:chattalk_explicit_animations/basic_examples/screens/animationController/animation_controller_screen.dart';
 import 'package:chattalk_explicit_animations/chattalk/components/rounded_button.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,13 @@ class _ExplicitAnimationExampleScreenState
           child: Center(
             child: Column(
               children: [
+                RoundedButton(
+                  title: 'AnimationController Example',
+                  color: Colors.deepPurpleAccent,
+                  onPressed: () {
+                    Navigator.pushNamed(context, AnimationControllerScreen.id);
+                  },
+                ),
                 RoundedButton(
                   title: 'Tween Example',
                   color: Colors.deepPurpleAccent,
