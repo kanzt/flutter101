@@ -1,4 +1,6 @@
 import 'package:chattalk_explicit_animations/basic_examples/screens/animationController/animation_controller_screen.dart';
+import 'package:chattalk_explicit_animations/basic_examples/screens/tween/explicit_animation_color_tween_screen.dart';
+import 'package:chattalk_explicit_animations/basic_examples/screens/tween/explicit_animation_tween_screen.dart';
 import 'package:chattalk_explicit_animations/chattalk/components/rounded_button.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +35,14 @@ class _ExplicitAnimationExampleScreenState
                   title: 'Tween Example',
                   color: Colors.deepPurpleAccent,
                   onPressed: () {
-                    // Navigator.pushNamed(context, ExplicitAnimationTweenScreen.id);
+                    Navigator.pushNamed(context, ExplicitAnimationTweenScreen.id);
+                  },
+                ),
+                RoundedButton(
+                  title: 'ColorTween Example',
+                  color: Colors.deepPurpleAccent,
+                  onPressed: () {
+                    Navigator.pushNamed(context, ExplicitAnimationColorTweenScreen.id);
                   },
                 ),
               ],

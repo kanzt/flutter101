@@ -1,12 +1,16 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AnimationControllerScreen extends StatefulWidget {
   static const String id = 'AnimationControllerScreen';
+
   const AnimationControllerScreen({Key? key}) : super(key: key);
 
   @override
-  _AnimationControllerScreenState createState() => _AnimationControllerScreenState();
+  _AnimationControllerScreenState createState() =>
+      _AnimationControllerScreenState();
 }
 
 class _AnimationControllerScreenState extends State<AnimationControllerScreen>
@@ -19,6 +23,11 @@ class _AnimationControllerScreenState extends State<AnimationControllerScreen>
     super.initState();
     _animationController =
         AnimationController(vsync: this, duration: const Duration(seconds: 3));
+
+    _animationController.addListener(() {
+      print(
+          "Current animationController value : ${_animationController.value}");
+    });
 
     _animationController.forward();
   }
@@ -38,25 +47,43 @@ class _AnimationControllerScreenState extends State<AnimationControllerScreen>
         builder: (context, child) {
           return Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
                 children: [
                   child!,
-                  const SizedBox(
-                    height: 20,
+                  const SizedBox(height: 24,),
+                  const Text(
+                    "The AnimationController.value is betwwen 0 - 1",
+                    textAlign: TextAlign.center,
                   ),
-                  Transform.scale(
-                    scale: _animationController.value,
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      color: Colors.blue,
-                    ),
+                  Text(
+                    "${_animationController.value}",
+                    textAlign: TextAlign.center,
                   ),
                 ],
-              ));
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Transform.scale(
+                scale: _animationController.value,
+                child: Container(
+                  height: 100,
+                  width: 100,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ));
         },
-        child: const Text(
-          "This child is not Related To Animation.\nSo won't rebuild when animation value changes.",
+        child: Column(
+          children: const [
+            Text(
+              "This child is not Related To Animation.\nSo won't rebuild when animation value changes.",
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
