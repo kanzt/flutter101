@@ -1,8 +1,8 @@
 import 'package:chattalk_explicit_animations/basic_examples/screens/animationController/animation_controller_screen.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/clipper/custom_clipper_selection_page.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/explicit_animation_example_screen.dart';
+import 'package:chattalk_explicit_animations/basic_examples/screens/interval/explicit_multiple_animation_screen.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/loop/explicit_animation_loop_screen.dart';
-import 'package:chattalk_explicit_animations/basic_examples/screens/multipleAnimation/explicit_multiple_animation_screen.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/tween/explicit_animation_color_tween_screen.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/tween/explicit_animation_tween_chain_screen.dart';
 import 'package:chattalk_explicit_animations/basic_examples/screens/tween/explicit_animation_tween_screen.dart';
