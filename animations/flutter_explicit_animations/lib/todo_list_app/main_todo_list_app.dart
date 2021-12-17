@@ -75,7 +75,14 @@ class _MyHomePageState extends State<MyHomePage>
         IconButton(
           icon: const Icon(Icons.supervised_user_circle),
           color: Colors.black,
-          onPressed: () {},
+          onPressed: () {
+            if(!_controller.isAnimating){
+              if(_controller.isCompleted){
+                _controller.reset();
+                _controller.forward();
+              }
+            }
+          },
           iconSize: _profilePictureAnimation.value,
         ),
       ],
