@@ -1,0 +1,4 @@
+#Mon Apr 04 09:17:25 ICT 2022
+base.0=/Users/kantaphattavelertsopon/Paper/My-projects/Flutter/flutter101/flutterUI/Flutter-Food-Panda-Ui-Clone/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
+renamed.0=classes.dex
+path.0=classes.dex
