@@ -21,3 +21,5 @@ If you want to support me, [buy me a coffee here](https://www.buymeacoffee.com/g
 ## Source Repository
 
 [Github](https://github.com/gbaccetta/flutter_navigation_tutorial.git)
+
+## ตัวอย่างการใช้งานแพ็คเกจ auto_route
