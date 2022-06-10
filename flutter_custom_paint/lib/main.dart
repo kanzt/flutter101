@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_custom_paint/custompaint/circle.dart';
 import 'package:flutter_custom_paint/custompaint/line.dart';
 import 'package:flutter_custom_paint/custompaint/rectangle.dart';
+import 'package:flutter_custom_paint/iflowsoft/iflowsoft_routing_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +28,8 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const IFlowSoftRoutingPage(),
     );
   }
 }
