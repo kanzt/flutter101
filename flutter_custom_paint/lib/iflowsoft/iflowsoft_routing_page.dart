@@ -46,7 +46,7 @@ class IFlowSoftRoutingPage extends StatelessWidget {
                   physics: const BouncingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   child: CustomPaint(
-                    size: Size(double.infinity,
+                    size: Size(1000,
                         MediaQuery.of(context).size.height),
                     painter: IFlowSoftRoutingCustomPaint(rootNode),
                   ),

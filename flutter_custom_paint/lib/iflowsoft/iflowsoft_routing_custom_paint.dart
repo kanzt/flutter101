@@ -22,29 +22,7 @@ class IFlowSoftRoutingCustomPaint extends CustomPainter {
   void paint(Canvas canvas, Size size) async {
     _onDraw(canvas, size, data);
 
-    data.child?.forEach((element) {
-      _onDraw(
-        canvas,
-        size,
-        element,
-      );
-
-      element.child?.forEach((element) {
-        _onDraw(
-          canvas,
-          size,
-          element,
-        );
-
-        element.child?.forEach((element) {
-          _onDraw(
-            canvas,
-            size,
-            element,
-          );
-        });
-      });
-    });
+    _drawAllChildNode(canvas, size, data);
   }
 
   void _onDraw(Canvas canvas, Size size, RoutingData data) {
@@ -71,7 +49,7 @@ class IFlowSoftRoutingCustomPaint extends CustomPainter {
           (size.height * 0.5) + (_imageSize * 0.5));
     } else {
       final childCount = data.parent!.child!.length;
-      final spaceY = size.height / (childCount + 1.0);
+      final spaceY = (data.parent!.myRect!.center.dy * 2) / (childCount + 1.0);
       final childPosition = data.parent!.child!.indexOf(data) + 1;
 
       data.myRect = Rect.fromLTRB(
@@ -164,5 +142,19 @@ class IFlowSoftRoutingCustomPaint extends CustomPainter {
     Offset endingOffset = data.myRect!.centerLeft;
 
     canvas.drawLine(startingOffset, endingOffset, paint);
+  }
+
+  void _drawAllChildNode(Canvas canvas, Size size, RoutingData data) {
+    data.child?.forEach((element) {
+      _onDraw(
+        canvas,
+        size,
+        element,
+      );
+
+      if(element.child?.isNotEmpty == true){
+        _drawAllChildNode(canvas, size, element);
+      }
+    });
   }
 }
