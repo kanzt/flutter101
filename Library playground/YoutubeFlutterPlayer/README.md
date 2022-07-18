@@ -16,4 +16,4 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 
-แนะนำให้ดูตัวอย่างประกอบได้ที่นี่จะครบถ้วนกว่า [Github](https://github.com/sarbagyastha/youtube_player_flutter)
+ตัวอย่าง example2 มาจาก Official [Github](https://github.com/sarbagyastha/youtube_player_flutter)
