@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -121,10 +122,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return YoutubePlayerBuilder(
       onEnterFullScreen: () {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeRight,
-          DeviceOrientation.landscapeLeft
-        ]);
+        if (Platform.isAndroid) {
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeRight,
+            DeviceOrientation.landscapeLeft
+          ]);
+        }
       },
       onExitFullScreen: () {
         // The player forces portraitUp after exiting fullscreen. This overrides the behaviour.
