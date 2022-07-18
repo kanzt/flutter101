@@ -189,12 +189,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       builder: (context, player) => Scaffold(
         appBar: AppBar(
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 12.0),
-            child: Image.asset(
-              'assets/ypf.png',
-              fit: BoxFit.fitWidth,
-            ),
+          leading: const Padding(
+            padding: EdgeInsets.only(left: 12.0),
+            child: Icon(Icons.flutter_dash)
           ),
           title: const Text(
             'Youtube Player Flutter',
