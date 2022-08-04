@@ -36,15 +36,18 @@ class _MyAppState extends State<MyApp> {
 
   // For a list of client IDs, go to https://demo.duendesoftware.com
   final String _clientId = 'mobile';
+  // Redirect หลัง Login
   final String _redirectUrl = 'dolappeal://auth';
   final String _issuer = 'https://apidcdev.dol.go.th/auth/realms/master';
   final String _discoveryUrl =
       'https://apidcdev.dol.go.th/auth/realms/master/.well-known/openid-configuration';
-  final String _postLogoutRedirectUrl = 'dolappeal:/';
+  // Redirect หลัง Logout
+  final String _postLogoutRedirectUrl = 'dolappeal://auth';
   final List<String> _scopes = <String>[
     'openid', 'email', 'profile'
   ];
 
+  /// ข้อมูล url ต่างๆมาจาก Keycloak : https://apidcdev.dol.go.th/auth/realms/master/.well-known/openid-configuration
   final AuthorizationServiceConfiguration _serviceConfiguration =
   const AuthorizationServiceConfiguration(
     authorizationEndpoint: 'https://apidcdev.dol.go.th/auth/realms/master/protocol/openid-connect/auth',
@@ -256,6 +259,7 @@ class _MyAppState extends State<MyApp> {
     try {
       _setBusyState();
 
+      /// ถ้าเคย Login จะได้ Token กลับมาเลยไม่แสดงหน้า Login ให้ผู้ใช้กรอก User/Pass อีก
       // show that we can also explicitly specify the endpoints rather than getting from the details from the discovery document
       // final AuthorizationTokenResponse? result =
       // await _appAuth.authorizeAndExchangeCode(
@@ -268,6 +272,7 @@ class _MyAppState extends State<MyApp> {
       //   ),
       // );
 
+      /// แบบนี้จะเป้นการ Force user ไปหน้า Login ถึงแม้ จะเคย Login แล้ว
       // this code block demonstrates passing in values for the prompt parameter. in this case it prompts the user login even if they have already signed in. the list of supported values depends on the identity provider
       final AuthorizationTokenResponse? result = await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(_clientId, _redirectUrl,
