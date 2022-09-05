@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AnimatedContainerWidget extends StatefulWidget {
+  const AnimatedContainerWidget({Key? key}) : super(key: key);
+
   @override
   AnimatedContainerWidgetState createState() => AnimatedContainerWidgetState();
 }
@@ -21,8 +23,8 @@ class AnimatedContainerWidgetState extends State<AnimatedContainerWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            new AnimatedContainer(
-              duration: new Duration(milliseconds: 1000),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 1000),
               curve: Curves.decelerate,
               width: _size,
               height: _size,
@@ -30,7 +32,7 @@ class AnimatedContainerWidgetState extends State<AnimatedContainerWidget> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: new RaisedButton(
+              child: ElevatedButton(
                 onPressed: () {
                   setState(() {
                     _size = _size == 200.0 ? 250.0 : 200.0;
@@ -40,14 +42,14 @@ class AnimatedContainerWidgetState extends State<AnimatedContainerWidget> {
                         : Colors.deepOrange;
                   });
                 },
-                child: Text("Animate"),
+                child: const Text("Animate"),
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.arrow_back),
+          child: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           }),

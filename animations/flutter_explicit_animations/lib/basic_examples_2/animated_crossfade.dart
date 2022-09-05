@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AnimatedCrossFadeWidget extends StatefulWidget {
+  const AnimatedCrossFadeWidget({Key? key}) : super(key: key);
+
   @override
   AnimatedCrossFadeWidgetState createState() => AnimatedCrossFadeWidgetState();
 }
@@ -11,7 +13,7 @@ class AnimatedCrossFadeWidgetState extends State<AnimatedCrossFadeWidget> {
     super.initState();
   }
 
-  double _size = 200.0;
+  final double _size = 200.0;
 
   CrossFadeState _fadeState = CrossFadeState.showFirst;
 
@@ -24,7 +26,7 @@ class AnimatedCrossFadeWidgetState extends State<AnimatedCrossFadeWidget> {
           children: [
             AnimatedCrossFade(
               crossFadeState: _fadeState,
-              duration: new Duration(milliseconds: 1000),
+              duration: const Duration(milliseconds: 1000),
               firstCurve: Curves.easeInOut,
               secondCurve: Curves.easeInOut,
               firstChild: Center(
@@ -44,7 +46,7 @@ class AnimatedCrossFadeWidgetState extends State<AnimatedCrossFadeWidget> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: new RaisedButton(
+              child: ElevatedButton(
                 onPressed: () {
                   setState(() {
                     _fadeState = _fadeState == CrossFadeState.showFirst
@@ -52,14 +54,14 @@ class AnimatedCrossFadeWidgetState extends State<AnimatedCrossFadeWidget> {
                         : CrossFadeState.showFirst;
                   });
                 },
-                child: Text("Animate"),
+                child: const Text("Animate"),
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.arrow_back),
+          child: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           }),
