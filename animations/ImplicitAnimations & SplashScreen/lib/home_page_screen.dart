@@ -27,56 +27,61 @@ class _HomePageScreenState extends State<HomePageScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
 
-                RaisedButton(
+                ElevatedButton(
                   child: Text('Animated Container'),
-                  color: Colors.blueGrey,
                   onPressed: () {
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => AnimatedContainerScreen()));
                   },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                  padding: EdgeInsets.all(13),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    padding: EdgeInsets.all(13),
+                  ),
                 ),
                 SizedBox(height: 8,),
-                RaisedButton(
+                ElevatedButton(
                   child: Text('Animated Opacity'),
-                  color: Colors.blueGrey,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    padding: EdgeInsets.all(13),
+                  ),
                   onPressed: () {
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => AnimatedOpacityScreen()));
                     },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                  padding: EdgeInsets.all(13),
 
                 ),
                 SizedBox(height: 8,),
 
-                RaisedButton(
+                ElevatedButton(
                   child: Text('Animated Cross Fade'),
-                  color: Colors.blueGrey,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    padding: EdgeInsets.all(13),
+                  ),
                   onPressed: () {
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => AnimatedCrossFadeScreen()));
                     },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                  padding: EdgeInsets.all(13),
 
 
                 ),
                 SizedBox(height: 8,),
 
-                RaisedButton(
+                ElevatedButton(
                   child: Text('Tween Animation Builder',),
-                  color: Colors.blueGrey,
-
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                    padding: EdgeInsets.all(13),
+                  ),
                   onPressed: () {
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => TweenAnimationBuilderScreen()));
                     },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-                  padding: EdgeInsets.all(13),
-
-
                 ),
                 
               ],
