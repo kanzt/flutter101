@@ -102,7 +102,7 @@ class _SliversDemoState extends State<SliversDemo> {
                       const Text('Add Name', style: TextStyle(fontSize: 22)),
                       _buildName(),
                       const SizedBox(height: 16),
-                      RaisedButton(
+                      ElevatedButton(
                         child: const Text('Submit'),
                         onPressed: _submit,
                       ),
