@@ -20,11 +20,19 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "startExampleService" -> {
                     startService(Intent(this, ExampleService::class.java))
-                    result.success("Started!")
+                    result.success("Started! ExampleService")
                 }
                 "stopExampleService" -> {
                     stopService(Intent(this, ExampleService::class.java))
-                    result.success("Stopped!")
+                    result.success("Stopped! ExampleService")
+                }
+                "startExampleBackgroundService" -> {
+                    startService(Intent(this, ExampleBackgroundService::class.java))
+                    result.success("Started! ExampleBackgroundService")
+                }
+                "stopExampleBackgroundService" -> {
+                    stopService(Intent(this, ExampleBackgroundService::class.java))
+                    result.success("Stopped! ExampleBackgroundService")
                 }
                 else -> {
                     result.notImplemented()

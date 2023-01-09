@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const platform = const MethodChannel('example_service');
   String _serverState = 'Did not make the call yet';
 
-  Future<void> _startService() async {
+  Future<void> _startForegroundService() async {
     try {
       final result = await platform.invokeMethod('startExampleService');
       setState(() {
@@ -42,9 +42,31 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _stopService() async {
+  Future<void> _stopForegroundService() async {
     try {
       final result = await platform.invokeMethod('stopExampleService');
+      setState(() {
+        _serverState = result;
+      });
+    } on PlatformException catch (e) {
+      print("Failed to invoke method: '${e.message}'.");
+    }
+  }
+
+  Future<void> _startBackgroundService() async {
+    try {
+      final result = await platform.invokeMethod('startExampleBackgroundService');
+      setState(() {
+        _serverState = result;
+      });
+    } on PlatformException catch (e) {
+      print("Failed to invoke method: '${e.message}'.");
+    }
+  }
+
+  Future<void> _stopBackgroundService() async {
+    try {
+      final result = await platform.invokeMethod('stopExampleBackgroundService');
       setState(() {
         _serverState = result;
       });
@@ -65,12 +87,20 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Text(_serverState),
             ElevatedButton(
-              child: Text('Start Service'),
-              onPressed: _startService,
+              child: Text('Start Foreground Service'),
+              onPressed: _startForegroundService,
             ),
             ElevatedButton(
-              child: Text('Stop Service'),
-              onPressed: _stopService,
+              child: Text('Stop Foreground Service'),
+              onPressed: _stopForegroundService,
+            ),
+            ElevatedButton(
+              child: Text('Start Background Service'),
+              onPressed: _startBackgroundService,
+            ),
+            ElevatedButton(
+              child: Text('Stop Background Service'),
+              onPressed: _stopBackgroundService,
             ),
           ],
         ),
