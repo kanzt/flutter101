@@ -19,6 +19,7 @@ class MainActivity : FlutterActivity() {
             call, result ->
             when (call.method) {
                 "startExampleService" -> {
+                    // ถ้ามีการสั่ง startService 2 ครั้ง ก็จะได้ Service ที่รันขึ้นมา 2 ตัวเลย
                     startService(Intent(this, ExampleService::class.java))
                     result.success("Started! ExampleService")
                 }

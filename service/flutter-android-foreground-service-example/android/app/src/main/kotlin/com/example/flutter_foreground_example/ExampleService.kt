@@ -1,18 +1,18 @@
 package com.example.flutter_foreground_example
 
-import androidx.annotation.RequiresApi
-import android.content.Context
-import android.graphics.Color
 import android.app.Notification
-import android.app.NotificationManager
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import java.util.Timer
-import java.util.TimerTask
+import kotlinx.coroutines.*
 
 class ExampleService : Service() {
     val notificationId = 1
@@ -21,28 +21,49 @@ class ExampleService : Service() {
     lateinit var channel: NotificationChannel
     lateinit var manager: NotificationManager
 
-    override fun onCreate() {
-        super.onCreate()
-        startForeground()
+    companion object {
+        val TAG = ExampleService::class.java.simpleName
+    }
+
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        GlobalScope
+        Log.d(TAG, "Service is running with ID : $startId")
+        startForeground(startId)
         serviceRunning = true
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                if (serviceRunning == true) {
-                    updateNotification("I got updated!")
+        serviceScope.launch {
+            delay(5000)
+            if (serviceRunning) {
+                updateNotification("I got updated! $startId", startId)
+
+                launch {
+                    while (true) {
+                        if (isActive) {
+                            delay(1000)
+                            Log.d(TAG, "Running from ID : $startId")
+                        }
+                    }
                 }
             }
-        }, 5000)
+        }
+        return START_STICKY
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         serviceRunning = false
+        Log.d(TAG, "Service is destroyed")
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(channelId: String, channelName: String): String {
-        channel = NotificationChannel(channelId,
-                channelName, NotificationManager.IMPORTANCE_NONE)
+        channel = NotificationChannel(
+            channelId,
+            channelName, NotificationManager.IMPORTANCE_NONE
+        )
         channel.lightColor = Color.BLUE
         channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -50,7 +71,7 @@ class ExampleService : Service() {
         return channelId
     }
 
-    private fun startForeground() {
+    private fun startForeground(notificationId: Int) {
         val channelId =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 createNotificationChannel("example_service", "Example Service")
@@ -67,10 +88,10 @@ class ExampleService : Service() {
             .setContentTitle("Example Service")
             .setContentText("Example Serivce is running")
             .setCategory(Notification.CATEGORY_SERVICE)
-        startForeground(1, builder.build())
+        startForeground(notificationId, builder.build())
     }
 
-    private fun updateNotification(text: String) {
+    private fun updateNotification(text: String, notificationId: Int) {
         builder
             .setContentText(text)
         manager.notify(notificationId, builder.build());

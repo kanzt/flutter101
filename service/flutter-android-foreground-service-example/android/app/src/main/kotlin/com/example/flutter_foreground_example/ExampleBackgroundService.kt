@@ -29,7 +29,7 @@ class ExampleBackgroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Service restarting")
+        Log.d(TAG, "Service is running")
         serviceScope.launch {
 
             // เนื่องจากภายใน downloadUserData เรียกใช้งาน coroutineScope ดังนั้นมันจะทำงานโค้ดข้างใน coroutineScope ให้เสร็จเรียบร้อยก่อน
@@ -37,7 +37,7 @@ class ExampleBackgroundService : Service() {
             downloadUserData()
 
             while (true){
-                delay(5)
+                delay(5000)
                 Log.d(TAG, "I got updated!")
             }
         }
@@ -55,7 +55,7 @@ class ExampleBackgroundService : Service() {
         // before returning from this suspended function.
         coroutineScope {
             for (i in 0 until 100) {
-                delay(10)
+                delay(1000)
                 Log.d(TAG, "Downloading : $i %")
                 result++
             }
