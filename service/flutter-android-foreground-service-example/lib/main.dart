@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_foreground_example/android_service.dart';
+import 'package:flutter_foreground_example/service.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,8 +29,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static const platform = const MethodChannel('example_service');
   String? _serverState = 'Did not make the call yet';
+
+  StreamSubscription? subscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    subscription = Service.instance.listenToForegroundService().listen((event) {
+      print(event);
+    });
+  }
+
+  @override
+  void dispose() {
+    subscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +59,17 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(_serverState ?? ""),
+            StreamBuilder(
+              stream: Service.instance.onConnectStatus,
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                return Text("Stream status : ${snapshot.data ?? ''}");
+              },
+            ),
             ElevatedButton(
                 child: Text('Start Foreground Service'),
                 onPressed: () async {
                   final result =
-                      await AndroidService.instance.startForegroundService();
+                      await Service.instance.startForegroundService();
                   setState(() {
                     _serverState = result;
                   });
@@ -54,8 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
                 child: Text('Stop Foreground Service'),
                 onPressed: () async {
-                  final result =
-                      await AndroidService.instance.stopForegroundService();
+                  final result = await Service.instance.stopForegroundService();
                   setState(() {
                     _serverState = result;
                   });
@@ -64,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text('Start Background Service'),
                 onPressed: () async {
                   final result =
-                      await AndroidService.instance.startBackgroundService();
+                      await Service.instance.startBackgroundService();
                   setState(() {
                     _serverState = result;
                   });
@@ -72,8 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
                 child: Text('Stop Background Service'),
                 onPressed: () async {
-                  final result =
-                      await AndroidService.instance.stopBackgroundService();
+                  final result = await Service.instance.stopBackgroundService();
                   setState(() {
                     _serverState = result;
                   });

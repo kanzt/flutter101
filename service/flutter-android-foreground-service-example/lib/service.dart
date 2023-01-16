@@ -1,12 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 
-class AndroidService {
+class Service {
+  // New Method Channel
   static MethodChannel _methodChannel = const MethodChannel('example_service');
 
-  static AndroidService _instance = AndroidService._privateConstructor();
-  static AndroidService get instance => _instance;
+  // New Event Channel
+  static const EventChannel _eventChannel =
+      const EventChannel('connect_status');
+  static const EventChannel _eventChannelFs =
+      const EventChannel('foreground_service_stream');
 
-  AndroidService._privateConstructor();
+  static Service _instance = Service._privateConstructor();
+
+  static Service get instance => _instance;
+
+  Service._privateConstructor();
+
+  Stream<String> get onConnectStatus {
+    return _eventChannel.receiveBroadcastStream().cast();
+  }
+
+  Stream<String> listenToForegroundService() {
+    return _eventChannelFs.receiveBroadcastStream().cast();
+  }
 
   Future<String?> startForegroundService() async {
     try {
