@@ -12,9 +12,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import io.flutter.plugin.common.EventChannel
 import kotlinx.coroutines.*
 
-class ExampleService : Service() {
+class ExampleForegroundService : Service() {
     val notificationId = 1
     var serviceRunning = false
     lateinit var builder: NotificationCompat.Builder
@@ -22,14 +23,14 @@ class ExampleService : Service() {
     lateinit var manager: NotificationManager
 
     companion object {
-        val TAG = ExampleService::class.java.simpleName
+        val TAG: String = ExampleForegroundService::class.java.simpleName
+        var sink : EventChannel.EventSink? = null
     }
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        GlobalScope
         Log.d(TAG, "Service is running with ID : $startId")
         startForeground(startId)
         serviceRunning = true
@@ -43,6 +44,10 @@ class ExampleService : Service() {
                         if (isActive) {
                             delay(1000)
                             Log.d(TAG, "Running from ID : $startId")
+
+                            withContext(Dispatchers.Main){
+                                sink?.success("Sink | Running from ID : $startId")
+                            }
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import CoreLocation
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -7,6 +8,8 @@ import Flutter
     var timer : Timer?
     
     var eventSink: FlutterEventSink?
+    
+    var locationManager: CLLocationManager?
     
     override func application(
         _ application: UIApplication,
@@ -18,8 +21,22 @@ import Flutter
         // Register Event Channel
         registerEventChannel()
         
+        // Observe location change
+        observeLocationChange()
+        
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+    
+    func observeLocationChange(){
+        // Reference : https://www.advancedswift.com/user-location-in-swift
+        locationManager = CLLocationManager()
+        locationManager?.delegate = self
+        locationManager?.allowsBackgroundLocationUpdates = true
+        // ระยะเกิน 50M จึงจะอัพเดท
+        // locationManager?.distanceFilter = 50
+        locationManager?.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager?.requestAlwaysAuthorization()
     }
     
     func registerEventChannel(){
@@ -69,7 +86,7 @@ import Flutter
                             print("Running from ID : \(self.currentQueueName()!)")
                             
                             if let events = self.eventSink {
-                                events("(Sink) Running from ID : \(self.currentQueueName()!)")
+                                events("Sink | Running from ID : \(self.currentQueueName()!)")
                             }
                         }
                     } else {
@@ -92,9 +109,32 @@ import Flutter
         let name = __dispatch_queue_get_label(nil)
         return String(cString: name, encoding: .utf8)
     }
+    
+    override func applicationDidEnterBackground(_ application: UIApplication) {
+        var identifier: UIBackgroundTaskIdentifier? = nil
+        identifier = UIApplication.shared.beginBackgroundTask {
+            if self.timer != nil {
+                self.timer?.invalidate()
+                self.timer = nil
+            }
+            
+            if #available(iOS 10.0, *) {
+                self.timer = Timer(timeInterval: 2, repeats: true) { _ in
+                    NSLog("Running from ID : \(self.currentQueueName()!)")
+                }
+            } else {
+                // Fallback on earlier versions
+            }
+            let runLoop = RunLoop.current
+            runLoop.add(self.timer!, forMode: .default)
+            runLoop.run()
+            UIApplication.shared.endBackgroundTask(identifier!)
+        }
+    }
+    
 }
 
-extension AppDelegate : FlutterStreamHandler {
+extension AppDelegate : FlutterStreamHandler, CLLocationManagerDelegate {
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
         return nil
@@ -104,5 +144,37 @@ extension AppDelegate : FlutterStreamHandler {
         return nil
     }
     
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch status {
+        case .notDetermined:
+            print("Permission notDetermined")
+        case .authorizedAlways, .authorizedWhenInUse:
+            // self.locationManager?.startUpdatingLocation()
+            self.locationManager?.startUpdatingLocation()
+        default:
+            break
+        }
+    }
+    
+    func locationManager(
+        _ manager: CLLocationManager,
+        didUpdateLocations locations: [CLLocation]
+    ) {
+        if let location = locations.last {
+            let latitude = location.coordinate.latitude
+            let longitude = location.coordinate.longitude
+            if let event = eventSink {
+                event("Latitude : \(latitude) | Longitude : \(longitude)")
+            }
+        }
+    }
+    
+    func locationManager(
+        _ manager: CLLocationManager,
+        didFailWithError error: Error
+    ) {
+        // Handle failure to get a user’s location
+        print("Failed to retrieve location")
+    }
     
 }
