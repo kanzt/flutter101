@@ -47,7 +47,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         let token = tokenParts.joined()
         print("Device Token: \(token)")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.onTokenUpdateEventSink?(token)
         }
     }
@@ -85,7 +85,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 }
 
 @available(iOS 13.0, *)
-extension FlutterMqttPlugin : UNUserNotificationCenterDelegate{
+extension FlutterMqttPlugin {
     /// Handling notification action here (Foreground / Background / Terminated
     /// e.g. user click notification or action button
    public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
