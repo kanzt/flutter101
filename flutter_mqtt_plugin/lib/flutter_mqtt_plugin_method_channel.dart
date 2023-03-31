@@ -41,7 +41,7 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
 
   @override
   Stream<String?> onOpenedNotification() {
-    return messageEventChannel
+    return openNotificationEventChannel
         .receiveBroadcastStream(openNotificationChannelName)
         .cast();
   }
