@@ -1,88 +1,40 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin.dart';
+import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
+import 'package:flutter_mqtt_plugin_example/src/core/di.dart';
+import 'package:flutter_mqtt_plugin_example/src/resources/theme/theme.dart';
+import 'package:flutter_mqtt_plugin_example/src/util/notification/notification_service.dart';
+import 'package:get/get.dart';
 
-void main() {
+void entrypoint() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // DI
+  await initCoreDI();
+
+  // Push notification
+  await NotificationService.initialized();
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _flutterMqttPlugin = FlutterMqttPlugin();
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion = await _flutterMqttPlugin.getPlatformVersion() ??
-          'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Running on: $_platformVersion\n'),
-              StreamBuilder(
-                stream: _flutterMqttPlugin.getToken(),
-                builder:
-                    (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                  if (snapshot.hasData) {
-                    return Text('Token is: ${snapshot.data ?? ""}\n');
-                  }
-                  return const SizedBox();
-                },
-              ),
-              StreamBuilder(
-                stream: _flutterMqttPlugin.onReceivedNotification(),
-                builder:
-                    (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                  if (snapshot.hasData) {
-                    return Text('Message is: ${snapshot.data ?? ""}\n');
-                  }
-                  return const SizedBox();
-                },
-              ),
-            ],
-          ),
-        ),
+    return GetMaterialApp(
+      theme: ThemeData(
+        primarySwatch: AppTheme.kAppThemeSwatch,
       ),
+      initialRoute: Routes.rootPage,
+      getPages: Routes.getRoute(),
     );
   }
 }
