@@ -6,6 +6,11 @@ import Combine
 let tokenChannelName  = "th.co.cdgs.flutter_mqtt_plugin/token";
 let messageChannelName = "th.co.cdgs.flutter_mqtt_plugin/onReceivedMessage";
 let openNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/onOpenedNotification";
+let initialNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/initialNotification";
+
+// PreferenceKeys
+let keyIsAppWasTerminated = "is_app_was_terminated"
+let keyRecentNotification = "recent_notification"
 
 @available(iOS 13.0, *)
 public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin {
@@ -15,6 +20,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_mqtt_plugin", binaryMessenger: registrar.messenger())
+        let initialNotificationChannel = FlutterMethodChannel(name: "th.co.cdgs.flutter_mqtt_plugin/initialNotification", binaryMessenger: registrar.messenger())
         let instance = FlutterMqttPlugin()
         
         let tokenUpdateEventChannel = FlutterEventChannel(name: tokenChannelName, binaryMessenger: registrar.messenger())
@@ -30,11 +36,19 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        result("iOS " + UIDevice.current.systemVersion)
+        switch call.method {
+        case "getPlatformVersion":
+            result("iOS " + UIDevice.current.systemVersion)
+        case "initialNotification":
+            pushLocalNotification(result)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
     }
     
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         print("didFinishLaunchingWithOptions invoke()")
+        UserDefaults.standard.set(true, forKey: keyIsAppWasTerminated)
         
         /// Request push noification permission
         requestPushNotificationPermission(application)
@@ -54,6 +68,14 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
+    }
+    
+    public func applicationWillEnterForeground(_ application: UIApplication) {
+        UserDefaults.standard.set(true, forKey: keyIsAppWasTerminated)
+    }
+    
+    public func applicationWillTerminate(_ application: UIApplication) {
+        UserDefaults.standard.set(false, forKey: keyIsAppWasTerminated)
     }
     
     /// ปัญหา didReceiveRemoteNotification ของ Plugin ไม่ทำงาน เลยย้ายไปใช้ของ AppDelegate แทน
@@ -146,6 +168,40 @@ extension FlutterMqttPlugin {
             }
         }
     }
+    
+    private func pushLocalNotification(_ result: @escaping FlutterResult){
+        if let recentNotificationString = UserDefaults.standard.string(forKey: keyRecentNotification) {
+//            let arecentNotificationList = recentNotificationString.components(separatedBy: "|")
+//
+//            for (idx,i) in arecentNotificationList.enumerated(){
+//                let trigger = UNTimeIntervalNotificationTrigger(
+//                    timeInterval: Double(idx + 1),
+//                    repeats: false)
+//
+//                let content = UNMutableNotificationContent()
+//                content.title = "Business control notification \(i)"
+//                content.body = "Gentle reminder for your task!"
+//                content.sound = .default
+//
+//                let request = UNNotificationRequest(
+//                    identifier: "\(i) \(Date().timeIntervalSince1970)",
+//                    content: content,
+//                    trigger: trigger
+//                )
+//
+//                UNUserNotificationCenter.current().add(request) { error in
+//                    if let error = error {
+//                        print(error)
+//                    }
+//                }
+//            }
+            FileLogger().write("invoke success!!")
+            UserDefaults.standard.set(nil, forKey: keyRecentNotification)
+            result(recentNotificationString)
+        }
+        
+        result(nil)
+    }
 }
 
 @available(iOS 13.0, *)
@@ -194,8 +250,20 @@ public class NotificationHandler {
                 options: []) {
                 let notificationPayload = String(data: theJSONData,
                                                  encoding: .utf8)
-                print("Notification payload = \(notificationPayload!)")
-                self.onReceivedNotificationEventSink?(notificationPayload)
+                print("Notification payload (Native) = \(notificationPayload!)")
+                // FileLogger().write("\(notificationPayload!)")
+                let isUserUsingApp = UserDefaults.standard.bool(forKey: keyIsAppWasTerminated)
+                print("isUserUsingApp (Native) = \(isUserUsingApp)")
+                if isUserUsingApp == true {
+                    // foreground & background
+                    self.onReceivedNotificationEventSink?(notificationPayload)
+                } else{
+                    // Terminated
+                    if let recentNotification = UserDefaults.standard.string(forKey: keyRecentNotification) {
+                        UserDefaults.standard.set("\(recentNotification)|\(String(describing: notificationPayload!))", forKey: keyRecentNotification)
+                    }
+                    UserDefaults.standard.set("\(notificationPayload!)", forKey: keyRecentNotification)
+                }
             }
         }
         

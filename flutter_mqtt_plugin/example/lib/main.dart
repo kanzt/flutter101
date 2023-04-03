@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      title: "Flutter MQTT Sample App",
       theme: ThemeData(
         primarySwatch: AppTheme.kAppThemeSwatch,
       ),

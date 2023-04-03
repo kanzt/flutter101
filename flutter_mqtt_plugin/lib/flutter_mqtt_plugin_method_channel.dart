@@ -45,4 +45,11 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
         .receiveBroadcastStream(openNotificationChannelName)
         .cast();
   }
+
+  @override
+  Future<String?> initialNotification() async {
+    final notifications =
+        await methodChannel.invokeMethod<String>('initialNotification');
+    return notifications;
+  }
 }

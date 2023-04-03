@@ -6,8 +6,8 @@ import 'package:flutter_mqtt_plugin_example/src/util/shared_preferences/shared_p
 import 'package:get/get.dart';
 
 class LoginPageController extends GetxController {
-  final TextEditingController username = TextEditingController();
-  final TextEditingController password = TextEditingController();
+  final TextEditingController username = TextEditingController(text: "admin");
+  final TextEditingController password = TextEditingController(text: "P@ssw0rd");
   final Repository _repository = Get.find();
 
   void onLogin() async {

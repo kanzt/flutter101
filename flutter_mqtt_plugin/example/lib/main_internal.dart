@@ -5,7 +5,7 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://192.168.1.38:8080/api/v1/",
+      baseURL: "http://172.20.10.5:8080/api/v1/",
     ),
   );
 

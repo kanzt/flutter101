@@ -17,4 +17,8 @@ class FlutterMqttPlugin {
   Stream<String?> onOpenedNotification() {
     return FlutterMqttPluginPlatform.instance.onOpenedNotification();
   }
+
+  Future<String?> initialNotification() {
+    return FlutterMqttPluginPlatform.instance.initialNotification();
+  }
 }
