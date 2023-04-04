@@ -9,7 +9,7 @@ let openNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/onOpenedNotifi
 let initialNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/initialNotification";
 
 // PreferenceKeys
-let keyIsAppWasTerminated = "is_app_was_terminated"
+let keyIsUserTerminatetdApp = "is_user_terminated_app"
 let keyRecentNotification = "recent_notification"
 
 @available(iOS 13.0, *)
@@ -20,7 +20,6 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_mqtt_plugin", binaryMessenger: registrar.messenger())
-        let initialNotificationChannel = FlutterMethodChannel(name: "th.co.cdgs.flutter_mqtt_plugin/initialNotification", binaryMessenger: registrar.messenger())
         let instance = FlutterMqttPlugin()
         
         let tokenUpdateEventChannel = FlutterEventChannel(name: tokenChannelName, binaryMessenger: registrar.messenger())
@@ -48,7 +47,8 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         print("didFinishLaunchingWithOptions invoke()")
-        UserDefaults.standard.set(true, forKey: keyIsAppWasTerminated)
+        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillTerminate), name: UIApplication.willTerminateNotification, object: nil)
         
         /// Request push noification permission
         requestPushNotificationPermission(application)
@@ -71,11 +71,23 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     }
     
     public func applicationWillEnterForeground(_ application: UIApplication) {
-        UserDefaults.standard.set(true, forKey: keyIsAppWasTerminated)
+        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
     }
     
     public func applicationWillTerminate(_ application: UIApplication) {
-        UserDefaults.standard.set(false, forKey: keyIsAppWasTerminated)
+        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
+    }
+    
+    public func applicationWillResignActive(_ application: UIApplication) {
+        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
+    }
+    
+    public func applicationDidBecomeActive(_ application: UIApplication) {
+        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
+    }
+    
+    public func applicationDidEnterBackground(_ application: UIApplication) {
+        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
     }
     
     /// ปัญหา didReceiveRemoteNotification ของ Plugin ไม่ทำงาน เลยย้ายไปใช้ของ AppDelegate แทน
@@ -110,7 +122,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 extension FlutterMqttPlugin {
     /// Handling notification action here (Foreground / Background / Terminated
     /// e.g. user click notification or action button
-   public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         print("get message didReceive :  \(response)")
         
         let userInfo = response.notification.request.content.userInfo
@@ -130,7 +142,7 @@ extension FlutterMqttPlugin {
         completionHandler()
     }
     
-     public override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    public override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         /// In iOS 14 .alert is deprecated
         /// Ref : https://stackoverflow.com/a/68813049
         if #available(iOS 14.0, *) {
@@ -171,36 +183,40 @@ extension FlutterMqttPlugin {
     
     private func pushLocalNotification(_ result: @escaping FlutterResult){
         if let recentNotificationString = UserDefaults.standard.string(forKey: keyRecentNotification) {
-//            let arecentNotificationList = recentNotificationString.components(separatedBy: "|")
-//
-//            for (idx,i) in arecentNotificationList.enumerated(){
-//                let trigger = UNTimeIntervalNotificationTrigger(
-//                    timeInterval: Double(idx + 1),
-//                    repeats: false)
-//
-//                let content = UNMutableNotificationContent()
-//                content.title = "Business control notification \(i)"
-//                content.body = "Gentle reminder for your task!"
-//                content.sound = .default
-//
-//                let request = UNNotificationRequest(
-//                    identifier: "\(i) \(Date().timeIntervalSince1970)",
-//                    content: content,
-//                    trigger: trigger
-//                )
-//
-//                UNUserNotificationCenter.current().add(request) { error in
-//                    if let error = error {
-//                        print(error)
-//                    }
-//                }
-//            }
+            //            let arecentNotificationList = recentNotificationString.components(separatedBy: "|")
+            //
+            //            for (idx,i) in arecentNotificationList.enumerated(){
+            //                let trigger = UNTimeIntervalNotificationTrigger(
+            //                    timeInterval: Double(idx + 1),
+            //                    repeats: false)
+            //
+            //                let content = UNMutableNotificationContent()
+            //                content.title = "Business control notification \(i)"
+            //                content.body = "Gentle reminder for your task!"
+            //                content.sound = .default
+            //
+            //                let request = UNNotificationRequest(
+            //                    identifier: "\(i) \(Date().timeIntervalSince1970)",
+            //                    content: content,
+            //                    trigger: trigger
+            //                )
+            //
+            //                UNUserNotificationCenter.current().add(request) { error in
+            //                    if let error = error {
+            //                        print(error)
+            //                    }
+            //                }
+            //            }
             FileLogger().write("invoke success!!")
             UserDefaults.standard.set(nil, forKey: keyRecentNotification)
             result(recentNotificationString)
         }
         
         result(nil)
+    }
+    
+    @objc func appWillTerminate() {
+        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
     }
 }
 
@@ -252,17 +268,39 @@ public class NotificationHandler {
                                                  encoding: .utf8)
                 print("Notification payload (Native) = \(notificationPayload!)")
                 // FileLogger().write("\(notificationPayload!)")
-                let isUserUsingApp = UserDefaults.standard.bool(forKey: keyIsAppWasTerminated)
-                print("isUserUsingApp (Native) = \(isUserUsingApp)")
-                if isUserUsingApp == true {
-                    // foreground & background
-                    self.onReceivedNotificationEventSink?(notificationPayload)
-                } else{
-                    // Terminated
+                
+                let isUserTerminatedApp = UserDefaults.standard.bool(forKey: keyIsUserTerminatetdApp)
+                
+                var debug = UserDefaults.standard.string(forKey: "debug") ?? ""
+                debug += "\n\(isUserTerminatedApp) at onReceivedMessage \(Date())"
+                
+/// ตรวจสอบสถานะแอปอยู่ใน FG / BG เนื่องจากลองแล้วตรวจสอบข้อมูลได้ไม่ถูกต้อง
+//                if UIApplication.shared.applicationState == .active || UIApplication.shared.applicationState == .background {
+//                    // App is running
+//                    debug += "\n Foreground or Background at onReceivedMessage \(Date())"
+//                } else {
+//                    // App is terminated
+//                    debug += "\n Terminated at onReceivedMessage \(Date())"
+//                }
+                
+                UserDefaults.standard.set(debug, forKey: "debug")
+                print(debug)
+                
+                
+                if isUserTerminatedApp{
+                    UIApplication.shared.applicationIconBadgeNumber += 1
+                    /// Terminated
                     if let recentNotification = UserDefaults.standard.string(forKey: keyRecentNotification) {
                         UserDefaults.standard.set("\(recentNotification)|\(String(describing: notificationPayload!))", forKey: keyRecentNotification)
+                    }else{
+                        /// First time
+                        UserDefaults.standard.set("\(notificationPayload!)", forKey: keyRecentNotification)
                     }
-                    UserDefaults.standard.set("\(notificationPayload!)", forKey: keyRecentNotification)
+                    
+                } else{
+                    /// Foreground & Background
+                    UIApplication.shared.applicationIconBadgeNumber += 2
+                    self.onReceivedNotificationEventSink?(notificationPayload)
                 }
             }
         }
