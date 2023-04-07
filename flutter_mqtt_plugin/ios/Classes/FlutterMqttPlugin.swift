@@ -9,7 +9,7 @@ let openNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/onOpenedNotifi
 let initialNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/initialNotification";
 
 // PreferenceKeys
-let keyIsUserTerminatetdApp = "is_user_terminated_app"
+let keyIsAppInterminatedState = "is_app_in_terminated_state"
 let keyRecentNotification = "recent_notification"
 
 @available(iOS 13.0, *)
@@ -47,13 +47,16 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         print("didFinishLaunchingWithOptions invoke()")
-        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillTerminate), name: UIApplication.willTerminateNotification, object: nil)
         
         /// Request push noification permission
         requestPushNotificationPermission(application)
         
         return true
+    }
+    
+    @objc func appWillTerminate() {
+        ApplicationLifecycle.WillTerminate()
     }
     
     public override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -68,26 +71,6 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
-    }
-    
-    public func applicationWillEnterForeground(_ application: UIApplication) {
-        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
-    }
-    
-    public func applicationWillTerminate(_ application: UIApplication) {
-        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
-    }
-    
-    public func applicationWillResignActive(_ application: UIApplication) {
-        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
-    }
-    
-    public func applicationDidBecomeActive(_ application: UIApplication) {
-        UserDefaults.standard.set(false, forKey: keyIsUserTerminatetdApp)
-    }
-    
-    public func applicationDidEnterBackground(_ application: UIApplication) {
-        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
     }
     
     /// ปัญหา didReceiveRemoteNotification ของ Plugin ไม่ทำงาน เลยย้ายไปใช้ของ AppDelegate แทน
@@ -183,40 +166,11 @@ extension FlutterMqttPlugin {
     
     private func pushLocalNotification(_ result: @escaping FlutterResult){
         if let recentNotificationString = UserDefaults.standard.string(forKey: keyRecentNotification) {
-            //            let arecentNotificationList = recentNotificationString.components(separatedBy: "|")
-            //
-            //            for (idx,i) in arecentNotificationList.enumerated(){
-            //                let trigger = UNTimeIntervalNotificationTrigger(
-            //                    timeInterval: Double(idx + 1),
-            //                    repeats: false)
-            //
-            //                let content = UNMutableNotificationContent()
-            //                content.title = "Business control notification \(i)"
-            //                content.body = "Gentle reminder for your task!"
-            //                content.sound = .default
-            //
-            //                let request = UNNotificationRequest(
-            //                    identifier: "\(i) \(Date().timeIntervalSince1970)",
-            //                    content: content,
-            //                    trigger: trigger
-            //                )
-            //
-            //                UNUserNotificationCenter.current().add(request) { error in
-            //                    if let error = error {
-            //                        print(error)
-            //                    }
-            //                }
-            //            }
-            FileLogger().write("invoke success!!")
             UserDefaults.standard.set(nil, forKey: keyRecentNotification)
             result(recentNotificationString)
         }
         
         result(nil)
-    }
-    
-    @objc func appWillTerminate() {
-        UserDefaults.standard.set(true, forKey: keyIsUserTerminatetdApp)
     }
 }
 
@@ -267,44 +221,39 @@ public class NotificationHandler {
                 let notificationPayload = String(data: theJSONData,
                                                  encoding: .utf8)
                 print("Notification payload (Native) = \(notificationPayload!)")
-                // FileLogger().write("\(notificationPayload!)")
                 
-                let isUserTerminatedApp = UserDefaults.standard.bool(forKey: keyIsUserTerminatetdApp)
+                if isApplicationRunInForeground() {
+                    /// Foreground
+                    UIApplication.shared.applicationIconBadgeNumber += 2
+                    self.onReceivedNotificationEventSink?(notificationPayload)
                 
-                var debug = UserDefaults.standard.string(forKey: "debug") ?? ""
-                debug += "\n\(isUserTerminatedApp) at onReceivedMessage \(Date())"
-                
-/// ตรวจสอบสถานะแอปอยู่ใน FG / BG เนื่องจากลองแล้วตรวจสอบข้อมูลได้ไม่ถูกต้อง
-//                if UIApplication.shared.applicationState == .active || UIApplication.shared.applicationState == .background {
-//                    // App is running
-//                    debug += "\n Foreground or Background at onReceivedMessage \(Date())"
-//                } else {
-//                    // App is terminated
-//                    debug += "\n Terminated at onReceivedMessage \(Date())"
-//                }
-                
-                UserDefaults.standard.set(debug, forKey: "debug")
-                print(debug)
-                
-                
-                if isUserTerminatedApp{
+                } else{
+                    /// Background & Terminated
                     UIApplication.shared.applicationIconBadgeNumber += 1
-                    /// Terminated
                     if let recentNotification = UserDefaults.standard.string(forKey: keyRecentNotification) {
                         UserDefaults.standard.set("\(recentNotification)|\(String(describing: notificationPayload!))", forKey: keyRecentNotification)
                     }else{
                         /// First time
                         UserDefaults.standard.set("\(notificationPayload!)", forKey: keyRecentNotification)
                     }
-                    
-                } else{
-                    /// Foreground & Background
-                    UIApplication.shared.applicationIconBadgeNumber += 2
-                    self.onReceivedNotificationEventSink?(notificationPayload)
                 }
             }
         }
         
         completionHandler(.newData)
+    }
+    
+    private func isApplicationRunInForeground() -> Bool {
+        // Check is app running in Foreground (Traditional way by Tanut)
+        let isUserTerminatedApp = UserDefaults.standard.bool(forKey: keyIsAppInterminatedState)
+        var debug = UserDefaults.standard.string(forKey: "debug") ?? ""
+        debug += "\n\(isUserTerminatedApp) : \(UIApplication.shared.applicationState.rawValue) at isUserTerminatedApp() \(Date())"
+        
+        UserDefaults.standard.set(debug, forKey: "debug")
+        print(debug)
+        
+        /// Foreground state UIApplication.shared.applicationState.rawValue = 0
+        /// Background & Terminated state UIApplication.shared.applicationState.rawValue = 2
+        return UIApplication.shared.applicationState == .active
     }
 }

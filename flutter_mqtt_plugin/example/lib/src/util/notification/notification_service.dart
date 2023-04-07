@@ -10,6 +10,9 @@ class NotificationService {
   static final recentOpenNotification = ValueNotifier<String?>(null);
 
   static Future<void> initialized() async {
+    recentNotification.value =  await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
+
+    /// Get Notification token
     _plugin.getToken().listen((event) {
       SharedPreference.write(
         SharedPreference.KEY_TOKEN,
@@ -17,8 +20,10 @@ class NotificationService {
       );
     });
 
+    /// Received notification in foreground
     _plugin.onReceivedNotification().listen((event) {
       print("Notification payload (Flutter) : ${event}");
+      SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, event);
       recentNotification.value = event;
     });
 
@@ -28,17 +33,21 @@ class NotificationService {
     });
   }
 
-  static Future<bool> checkInitialNotification() async {
-    final initialNotification = await _plugin.initialNotification();
-    if (initialNotification != null) {
+  /// Received notification in background & terminated
+  /// We need to check it manually in ApplicationLifecycleController@onResumed
+  static Future<bool> checkPendingNotification() async {
+    final pendingNotification = await _plugin.getPendingNotification();
+    if (pendingNotification != null) {
       try {
-        final notification = initialNotification.split("|").last;
+        final notification = pendingNotification.split("|").last;
         print("checkInitialNotification : $notification");
+        SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, notification);
         recentNotification.value = notification;
         return true;
       } on Exception catch (e) {
-        print("checkInitialNotification : $initialNotification");
-        recentNotification.value = initialNotification;
+        print("checkInitialNotification : $pendingNotification");
+        SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, pendingNotification);
+        recentNotification.value = pendingNotification;
         return true;
       }
     }

@@ -39,7 +39,7 @@ abstract class FlutterMqttPluginPlatform extends PlatformInterface {
     throw UnimplementedError('onOpenedNotification() has not been implemented.');
   }
 
-  Future<String?> initialNotification() {
-    throw UnimplementedError('initialNotification() has not been implemented.');
+  Future<String?> getPendingNotification() {
+    throw UnimplementedError('getPendingNotification() has not been implemented.');
   }
 }

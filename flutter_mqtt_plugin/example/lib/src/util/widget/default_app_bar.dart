@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DefaultAppBar extends StatelessWidget with PreferredSizeWidget {
-  const DefaultAppBar({Key? key}) : super(key: key);
+  DefaultAppBar({Key? key, this.onBack}) : super(key: key);
+
+  VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       title: const Text("Flutter MQTT Sample App"),
+      leading: Builder(
+        builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () {
+              if(onBack != null){
+                onBack!();
+              }else{
+                Get.back();
+              }
+            },
+          );
+        },
+      ),
     );
   }
 

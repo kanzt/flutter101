@@ -15,7 +15,7 @@ func getDocumentsDirectory() -> URL {
     return paths[0]
 }
 
-
+/// Example : FileLogger().write("invoke success!!")
 struct FileLogger: TextOutputStream {
     
     func write(_ string: String) {

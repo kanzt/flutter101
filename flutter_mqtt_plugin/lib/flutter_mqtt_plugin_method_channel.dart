@@ -47,7 +47,7 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
   }
 
   @override
-  Future<String?> initialNotification() async {
+  Future<String?> getPendingNotification() async {
     final notifications =
         await methodChannel.invokeMethod<String>('initialNotification');
     return notifications;

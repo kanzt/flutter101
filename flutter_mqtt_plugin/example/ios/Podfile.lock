@@ -2,14 +2,8 @@ PODS:
   - Flutter (1.0.0)
   - flutter_mqtt_plugin (0.0.1):
     - Flutter
-    - RealmSwift (= 10.32.2)
   - flutter_secure_storage (6.0.0):
     - Flutter
-  - Realm (10.32.2):
-    - Realm/Headers (= 10.32.2)
-  - Realm/Headers (10.32.2)
-  - RealmSwift (10.32.2):
-    - Realm (= 10.32.2)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -19,11 +13,6 @@ DEPENDENCIES:
   - flutter_mqtt_plugin (from `.symlinks/plugins/flutter_mqtt_plugin/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
-
-SPEC REPOS:
-  trunk:
-    - Realm
-    - RealmSwift
 
 EXTERNAL SOURCES:
   Flutter:
@@ -37,10 +26,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_mqtt_plugin: ba99d266425e0e6f4b51f9a431be9428bd6bc0f4
+  flutter_mqtt_plugin: 78be6077a0aa3433c959435e7784a756c1fd8aa6
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
-  Realm: a11d133606e898ee43ddd3c24050a382c8d3eab1
-  RealmSwift: f796f7701a5efa031554d5639ef5b2d4c850bc74
   shared_preferences_foundation: 986fc17f3d3251412d18b0265f9c64113a8c2472
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3

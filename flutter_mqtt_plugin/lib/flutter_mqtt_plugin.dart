@@ -18,7 +18,7 @@ class FlutterMqttPlugin {
     return FlutterMqttPluginPlatform.instance.onOpenedNotification();
   }
 
-  Future<String?> initialNotification() {
-    return FlutterMqttPluginPlatform.instance.initialNotification();
+  Future<String?> getPendingNotification() {
+    return FlutterMqttPluginPlatform.instance.getPendingNotification();
   }
 }

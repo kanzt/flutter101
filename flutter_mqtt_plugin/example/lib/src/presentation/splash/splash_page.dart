@@ -17,27 +17,18 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    Timer(
-        const Duration(seconds: 3),
-            () async {
-          final isLogin = await SharedPreference.read(
-              SharedPreference.KEY_USER_ID);
-          if (isLogin != null) {
-            // TODO : ทดสอบ
-            final initialNotification = await NotificationService
-                .checkInitialNotification();
-            if (!initialNotification) {
-              Get.offAllNamed(
-                Routes.consumerPage,
-              );
-            }
-          } else {
-            Get.offAllNamed(
-              Routes.loginPage,
-            );
-          }
-        }
-    );
+    Timer(const Duration(seconds: 3), () async {
+      final isLogin = await SharedPreference.read(SharedPreference.KEY_USER_ID);
+      if (isLogin != null) {
+        Get.offAllNamed(
+          Routes.consumerPage,
+        );
+      } else {
+        Get.offAllNamed(
+          Routes.loginPage,
+        );
+      }
+    });
   }
 
   @override
