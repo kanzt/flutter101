@@ -8,7 +8,9 @@ class ConsumerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const DefaultAppBar(),
+      appBar: DefaultAppBar(
+        isHideBackButton : true,
+      ),
       body: Stack(
         children: [
           const Center(

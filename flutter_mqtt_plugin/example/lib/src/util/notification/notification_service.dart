@@ -29,7 +29,12 @@ class NotificationService {
 
     _plugin.onOpenedNotification().listen((event) {
       recentOpenNotification.value = event;
-      Get.toNamed(Routes.notificationDetailPage);
+      if(Get.currentRoute != Routes.rootPage){
+        Get.toNamed(Routes.notificationDetailPage);
+      }else{
+        Get.offAllNamed(Routes.consumerNoAnimPage);
+        Get.toNamed(Routes.notificationDetailPage);
+      }
     });
   }
 

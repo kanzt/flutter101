@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
-import 'package:flutter_mqtt_plugin_example/src/util/notification/notification_service.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 
@@ -15,14 +14,17 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   @override
-  void initState() {
+  void initState() async {
     super.initState();
+
     Timer(const Duration(seconds: 3), () async {
       final isLogin = await SharedPreference.read(SharedPreference.KEY_USER_ID);
       if (isLogin != null) {
-        Get.offAllNamed(
-          Routes.consumerPage,
-        );
+        if (Get.currentRoute != Routes.notificationDetailPage) {
+          Get.offAllNamed(
+            Routes.consumerPage,
+          );
+        }
       } else {
         Get.offAllNamed(
           Routes.loginPage,
@@ -33,6 +35,11 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text("Splashscreen"),
+      ),
+    );
   }
 }

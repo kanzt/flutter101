@@ -8,6 +8,7 @@ class Routes {
   static const rootPage = "/splashPage";
   static const loginPage = "/loginPage";
   static const consumerPage = "/consumerPage";
+  static const consumerNoAnimPage = "/consumerNoAnimPage";
   static const notificationDetailPage = "/notificationDetailPage";
 
   static List<GetPage> getRoute() {
@@ -23,6 +24,11 @@ class Routes {
       GetPage(
         name: consumerPage,
         page: () => const ConsumerPage(),
+      ),
+      GetPage(
+        name: consumerNoAnimPage,
+        page: () => const ConsumerPage(),
+        transition: Transition.noTransition
       ),
       GetPage(
         name: notificationDetailPage,
