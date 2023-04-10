@@ -9,8 +9,8 @@ let openNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/onOpenedNotifi
 let initialNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/initialNotification";
 
 // PreferenceKeys
-let keyIsAppInterminatedState = "is_app_in_terminated_state"
-let keyRecentNotification = "recent_notification"
+let keyIsAppInterminatedState = "th.co.cdgs.flutter_mqtt_plugin/is_app_in_terminated_state"
+let keyRecentNotification = "th.co.cdgs.flutter_mqtt_plugin/recent_notification"
 
 @available(iOS 13.0, *)
 public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin {
