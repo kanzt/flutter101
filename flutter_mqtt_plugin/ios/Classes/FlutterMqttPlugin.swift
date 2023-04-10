@@ -9,7 +9,7 @@ let openNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/onOpenedNotifi
 let initialNotificationChannelName = "th.co.cdgs.flutter_mqtt_plugin/initialNotification";
 
 // PreferenceKeys
-let keyIsAppInterminatedState = "th.co.cdgs.flutter_mqtt_plugin/is_app_in_terminated_state"
+let keyIsAppInTerminatedState = "th.co.cdgs.flutter_mqtt_plugin/is_app_in_terminated_state"
 let keyRecentNotification = "th.co.cdgs.flutter_mqtt_plugin/recent_notification"
 
 @available(iOS 13.0, *)
@@ -245,7 +245,7 @@ public class NotificationHandler {
     
     private func isApplicationRunInForeground() -> Bool {
         // Check is app running in Foreground (Traditional way by Tanut)
-        let isUserTerminatedApp = UserDefaults.standard.bool(forKey: keyIsAppInterminatedState)
+        let isUserTerminatedApp = UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState)
         var debug = UserDefaults.standard.string(forKey: "debug") ?? ""
         debug += "\n\(isUserTerminatedApp) : \(UIApplication.shared.applicationState.rawValue) at isUserTerminatedApp() \(Date())"
         
