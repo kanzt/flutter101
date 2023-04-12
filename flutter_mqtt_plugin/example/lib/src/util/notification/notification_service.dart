@@ -4,13 +4,22 @@ import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 
-class NotificationService {
-  static final _plugin = FlutterMqttPlugin();
-  static final recentNotification = ValueNotifier<String?>(null);
-  static final recentOpenNotification = ValueNotifier<String?>(null);
+abstract class NotificationService {
+  Future<void> initialize();
+  Future<bool> checkPendingNotification();
+  final recentNotification = ValueNotifier<String?>(null);
+}
 
-  static Future<void> initialized() async {
-    recentNotification.value =  await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
+class IOSNotificationService implements NotificationService {
+  final _plugin = FlutterMqttPlugin();
+
+  @override
+  ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
+
+  @override
+  Future<void> initialize() async {
+    recentNotification.value =
+        await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
 
     /// Get Notification token
     _plugin.getToken().listen((event) {
@@ -22,16 +31,15 @@ class NotificationService {
 
     /// Received notification in foreground
     _plugin.onReceivedNotification().listen((event) {
-      print("Notification payload (Flutter) : ${event}");
+      print("Notification payload (Flutter) : $event");
       SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, event);
       recentNotification.value = event;
     });
 
     _plugin.onOpenedNotification().listen((event) {
-      recentOpenNotification.value = event;
-      if(Get.currentRoute != Routes.rootPage){
+      if (Get.currentRoute != Routes.rootPage) {
         Get.toNamed(Routes.notificationDetailPage);
-      }else{
+      } else {
         Get.offAllNamed(Routes.consumerNoAnimPage);
         Get.toNamed(Routes.notificationDetailPage);
       }
@@ -40,22 +48,44 @@ class NotificationService {
 
   /// Received notification in background & terminated
   /// We need to check it manually in ApplicationLifecycleController@onResumed
-  static Future<bool> checkPendingNotification() async {
+  Future<bool> checkPendingNotification() async {
     final pendingNotification = await _plugin.getPendingNotification();
     if (pendingNotification != null) {
       try {
         final notification = pendingNotification.split("|").last;
         print("checkInitialNotification : $notification");
-        SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, notification);
+        SharedPreference.write(
+            SharedPreference.KEY_RECENT_NOTIFICATION, notification);
         recentNotification.value = notification;
         return true;
       } on Exception catch (e) {
         print("checkInitialNotification : $pendingNotification");
-        SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, pendingNotification);
+        SharedPreference.write(
+            SharedPreference.KEY_RECENT_NOTIFICATION, pendingNotification);
         recentNotification.value = pendingNotification;
         return true;
       }
     }
     return false;
+  }
+}
+
+class AndroidNotificationService implements NotificationService {
+  final _plugin = FlutterMqttPlugin();
+
+  @override
+  ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
+
+  @override
+  Future<void> initialize() async {
+    recentNotification.value =
+        await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
+
+    /// Received notification in foreground
+    _plugin.onReceivedNotification().listen((event) {
+      print("Notification payload (Flutter) : $event");
+      SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, event);
+      recentNotification.value = event;
+    });
   }
 }

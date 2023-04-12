@@ -44,37 +44,6 @@ android {
     defaultConfig {
         minSdkVersion 24
     }
-
-    flavorDimensions "app"
-
-    productFlavors {
-        local {
-            dimension = "app"
-            buildConfigField 'boolean', 'IS_REQUIRED_SSL', 'false'
-            buildConfigField "String", "HOSTNAME", '"10.0.2.2"'
-            buildConfigField "String", "BASE_URL", '"http://10.0.2.2:8080/api/v1/"'
-            buildConfigField "String", "USERNAME", '"mqtt-mobile"'
-            buildConfigField "String", "PASSWORD", '"mqtt-mobile"'
-        }
-
-        internal {
-            dimension = "app"
-            buildConfigField 'boolean', 'IS_REQUIRED_SSL', 'false'
-            buildConfigField "String", "HOSTNAME", '"172.20.10.5"'
-            buildConfigField "String", "BASE_URL", '"http://172.20.10.5:8080/api/v1/"'
-            buildConfigField "String", "USERNAME", '"mqtt-mobile"'
-            buildConfigField "String", "PASSWORD", '"mqtt-mobile"'
-        }
-
-        external {
-            dimension = "app"
-            buildConfigField 'boolean', 'IS_REQUIRED_SSL', 'true'
-            buildConfigField "String", "HOSTNAME", '"mqttmobile-dev.cdgs.co.th"'
-            buildConfigField "String", "BASE_URL", '"http://10.0.2.2:8080/api/v1/"'
-            buildConfigField "String", "USERNAME", '"mqtt-mobile"'
-            buildConfigField "String", "PASSWORD", '"mqtt-mobile"'
-        }
-    }
 }
 
 dependencies {
@@ -87,7 +56,8 @@ dependencies {
     implementation 'androidx.concurrent:concurrent-futures-ktx:1.1.0'
 
     // HiveMQTT
-    implementation "com.hivemq:hivemq-mqtt-client:1.3.0"
+    implementation 'com.hivemq:hivemq-mqtt-client:1.3.0'
+
     // Json to Pojo
     implementation 'com.google.code.gson:gson:2.9.0'
 }

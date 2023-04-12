@@ -1,4 +1,6 @@
 
+import 'package:flutter_mqtt_plugin/entity/config.dart';
+
 import 'flutter_mqtt_plugin_platform_interface.dart';
 
 class FlutterMqttPlugin {
@@ -16,5 +18,9 @@ class FlutterMqttPlugin {
 
   Future<String?> getPendingNotification() {
     return FlutterMqttPluginPlatform.instance.getPendingNotification();
+  }
+
+  void connectMQTT(Config config) {
+     FlutterMqttPluginPlatform.instance.connectMQTT(config);
   }
 }

@@ -51,7 +51,7 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(
                 width: double.infinity,
-                height: 65.rv,
+                height: 60,
                 child: ElevatedButton(
                   onPressed: loginPageController.onLogin,
                   style: ElevatedButton.styleFrom(

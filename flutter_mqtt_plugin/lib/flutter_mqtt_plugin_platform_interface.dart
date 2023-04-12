@@ -1,3 +1,4 @@
+import 'package:flutter_mqtt_plugin/entity/config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_mqtt_plugin_method_channel.dart';
@@ -37,5 +38,9 @@ abstract class FlutterMqttPluginPlatform extends PlatformInterface {
 
   Future<String?> getPendingNotification() {
     throw UnimplementedError('getPendingNotification() has not been implemented.');
+  }
+
+  void connectMQTT(Config config) {
+    throw UnimplementedError('connectMQTT() has not been implemented.');
   }
 }

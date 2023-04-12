@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
@@ -18,11 +21,21 @@ void entrypoint() async {
   await initCoreDI();
 
   // Push notification
-  await NotificationService.initialized();
+  try {
+    if (Platform.isIOS) {
+      Get.put<NotificationService>(IOSNotificationService());
+    } else if (Platform.isAndroid) {
+      Get.put<NotificationService>(AndroidNotificationService());
+    }
+    await Get.find<NotificationService>().initialize();
+  } on Exception catch (e) {
+    if (kDebugMode) {
+      print(e);
+    }
+  }
 
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

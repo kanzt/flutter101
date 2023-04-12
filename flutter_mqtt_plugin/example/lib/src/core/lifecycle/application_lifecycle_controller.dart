@@ -24,6 +24,6 @@ class ApplicationLifecycleController extends FullLifeCycleController with FullLi
   @override
   void onResumed() {
     print('ApplicationLifecycleController - onResumed called');
-    NotificationService.checkPendingNotification();
+    Get.find<NotificationService>().checkPendingNotification();
   }
 }

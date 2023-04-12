@@ -1,4 +1,4 @@
-package com.example.mqttkotlinsample.data.entity
+package th.co.cdgs.flutter_mqtt_plugin.entity
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName

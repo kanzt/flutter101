@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_mqtt_plugin/entity/config.dart';
 
 import 'flutter_mqtt_plugin_platform_interface.dart';
 
@@ -44,5 +45,10 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
     final notifications =
         await methodChannel.invokeMethod<String>('initialNotification');
     return notifications;
+  }
+
+  @override
+  void connectMQTT(Config config) {
+    methodChannel.invokeMethod('connectMQTT', config.toJson());
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/notification/notification_service.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/widget/default_app_bar.dart';
+import 'package:get/get.dart';
 
 class ConsumerPage extends StatelessWidget {
   const ConsumerPage({Key? key}) : super(key: key);
@@ -39,8 +40,7 @@ class ConsumerPage extends StatelessWidget {
                         children: <Widget>[
                           Flexible(
                             child: ValueListenableBuilder(
-                              valueListenable:
-                                  NotificationService.recentNotification,
+                              valueListenable: Get.find<NotificationService>().recentNotification,
                               builder: (BuildContext context, String? value,
                                   Widget? child) {
                                 return Text(value ?? "");

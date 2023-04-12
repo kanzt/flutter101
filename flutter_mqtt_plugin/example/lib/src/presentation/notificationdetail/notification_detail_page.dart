@@ -29,7 +29,7 @@ class NotificationDetailPage extends StatelessWidget {
               ),
             ),
             ValueListenableBuilder(
-              valueListenable: NotificationService.recentNotification,
+              valueListenable: Get.find<NotificationService>().recentNotification,
               builder: (BuildContext context, String? value, Widget? child) {
                 return Text(value ?? "");
               },
