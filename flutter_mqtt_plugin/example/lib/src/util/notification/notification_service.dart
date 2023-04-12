@@ -88,4 +88,10 @@ class AndroidNotificationService implements NotificationService {
       recentNotification.value = event;
     });
   }
+
+  @override
+  Future<bool> checkPendingNotification() {
+    // TODO: implement checkPendingNotification
+    throw UnimplementedError();
+  }
 }
