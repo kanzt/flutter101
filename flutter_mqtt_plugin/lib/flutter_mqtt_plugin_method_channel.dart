@@ -19,13 +19,6 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
       const EventChannel(openNotificationChannelName);
 
   @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
-  }
-
-  @override
   Stream<String?> getToken() {
     return tokenUpdateEventChannel
         .receiveBroadcastStream(tokenChannelName)

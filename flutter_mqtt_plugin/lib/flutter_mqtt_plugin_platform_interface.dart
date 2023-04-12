@@ -23,10 +23,6 @@ abstract class FlutterMqttPluginPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
-  }
-
   Stream<String?> getToken() {
     throw UnimplementedError('getToken() has not been implemented.');
   }
