@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_mqtt_plugin/entity/config.dart';
 import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 
 abstract class NotificationService {
-  Future<void> initialize();
+  Future<void> initialize(Config? connection);
+
   Future<bool> checkPendingNotification();
+
   final recentNotification = ValueNotifier<String?>(null);
 }
 
@@ -17,7 +20,7 @@ class IOSNotificationService implements NotificationService {
   ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
 
   @override
-  Future<void> initialize() async {
+  Future<void> initialize(Config? connection) async {
     recentNotification.value =
         await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
 
@@ -77,7 +80,13 @@ class AndroidNotificationService implements NotificationService {
   ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
 
   @override
-  Future<void> initialize() async {
+  Future<void> initialize(Config? connection) async {
+    if (connection != null) {
+      _plugin.connectMQTT(connection);
+    } else {
+      throw Exception("Android platform required connection configuration");
+    }
+
     recentNotification.value =
         await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
 

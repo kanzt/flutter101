@@ -21,7 +21,7 @@ import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
 import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe
 import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import th.co.cdgs.flutter_mqtt_plugin.FlutterMqttPlugin
 import th.co.cdgs.flutter_mqtt_plugin.entity.NotificationPayload
 import th.co.cdgs.flutter_mqtt_plugin.util.isNullOrBlankOrEmpty
@@ -65,21 +65,6 @@ class HiveMqttNotificationServiceWorker(
                 with(NotificationManagerCompat.from(context)) {
 
                     val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
-                    // Create an Intent for the activity you want to start
-//                    val resultIntent =
-//                        Intent(context, NotificationDetailActivity::class.java).also {
-//                            it.putExtra(NOTIFICATION_PAYLOAD, jsonMessage)
-//                        }
-//                    // Create the TaskStackBuilder
-//                    val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(context).run {
-//                        // Add the intent, which inflates the back stack
-//                        addNextIntentWithParentStack(resultIntent)
-//                        // Get the PendingIntent containing the entire back stack
-//                        getPendingIntent(
-//                            0,
-//                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-//                        )
-//                    }
 
                     val pushNotificationBuilder = NotificationCompat.Builder(
                         context,
@@ -93,7 +78,6 @@ class HiveMqttNotificationServiceWorker(
                             NotificationCompat.BigTextStyle()
                                 .bigText(logMessage)
                         )
-                        // setContentIntent(resultPendingIntent)
                         setCategory(Notification.CATEGORY_MESSAGE)
                     }
 
@@ -113,7 +97,11 @@ class HiveMqttNotificationServiceWorker(
                     notify(System.currentTimeMillis().toInt(), pushNotificationBuilder.build())
                     notify(GROUP_PUSH_NOTIFICATION_ID, groupPushNotificationBuilder.build())
 
-                    FlutterMqttPlugin.onReceivedNotificationEventSink?.success(jsonMessage)
+                    val scope = CoroutineScope(Dispatchers.Main)
+                    scope.launch {
+                        FlutterMqttPlugin.onReceivedNotificationEventSink?.success(jsonMessage)
+                        scope.cancel()
+                    }
                 }
             }
         }
@@ -190,7 +178,7 @@ class HiveMqttNotificationServiceWorker(
         private const val GROUP_PUSH_NOTIFICATION_ID = 4
         private const val CHANNEL_ID = "push_notification"
         private const val GROUP_KEY_MESSAGE =
-            "com.example.mqttkotlinsample.HiveMqttNotificationServiceWorker"
+            "th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker"
         const val UNIQUE_PERIODIC_HIVE_MQTT = "MqttHiveNotificationServiceWorker"
         private var topic: String? = null
 
@@ -198,7 +186,7 @@ class HiveMqttNotificationServiceWorker(
         var isConnected: Boolean = false
 
         private fun getDrawableResourceId(context: Context, name: String): Int {
-            return context.resources.getIdentifier(name, "drawable", context.packageName)
+            return context.resources.getIdentifier(name, "mipmap", context.packageName)
         }
 
         fun disconnect(

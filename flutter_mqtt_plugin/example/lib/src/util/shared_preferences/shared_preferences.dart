@@ -8,8 +8,8 @@ class SharedPreference {
   static const KEY_IS_INITIALIZED = "key_is_initialized";
   static const KEY_USER_ID = "key_userid";
   static const KEY_TOKEN = "key_token";
-  static const KEY_CLIENT_ID = "key_client_id";
   static const KEY_QUEUE_NAME = "key_queue_name";
+  static const KEY_CLIENT_ID = "key_client_id";
 
   static Future<void> clearLogoutAll() async {
     AndroidOptions _getAndroidOptions() => const AndroidOptions(

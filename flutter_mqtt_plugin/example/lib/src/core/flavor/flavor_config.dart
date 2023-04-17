@@ -1,12 +1,21 @@
-
-
 import 'package:flutter_mqtt_plugin_example/src/core/flavor/string_utils.dart';
 
 enum Flavor { LOCAL, INTERNAL, EXTERNAL }
 
 class FlavorValues {
   final String baseURL;
-  FlavorValues({required this.baseURL});
+  final String hostName;
+  final String password;
+  final String userName;
+  final bool isRequiredSSL;
+
+  FlavorValues({
+    required this.baseURL,
+    required this.hostName,
+    required this.password,
+    required this.userName,
+    required this.isRequiredSSL,
+  });
 }
 
 class FlavorConfig {
@@ -16,8 +25,7 @@ class FlavorConfig {
 
   static late FlavorConfig _instance;
 
-  factory FlavorConfig({required Flavor flavor,
-      required FlavorValues values}) {
+  factory FlavorConfig({required Flavor flavor, required FlavorValues values}) {
     _instance = FlavorConfig._internal(
         flavor, StringUtils.enumName(flavor.toString()), values);
     return _instance;

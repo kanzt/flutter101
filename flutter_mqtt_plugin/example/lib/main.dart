@@ -24,10 +24,12 @@ void entrypoint() async {
   try {
     if (Platform.isIOS) {
       Get.put<NotificationService>(IOSNotificationService());
+      // Initialize ก่อน Android เพราะต้องการ Token
+      await Get.find<NotificationService>().initialize(null);
     } else if (Platform.isAndroid) {
+      // Android Initialize หลัง Login
       Get.put<NotificationService>(AndroidNotificationService());
     }
-    await Get.find<NotificationService>().initialize();
   } on Exception catch (e) {
     if (kDebugMode) {
       print(e);

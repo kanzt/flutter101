@@ -5,7 +5,11 @@ void main() {
   FlavorConfig(
     flavor: Flavor.LOCAL,
     values: FlavorValues(
-      baseURL: "http://localhost:8080/api/v1/",
+      baseURL: "http://10.0.2.2:8080/api/v1/",
+      hostName: '10.0.2.2',
+      password: 'mqtt-mobile',
+      userName: 'mqtt-mobile',
+      isRequiredSSL: false,
     ),
   );
 

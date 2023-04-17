@@ -1,13 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_mqtt_plugin/entity/config.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
+import 'package:flutter_mqtt_plugin_example/src/core/flavor/flavor_config.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/repository/repository.dart';
 import 'package:flutter_mqtt_plugin_example/src/data/entity/token_request.dart';
+import 'package:flutter_mqtt_plugin_example/src/util/enum/platform.dart';
+import 'package:flutter_mqtt_plugin_example/src/util/notification/notification_service.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
+import 'package:uuid/uuid.dart';
 
 class LoginPageController extends GetxController {
   final TextEditingController username = TextEditingController(text: "admin");
-  final TextEditingController password = TextEditingController(text: "P@ssw0rd");
+  final TextEditingController password =
+      TextEditingController(text: "P@ssw0rd");
   final Repository _repository = Get.find();
 
   void onLogin() async {
@@ -36,20 +44,35 @@ class LoginPageController extends GetxController {
       final loginRes = await _repository.login(username.text, password.text);
       if (loginRes != null) {
         if (loginRes.result?.userId.isNotEmpty == true) {
-          final token = await SharedPreference.read(SharedPreference.KEY_TOKEN);
-          await SharedPreference.write(
-              SharedPreference.KEY_USER_ID, loginRes.result!.userId);
-          final tokenRes = await _repository.token(
-            TokenRequest(
-                token: token!,
-                userId: loginRes.result!.userId,
-                platform: "iOS"),
-          );
+          bool? isSaveTokenSuccess;
 
-          if (tokenRes?.result == true) {
-            Get.offAllNamed(Routes.consumerPage);
+          if (Platform.isIOS) {
+            isSaveTokenSuccess = await saveTokenIos(loginRes.result!.userId);
+          } else if (Platform.isAndroid) {
+            isSaveTokenSuccess =
+                await saveTokenAndroid(loginRes.result!.userId);
           }
 
+          if (isSaveTokenSuccess != null) {
+            if (isSaveTokenSuccess) {
+              if (Platform.isAndroid) {
+                final clientId = await SharedPreference.read(SharedPreference.KEY_CLIENT_ID) ?? "";
+                final topic = await SharedPreference.read(SharedPreference.KEY_TOKEN) ?? "";
+                final connection = Config(
+                  isRequiredSsl: false,
+                  hostname: FlavorConfig.instance.values.hostName,
+                  password: FlavorConfig.instance.values.password,
+                  username: FlavorConfig.instance.values.userName,
+                  clientId: clientId,
+                  topic: topic,
+                );
+                await Get.find<NotificationService>().initialize(connection);
+              }
+              Get.offAllNamed(Routes.consumerPage);
+            }
+          } else {
+            throw Exception("Platform is not support");
+          }
         } else {
           Get.dialog(
             AlertDialog(
@@ -82,5 +105,42 @@ class LoginPageController extends GetxController {
     password.dispose();
 
     super.onClose();
+  }
+
+  Future<bool> saveTokenAndroid(String userId) async {
+    // Generate Topic for Android
+    final topic = "$userId-${const Uuid().v4()}";
+    final request = TokenRequest(
+        token: topic, userId: userId, platform: PlatformEnum.Android.value!);
+
+    final tokenRes = await _repository.token(
+      request,
+    );
+
+    if (tokenRes?.result == true) {
+      await SharedPreference.write(SharedPreference.KEY_USER_ID, userId);
+      await SharedPreference.write(SharedPreference.KEY_TOKEN, topic);
+      await SharedPreference.write(SharedPreference.KEY_CLIENT_ID, topic);
+      await SharedPreference.write(
+          SharedPreference.KEY_QUEUE_NAME, "mqtt-subscription-${topic}qos1");
+    }
+
+    return tokenRes?.result == true;
+  }
+
+  Future<bool> saveTokenIos(String userId) async {
+    final token = await SharedPreference.read(SharedPreference.KEY_TOKEN);
+    final request = TokenRequest(
+        token: token!, userId: userId, platform: PlatformEnum.iOS.value!);
+
+    final tokenRes = await _repository.token(
+      request,
+    );
+
+    if (tokenRes?.result == true) {
+      await SharedPreference.write(SharedPreference.KEY_USER_ID, userId);
+    }
+
+    return tokenRes?.result == true;
   }
 }
