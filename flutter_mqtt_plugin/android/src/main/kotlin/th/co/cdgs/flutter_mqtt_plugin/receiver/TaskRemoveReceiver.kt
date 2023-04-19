@@ -8,11 +8,14 @@ import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestUtil
 
 class TaskRemoveReceiver : BroadcastReceiver() {
 
-    companion object{
+    companion object {
         private val TAG = TaskRemoveReceiver::class.java.simpleName
     }
+
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TaskRemoveReceiver::class.java.simpleName, "MyReceiver received event")
-        WorkManagerRequestUtil.startOneTimeHiveMqttNotificationServiceWorker(context)
+        if (intent.action.equals(context.packageName + "TASK_REMOVE_RECEIVER")) {
+            Log.d(TAG, "MyReceiver received event")
+            WorkManagerRequestUtil.startOneTimeHiveMqttNotificationServiceWorker(context)
+        }
     }
 }

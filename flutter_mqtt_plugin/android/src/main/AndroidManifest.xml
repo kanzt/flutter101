@@ -19,7 +19,11 @@
         <receiver
             android:name=".receiver.TaskRemoveReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="th.co.cdgs.flutter_mqtt_plugin.TASK_REMOVE_RECEIVER" />
+            </intent-filter>
+        </receiver>
         <service
             android:name=".service.DetectTaskRemoveService"
             android:enabled="true"

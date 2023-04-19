@@ -1,10 +1,16 @@
 package th.co.cdgs.flutter_mqtt_plugin.util
 
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.DialogInterface
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
 
 fun String?.isNullOrBlankOrEmpty(): Boolean =
@@ -57,4 +63,21 @@ open class Data
 
 fun <T> Data.deepCopy(): T? = Gson().run {
     fromJson(toJson(this@deepCopy), this@deepCopy.javaClass) as? T
+}
+
+/**
+ * BoardcastReceiver
+ */
+fun BroadcastReceiver.goAsync(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend CoroutineScope.() -> Unit
+) {
+    val pendingResult = goAsync()
+    CoroutineScope(SupervisorJob()).launch(context) {
+        try {
+            block()
+        } finally {
+            pendingResult.finish()
+        }
+    }
 }
