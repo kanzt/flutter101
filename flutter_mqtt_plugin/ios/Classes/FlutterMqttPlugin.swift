@@ -54,7 +54,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     }
     
     @objc func appWillTerminate() {
-        ApplicationLifecycle.WillTerminate()
+        // ApplicationLifecycle.WillTerminate()
     }
     
     public override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {

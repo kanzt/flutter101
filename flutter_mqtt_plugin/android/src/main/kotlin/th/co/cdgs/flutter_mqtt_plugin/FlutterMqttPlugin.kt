@@ -10,10 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -39,7 +36,8 @@ const val keyIsAppInTerminatedState = "th.co.cdgs.flutter_mqtt_plugin/is_app_in_
 const val keyRecentNotification = "th.co.cdgs.flutter_mqtt_plugin/recent_notification"
 
 /** FlutterMqttPlugin */
-class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
+    PluginRegistry.RequestPermissionsResultListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -47,10 +45,10 @@ class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugi
     private lateinit var channel: MethodChannel
     private lateinit var applicationContext: Context
     private var activity: Activity? = null
-    val NOTIFICATION_PERMISSION_REQUEST_CODE = 36
 
     // Streaming data from Native side
     companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 36
         private val TAG = FlutterMqttPlugin::class.java.simpleName
         var onTokenUpdateEventSink: EventChannel.EventSink? = null
         var onReceivedNotificationEventSink: EventChannel.EventSink? = null
@@ -124,16 +122,43 @@ class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugi
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        config = null
         channel.setMethodCallHandler(null)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ): Boolean {
+        when (requestCode) {
+            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
+                return if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, proceed with using the camera
+                    Toast.makeText(
+                        applicationContext,
+                        "Notification permission granted",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    startWorker()
+                    true
+                } else {
+                    // Permission denied, show a message to the user
+                    Toast.makeText(
+                        applicationContext,
+                        "Notification permission denied",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    false
+                }
+            }
+        }
+        return false
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
         binding.addRequestPermissionsResultListener(this)
-        /**
-         * Request POST_NOTIFICATION permission for Android 13
-         */
-        requestPostNotificationPermission()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -150,10 +175,31 @@ class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugi
     }
 
     /**
-     * Developer
+     * Plugin implementation
      */
     private fun connectMQTT(config: Config) {
         FlutterMqttPlugin.config = config
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (
+                ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                activity?.requestPermissions(
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            } else {
+                startWorker()
+            }
+        } else {
+            startWorker()
+        }
+    }
+
+    private fun startWorker() {
         WorkManagerRequestUtil.startPeriodicWorkHiveMQNotificationServiceWorkManager(
             applicationContext
         )
@@ -176,36 +222,5 @@ class FlutterMqttPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugi
             it.createNotificationChannel(channel)
         }
         return channelId
-    }
-
-    private fun requestPostNotificationPermission() {
-        Log.d(TAG, "requestPostNotificationPermission called")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (
-                ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                activity?.requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ): Boolean {
-        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, proceed with using the camera
-                Toast.makeText(applicationContext, "Notification permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                // Permission denied, show a message to the user
-                Toast.makeText(applicationContext, "Notification permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-        return true
     }
 }

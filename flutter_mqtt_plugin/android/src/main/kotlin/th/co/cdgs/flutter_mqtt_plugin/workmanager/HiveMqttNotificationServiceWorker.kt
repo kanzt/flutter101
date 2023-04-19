@@ -2,8 +2,12 @@ package th.co.cdgs.flutter_mqtt_plugin.workmanager
 
 import android.Manifest
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -64,7 +68,23 @@ class HiveMqttNotificationServiceWorker(
             ) {
                 with(NotificationManagerCompat.from(context)) {
 
+                    val notificationId = System.currentTimeMillis().toInt()
                     val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
+
+                    val intent = getLaunchIntent(context)?.also {
+                        it.action = SELECT_NOTIFICATION
+                        it.putExtra(
+                            NOTIFICATION_PAYLOAD,
+                            jsonMessage
+                        )
+                    }
+                    val pendingIntent =
+                        PendingIntent.getActivity(
+                            context,
+                            notificationId,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
 
                     val pushNotificationBuilder = NotificationCompat.Builder(
                         context,
@@ -74,6 +94,7 @@ class HiveMqttNotificationServiceWorker(
                         setGroup(GROUP_KEY_MESSAGE)
                         setContentTitle("Push notification")
                         setContentText(logMessage)
+                        setContentIntent(pendingIntent)
                         setStyle(
                             NotificationCompat.BigTextStyle()
                                 .bigText(logMessage)
@@ -94,7 +115,7 @@ class HiveMqttNotificationServiceWorker(
                         setCategory(Notification.CATEGORY_MESSAGE)
                     }
 
-                    notify(System.currentTimeMillis().toInt(), pushNotificationBuilder.build())
+                    notify(notificationId, pushNotificationBuilder.build())
                     notify(GROUP_PUSH_NOTIFICATION_ID, groupPushNotificationBuilder.build())
 
                     val scope = CoroutineScope(Dispatchers.Main)
@@ -173,15 +194,23 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
+    private fun getLaunchIntent(context: Context): Intent? {
+        val packageName = context.packageName
+        val packageManager = context.packageManager
+        return packageManager.getLaunchIntentForPackage(packageName)
+    }
+
     companion object {
         private val TAG = HiveMqttNotificationServiceWorker::class.java.simpleName
         private const val GROUP_PUSH_NOTIFICATION_ID = 4
         private const val CHANNEL_ID = "push_notification"
         private const val GROUP_KEY_MESSAGE =
             "th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker"
-        const val UNIQUE_PERIODIC_HIVE_MQTT = "MqttHiveNotificationServiceWorker"
+        const val UNIQUE_PERIODIC_HIVE_MQTT =
+            "th.co.cdgs.flutter_mqtt_plugin.workmanager.MqttHiveNotificationServiceWorker"
+        const val NOTIFICATION_PAYLOAD = "NOTIFICATION_PAYLOAD"
+        private const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
         private var topic: String? = null
-
         private var mqtt3AsyncClient: Mqtt3AsyncClient? = null
         var isConnected: Boolean = false
 

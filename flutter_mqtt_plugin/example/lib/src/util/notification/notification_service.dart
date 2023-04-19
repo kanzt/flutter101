@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_mqtt_plugin/entity/config.dart';
 import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin.dart';
@@ -10,14 +12,14 @@ abstract class NotificationService {
 
   Future<bool> checkPendingNotification();
 
-  final recentNotification = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> recentNotification = ValueNotifier<String?>(null);
 }
 
 class IOSNotificationService implements NotificationService {
   final _plugin = FlutterMqttPlugin();
 
   @override
-  ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
+  ValueNotifier<String?> recentNotification = ValueNotifier(null);
 
   @override
   Future<void> initialize(Config? connection) async {
@@ -77,7 +79,7 @@ class AndroidNotificationService implements NotificationService {
   final _plugin = FlutterMqttPlugin();
 
   @override
-  ValueNotifier<String?> get recentNotification => ValueNotifier<String?>(null);
+  ValueNotifier<String?>  recentNotification = ValueNotifier(null);
 
   @override
   Future<void> initialize(Config? connection) async {
@@ -91,7 +93,7 @@ class AndroidNotificationService implements NotificationService {
         await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
 
     /// Received notification in foreground
-    _plugin.onReceivedNotification().listen((event) {
+    _plugin.onReceivedNotification().listen((event) async {
       print("Notification payload (Flutter) : $event");
       SharedPreference.write(SharedPreference.KEY_RECENT_NOTIFICATION, event);
       recentNotification.value = event;
@@ -101,6 +103,6 @@ class AndroidNotificationService implements NotificationService {
   @override
   Future<bool> checkPendingNotification() {
     // TODO: implement checkPendingNotification
-    throw UnimplementedError();
+    return Future.value(false);
   }
 }
