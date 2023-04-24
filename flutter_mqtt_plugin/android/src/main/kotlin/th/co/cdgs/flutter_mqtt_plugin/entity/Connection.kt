@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Config(
+data class Connection(
     @SerializedName("isRequiredSSL")
     val isRequiredSSL: Boolean,
     @SerializedName("hostname")

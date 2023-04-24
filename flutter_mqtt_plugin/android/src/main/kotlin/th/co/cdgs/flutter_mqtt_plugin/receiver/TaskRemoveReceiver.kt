@@ -4,7 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestUtil
+import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestHelper
+
 
 class TaskRemoveReceiver : BroadcastReceiver() {
 
@@ -13,9 +14,9 @@ class TaskRemoveReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action.equals(context.packageName + "TASK_REMOVE_RECEIVER")) {
-            Log.d(TAG, "MyReceiver received event")
-            WorkManagerRequestUtil.startOneTimeHiveMqttNotificationServiceWorker(context)
+        Log.d(TAG, "MyReceiver received event")
+        if (intent.action.equals(context.packageName + ".TASK_REMOVE_RECEIVER")) {
+            WorkManagerRequestHelper.startOneTimeHiveMqttNotificationServiceWorker(context)
         }
     }
 }

@@ -3,7 +3,7 @@ package th.co.cdgs.flutter_mqtt_plugin.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestUtil
+import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestHelper
 import th.co.cdgs.flutter_mqtt_plugin.util.goAsync
 
 
@@ -19,7 +19,7 @@ class BootBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) = goAsync {
         if (intent.action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            WorkManagerRequestUtil.startOneTimeHiveMqttNotificationServiceWorker(context)
+            WorkManagerRequestHelper.startOneTimeHiveMqttNotificationServiceWorker(context)
         }
     }
 }

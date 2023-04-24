@@ -43,4 +43,8 @@ abstract class FlutterMqttPluginPlatform extends PlatformInterface {
   void connectMQTT(Config config) {
     throw UnimplementedError('connectMQTT() has not been implemented.');
   }
+
+  void disconnectMQTT() {
+    throw UnimplementedError('disconnectMQTT() has not been implemented.');
+  }
 }

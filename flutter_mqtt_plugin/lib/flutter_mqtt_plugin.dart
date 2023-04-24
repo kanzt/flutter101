@@ -23,4 +23,8 @@ class FlutterMqttPlugin {
   void connectMQTT(Config config) {
      FlutterMqttPluginPlatform.instance.connectMQTT(config);
   }
+
+  void disconnectMQTT() {
+    FlutterMqttPluginPlatform.instance.disconnectMQTT();
+  }
 }

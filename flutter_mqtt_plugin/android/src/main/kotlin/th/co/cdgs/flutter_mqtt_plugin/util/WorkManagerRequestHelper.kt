@@ -6,10 +6,16 @@ import androidx.work.*
 import th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker
 import java.util.concurrent.TimeUnit
 
-object WorkManagerRequestUtil {
+object WorkManagerRequestHelper {
 
-    private val TAG = WorkManagerRequestUtil::class.java.simpleName
-    fun startOneTimeHiveMqttNotificationServiceWorker(context: Context) {
+    private val TAG = WorkManagerRequestHelper::class.java.simpleName
+
+    private const val UNIQUE_PERIODIC_HIVE_MQTT =
+        "th.co.cdgs.flutter_mqtt_plugin.workmanager.MqttHiveNotificationServiceWorker"
+
+    fun startOneTimeHiveMqttNotificationServiceWorker(
+        context: Context,
+    ) {
         Log.d(TAG, "startOneTimeHiveMqttNotificationServiceWorker called")
         val workManager: WorkManager = WorkManager.getInstance(context)
         val startServiceRequest =
@@ -26,10 +32,14 @@ object WorkManagerRequestUtil {
         workManager.enqueue(startServiceRequest)
     }
 
-    fun startPeriodicWorkHiveMQNotificationServiceWorkManager(context: Context) {
+    fun startPeriodicWorkHiveMQNotificationServiceWorkManager(
+        context: Context,
+    ) {
         Log.d(TAG, "startPeriodicWorkHiveMQNotificationServiceWorkManager called")
         val workManager = WorkManager.getInstance(context)
-        workManager.cancelUniqueWork(HiveMqttNotificationServiceWorker.UNIQUE_PERIODIC_HIVE_MQTT)
+        // Clear previous before start new one
+        workManager.cancelUniqueWork(UNIQUE_PERIODIC_HIVE_MQTT)
+
         // As per Documentation: The minimum repeat interval that can be defined is 15 minutes
         // (same as the JobScheduler API), but in practice 15 doesn't work. Using 16 here
         val request = PeriodicWorkRequest.Builder(
@@ -47,9 +57,14 @@ object WorkManagerRequestUtil {
         // to schedule a unique work, no matter how many times app is opened i.e. startServiceViaWorker gets called
         // do check for AutoStart permission
         workManager.enqueueUniquePeriodicWork(
-            HiveMqttNotificationServiceWorker.UNIQUE_PERIODIC_HIVE_MQTT,
+            UNIQUE_PERIODIC_HIVE_MQTT,
             ExistingPeriodicWorkPolicy.KEEP,
             request
         )
+    }
+
+    fun cancelAllWork(context: Context){
+        val workManager: WorkManager = WorkManager.getInstance(context)
+        workManager.cancelAllWork()
     }
 }

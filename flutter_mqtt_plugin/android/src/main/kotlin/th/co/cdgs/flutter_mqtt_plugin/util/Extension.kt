@@ -59,12 +59,6 @@ suspend fun AlertDialog.await(
     show()
 }
 
-open class Data
-
-fun <T> Data.deepCopy(): T? = Gson().run {
-    fromJson(toJson(this@deepCopy), this@deepCopy.javaClass) as? T
-}
-
 /**
  * BoardcastReceiver
  */
