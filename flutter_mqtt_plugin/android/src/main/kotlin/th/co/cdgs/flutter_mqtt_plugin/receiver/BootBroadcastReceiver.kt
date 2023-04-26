@@ -19,7 +19,7 @@ class BootBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) = goAsync {
         if (intent.action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            WorkManagerRequestHelper.startOneTimeHiveMqttNotificationServiceWorker(context)
+            WorkManagerRequestHelper.startOneTimeWorker(context)
         }
     }
 }

@@ -120,7 +120,7 @@ private class ConnectMqttHandler : CallHandler<FlutterMqttCall.ConnectMqtt>, Act
 
     private fun startWorker() {
 
-        WorkManagerRequestHelper.startPeriodicWorkHiveMQNotificationServiceWorkManager(
+        WorkManagerRequestHelper.startPeriodicWorker(
             ctx,
         )
 

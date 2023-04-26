@@ -16,7 +16,7 @@ class TaskRemoveReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "MyReceiver received event")
         if (intent.action.equals(context.packageName + ".TASK_REMOVE_RECEIVER")) {
-            WorkManagerRequestHelper.startOneTimeHiveMqttNotificationServiceWorker(context)
+            WorkManagerRequestHelper.startPeriodicWorker(context)
         }
     }
 }

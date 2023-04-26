@@ -24,7 +24,7 @@ class DetectTaskRemoveService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         Log.d(TAG, "onTaskRemoved is working")
         val broadcastIntent = Intent(this, TaskRemoveReceiver::class.java).also {
-            it.action = packageName + ".TASK_REMOVE_RECEIVER"
+            it.action = "$packageName.TASK_REMOVE_RECEIVER"
         }
         this.sendBroadcast(broadcastIntent)
         super.onTaskRemoved(rootIntent)

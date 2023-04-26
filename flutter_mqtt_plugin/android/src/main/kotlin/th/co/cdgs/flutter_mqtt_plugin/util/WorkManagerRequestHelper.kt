@@ -11,12 +11,12 @@ object WorkManagerRequestHelper {
     private val TAG = WorkManagerRequestHelper::class.java.simpleName
 
     private const val UNIQUE_PERIODIC_HIVE_MQTT =
-        "th.co.cdgs.flutter_mqtt_plugin.workmanager.MqttHiveNotificationServiceWorker"
+        "th.co.cdgs.flutter_mqtt_plugin.util.MqttHiveNotificationServiceWorker"
 
-    fun startOneTimeHiveMqttNotificationServiceWorker(
+    fun startOneTimeWorker(
         context: Context,
     ) {
-        Log.d(TAG, "startOneTimeHiveMqttNotificationServiceWorker called")
+        Log.d(TAG, "startOneTimeHiveMqttNotificationServiceWorker is running...")
         val workManager: WorkManager = WorkManager.getInstance(context)
         val startServiceRequest =
             OneTimeWorkRequest.Builder(HiveMqttNotificationServiceWorker::class.java)
@@ -32,10 +32,10 @@ object WorkManagerRequestHelper {
         workManager.enqueue(startServiceRequest)
     }
 
-    fun startPeriodicWorkHiveMQNotificationServiceWorkManager(
+    fun startPeriodicWorker(
         context: Context,
     ) {
-        Log.d(TAG, "startPeriodicWorkHiveMQNotificationServiceWorkManager called")
+        Log.d(TAG, "startPeriodicWorkHiveMQNotificationServiceWorkManager is running...")
         val workManager = WorkManager.getInstance(context)
         // Clear previous before start new one
         workManager.cancelUniqueWork(UNIQUE_PERIODIC_HIVE_MQTT)
