@@ -5,4 +5,5 @@ import 'package:get/get.dart';
 class ServiceApi extends GetxService{
   final login = RequestConfig(HttpMethod.POST, "/auth/login");
   final token = RequestConfig(HttpMethod.POST, "/notification/token");
+  final logout = RequestConfig(HttpMethod.POST, "/auth/logout");
 }

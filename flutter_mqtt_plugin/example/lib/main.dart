@@ -25,7 +25,7 @@ void entrypoint() async {
     if (Platform.isIOS) {
       Get.put<NotificationService>(IOSNotificationService());
       // Initialize ก่อน Android เพราะต้องการ Token
-      await Get.find<NotificationService>().initialize(null);
+      await Get.find<NotificationService>().initialize();
     } else if (Platform.isAndroid) {
       // Android Initialize หลัง Login
       Get.put<NotificationService>(AndroidNotificationService());

@@ -25,8 +25,9 @@ import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe
 import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe
 import kotlinx.coroutines.*
 import th.co.cdgs.flutter_mqtt_plugin.FlutterMqttStreamHandler
-import th.co.cdgs.flutter_mqtt_plugin.entity.Connection
+import th.co.cdgs.flutter_mqtt_plugin.entity.ConnectionSetting
 import th.co.cdgs.flutter_mqtt_plugin.entity.NotificationPayload
+import th.co.cdgs.flutter_mqtt_plugin.util.NotificationHelper.CHANNEL_ID
 import th.co.cdgs.flutter_mqtt_plugin.util.SharedPreferenceHelper
 import th.co.cdgs.flutter_mqtt_plugin.util.isNullOrBlankOrEmpty
 import java.util.concurrent.TimeUnit
@@ -89,6 +90,7 @@ class HiveMqttNotificationServiceWorker(
                     setContentTitle("Push notification")
                     setContentText(logMessage)
                     setContentIntent(pendingIntent)
+                    setAutoCancel(true)
                     setStyle(
                         NotificationCompat.BigTextStyle().bigText(logMessage)
                     )
@@ -115,6 +117,7 @@ class HiveMqttNotificationServiceWorker(
                     FlutterMqttStreamHandler.onReceivedNotificationEventSink?.success(
                         jsonMessage
                     )
+                    it.acknowledge()
                     scope.cancel()
                 }
             }
@@ -134,7 +137,7 @@ class HiveMqttNotificationServiceWorker(
             Log.d(TAG, "isConnected : $isConnected | mqtt3AsyncClient : $mqtt3AsyncClient")
             if (!isConnected && mqtt3AsyncClient == null) {
                 connect(
-                    Connection(
+                    ConnectionSetting(
                         hostname = hostname,
                         userName = username,
                         password = password,
@@ -152,30 +155,30 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private suspend fun connect(connection: Connection) {
+    private suspend fun connect(connectionSetting: ConnectionSetting) {
         Log.d(TAG, "Before coroutineScope")
         coroutineScope {
             Log.d(TAG, "begin coroutineScope")
-            val clientId = connection.clientId
-            topic = connection.topic
+            val clientId = connectionSetting.clientId
+            topic = connectionSetting.topic
             Log.d(TAG, "ClientId is $clientId")
             Log.d(TAG, "Topic is $topic")
             Log.d(TAG, "Context is $context")
             if (!clientId.isNullOrBlankOrEmpty() && !topic.isNullOrBlankOrEmpty()) {
-                var clientBuilder = MqttClient.builder().identifier(clientId)
-                    .serverHost(connection.hostname).serverPort(1883)
+                var clientBuilder = MqttClient.builder().identifier(clientId!!)
+                    .serverHost(connectionSetting.hostname!!).serverPort(1883)
                     .useMqttVersion3()
                     /** Reconnect strategy
                      *  https://www.hivemq.com/blog/hivemq-mqtt-client-features/reconnect-handling/
                      */
                     .automaticReconnect().initialDelay(3000, TimeUnit.MILLISECONDS)
                     .maxDelay(3, TimeUnit.MINUTES).applyAutomaticReconnect().simpleAuth()
-                    .username(connection.userName)
-                    .password(connection.password.toByteArray())
+                    .username(connectionSetting.userName!!)
+                    .password(connectionSetting.password!!.toByteArray())
                     .applySimpleAuth().addConnectedListener(onConnected)
                     .addDisconnectedListener(onDisConnected)
 
-                if (connection.isRequiredSSL) {
+                if (connectionSetting.isRequiredSSL!!) {
                     clientBuilder = clientBuilder.sslWithDefaultConfig()
                 }
 
@@ -213,12 +216,10 @@ class HiveMqttNotificationServiceWorker(
 
 
         private const val GROUP_PUSH_NOTIFICATION_ID = 4
-        const val CHANNEL_ID = "push_notification"
         const val NOTIFICATION_PAYLOAD = "NOTIFICATION_PAYLOAD"
-        private const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
+        const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
         private const val GROUP_KEY_MESSAGE =
             "th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker"
-
 
 
         private var topic: String? = null

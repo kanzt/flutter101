@@ -1,20 +1,15 @@
+import 'package:flutter_mqtt_plugin/entity/initialization_settings.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/flavor/string_utils.dart';
 
 enum Flavor { LOCAL, INTERNAL, EXTERNAL }
 
 class FlavorValues {
   final String baseURL;
-  final String hostName;
-  final String password;
-  final String userName;
-  final bool isRequiredSSL;
+  final InitializationSettings initializationSettings;
 
   FlavorValues({
     required this.baseURL,
-    required this.hostName,
-    required this.password,
-    required this.userName,
-    required this.isRequiredSSL,
+    required this.initializationSettings,
   });
 }
 

@@ -36,10 +36,10 @@ object WorkManagerRequestHelper {
         context: Context,
     ) {
         Log.d(TAG, "startPeriodicWorkHiveMQNotificationServiceWorkManager is running...")
-        val workManager = WorkManager.getInstance(context)
         // Clear previous before start new one
-        workManager.cancelUniqueWork(UNIQUE_PERIODIC_HIVE_MQTT)
+        cancelNotificationWorker(context)
 
+        val workManager = WorkManager.getInstance(context)
         // As per Documentation: The minimum repeat interval that can be defined is 15 minutes
         // (same as the JobScheduler API), but in practice 15 doesn't work. Using 16 here
         val request = PeriodicWorkRequest.Builder(
@@ -63,8 +63,8 @@ object WorkManagerRequestHelper {
         )
     }
 
-    fun cancelAllWork(context: Context){
+    fun cancelNotificationWorker(context: Context){
         val workManager: WorkManager = WorkManager.getInstance(context)
-        workManager.cancelAllWork()
+        workManager.cancelUniqueWork(UNIQUE_PERIODIC_HIVE_MQTT)
     }
 }

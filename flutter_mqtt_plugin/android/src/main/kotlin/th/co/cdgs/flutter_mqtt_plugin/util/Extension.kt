@@ -4,7 +4,7 @@ import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.DialogInterface
-import com.google.gson.Gson
+import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -12,6 +12,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
+
 
 fun String?.isNullOrBlankOrEmpty(): Boolean =
     this.isNullOrEmpty() || this.isNullOrBlank() || this == "null"
@@ -74,4 +75,11 @@ fun BroadcastReceiver.goAsync(
             pendingResult.finish()
         }
     }
+}
+
+
+fun Context.getLaunchIntent(): Intent? {
+    val packageName = this.packageName
+    val packageManager = this.packageManager
+    return packageManager.getLaunchIntentForPackage(packageName)
 }

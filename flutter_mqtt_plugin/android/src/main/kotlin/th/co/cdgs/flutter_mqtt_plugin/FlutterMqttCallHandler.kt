@@ -2,13 +2,9 @@ package th.co.cdgs.flutter_mqtt_plugin
 
 import android.Manifest
 import android.app.Activity
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -17,14 +13,19 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
-import th.co.cdgs.flutter_mqtt_plugin.entity.Connection
+import th.co.cdgs.flutter_mqtt_plugin.entity.ConnectionSetting
 import th.co.cdgs.flutter_mqtt_plugin.service.DetectTaskRemoveService
+import th.co.cdgs.flutter_mqtt_plugin.util.ConnectionHelper.hasInvalidConnectionConfig
 import th.co.cdgs.flutter_mqtt_plugin.util.Extractor
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall
+import th.co.cdgs.flutter_mqtt_plugin.util.NotificationHelper.CHANNEL_ID
+import th.co.cdgs.flutter_mqtt_plugin.util.NotificationHelper.CHANNEL_NAME
+import th.co.cdgs.flutter_mqtt_plugin.util.NotificationHelper.createNotificationChannel
+import th.co.cdgs.flutter_mqtt_plugin.util.ResourceHelper.hasInvalidIcon
 import th.co.cdgs.flutter_mqtt_plugin.util.SharedPreferenceHelper
 import th.co.cdgs.flutter_mqtt_plugin.util.WorkManagerRequestHelper
 import th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker
-import th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker.Companion.CHANNEL_ID
+import th.co.cdgs.flutter_mqtt_plugin.workmanager.HiveMqttNotificationServiceWorker.Companion.SELECT_NOTIFICATION
 
 private interface CallHandler<T : FlutterMqttCall> {
     fun handle(context: Context, convertedCall: T, result: MethodChannel.Result)
@@ -40,6 +41,9 @@ class FlutterMqttCallHandler(private val ctx: Context) : MethodChannel.MethodCal
         when (val extractedCall = Extractor.extractFlutterMqttCallFromRawMethodName(call)) {
             is FlutterMqttCall.ConnectMqtt -> {
                 ConnectMqttHandler().handle(ctx, extractedCall, result)
+            }
+            is FlutterMqttCall.GetNotificationAppLaunchDetails -> {
+                GetNotificationGetLaunchDetails().handle(ctx, extractedCall, result)
             }
             is FlutterMqttCall.Disconnect -> {
                 DisconnectHandler.handle(ctx, extractedCall, result)
@@ -59,7 +63,6 @@ private class ConnectMqttHandler : CallHandler<FlutterMqttCall.ConnectMqtt>, Act
 
     companion object {
         private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 36
-        private const val CHANNEL_NAME = "Push notification"
     }
 
     override fun handle(
@@ -67,9 +70,18 @@ private class ConnectMqttHandler : CallHandler<FlutterMqttCall.ConnectMqtt>, Act
         convertedCall: FlutterMqttCall.ConnectMqtt,
         result: MethodChannel.Result
     ) {
+        // TODO : ทดสอบส่ง Arguments มาไม่ครบ หรือส่ง Empty string มาจะได้ผลลัพธ์อย่างไร
+        // TODO : จัดการ createNotificationChannel ใหม่ ตาม Argument ที่ส่งเข้ามา
+        if (
+            hasInvalidIcon(context, convertedCall.notificationSettings.notificationIcon, result) ||
+            hasInvalidConnectionConfig(convertedCall.connectionSetting, result)
+        ) {
+            return
+        }
+
         this.ctx = context
         createNotificationChannel(context, CHANNEL_ID, CHANNEL_NAME)
-        saveConnectionConfiguration(convertedCall.connection)
+        saveConnectionConfiguration(convertedCall.connectionSetting)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (
@@ -92,30 +104,14 @@ private class ConnectMqttHandler : CallHandler<FlutterMqttCall.ConnectMqtt>, Act
         result.success(null)
     }
 
-    private fun saveConnectionConfiguration(connection: Connection) {
-        SharedPreferenceHelper.setHostname(ctx, connection.hostname)
-        SharedPreferenceHelper.setUsername(ctx, connection.userName)
-        SharedPreferenceHelper.setPassword(ctx, connection.password)
-        SharedPreferenceHelper.setTopic(ctx, connection.topic)
-        SharedPreferenceHelper.setClientId(ctx, connection.clientId)
-        SharedPreferenceHelper.setIsRequiredSSL(ctx, connection.isRequiredSSL)
-    }
 
-    private fun createNotificationChannel(
-        context: Context,
-        channelId: String,
-        channelName: String
-    ): String {
-        val channel: NotificationChannel = NotificationChannel(
-            channelId, channelName, NotificationManager.IMPORTANCE_HIGH
-        ).also {
-            it.lightColor = Color.BLUE
-            it.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        }
-        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).also {
-            it.createNotificationChannel(channel)
-        }
-        return channelId
+    private fun saveConnectionConfiguration(connectionSetting: ConnectionSetting) {
+        SharedPreferenceHelper.setHostname(ctx, connectionSetting.hostname!!)
+        SharedPreferenceHelper.setUsername(ctx, connectionSetting.userName!!)
+        SharedPreferenceHelper.setPassword(ctx, connectionSetting.password!!)
+        SharedPreferenceHelper.setTopic(ctx, connectionSetting.topic!!)
+        SharedPreferenceHelper.setClientId(ctx, connectionSetting.clientId!!)
+        SharedPreferenceHelper.setIsRequiredSSL(ctx, connectionSetting.isRequiredSSL == true)
     }
 
     private fun startWorker() {
@@ -181,17 +177,72 @@ private class ConnectMqttHandler : CallHandler<FlutterMqttCall.ConnectMqtt>, Act
     }
 }
 
+private class GetNotificationGetLaunchDetails :
+    CallHandler<FlutterMqttCall.GetNotificationAppLaunchDetails>,
+    ActivityAware {
+
+    private var activity: Activity? = null
+
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.GetNotificationAppLaunchDetails,
+        result: MethodChannel.Result
+    ) {
+        var notificationAppLaunchDetails: Map<String, Any> = hashMapOf()
+        val notificationLaunchedApp: Boolean
+        if (activity != null) {
+            val launchIntent: Intent = activity!!.intent
+            notificationLaunchedApp =
+                launchIntent.action.equals(SELECT_NOTIFICATION) && !launchedActivityFromHistory(
+                    launchIntent
+                )
+            if (notificationLaunchedApp) {
+                // TODO : Attach notification payload copy from FlutterLocalNotificationsPlugin.kt Line 1538
+                notificationAppLaunchDetails = hashMapOf(
+                    "notificationResponse" to ""
+                )
+            }
+        }
+
+        result.success(notificationAppLaunchDetails)
+    }
+
+    private fun launchedActivityFromHistory(intent: Intent?): Boolean {
+        return (intent != null
+                && intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY
+                == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
+    }
+
+}
+
 private object DisconnectHandler : CallHandler<FlutterMqttCall.Disconnect> {
     override fun handle(
         context: Context,
         convertedCall: FlutterMqttCall.Disconnect,
         result: MethodChannel.Result
     ) {
-        WorkManagerRequestHelper.cancelAllWork(context)
         HiveMqttNotificationServiceWorker.disconnect {
             SharedPreferenceHelper.clearPrefs(context)
+            WorkManagerRequestHelper.cancelNotificationWorker(context)
         }
-        result.success(null)
+
+        result.success(true)
     }
 }
 

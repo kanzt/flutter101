@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_mqtt_plugin/entity/config.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/flavor/flavor_config.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/repository/repository.dart';
@@ -15,7 +14,7 @@ import 'package:uuid/uuid.dart';
 class LoginPageController extends GetxController {
   final TextEditingController username = TextEditingController(text: "admin");
   final TextEditingController password =
-      TextEditingController(text: "P@ssw0rd");
+  TextEditingController(text: "P@ssw0rd");
   final Repository _repository = Get.find();
 
   void onLogin() async {
@@ -49,25 +48,11 @@ class LoginPageController extends GetxController {
           if (Platform.isIOS) {
             isSaveTokenSuccess = await saveTokenIos(loginRes.result!.userId);
           } else if (Platform.isAndroid) {
-            isSaveTokenSuccess =
-                await saveTokenAndroid(loginRes.result!.userId);
+            isSaveTokenSuccess = await saveTokenAndroid(loginRes.result!.userId);
           }
 
           if (isSaveTokenSuccess != null) {
             if (isSaveTokenSuccess) {
-              if (Platform.isAndroid) {
-                final clientId = await SharedPreference.read(SharedPreference.KEY_CLIENT_ID) ?? "";
-                final topic = await SharedPreference.read(SharedPreference.KEY_TOKEN) ?? "";
-                final connection = Config(
-                  isRequiredSsl: false,
-                  hostname: FlavorConfig.instance.values.hostName,
-                  password: FlavorConfig.instance.values.password,
-                  username: FlavorConfig.instance.values.userName,
-                  clientId: clientId,
-                  topic: topic,
-                );
-                await Get.find<NotificationService>().initialize(connection);
-              }
               Get.offAllNamed(Routes.consumerPage);
             }
           } else {

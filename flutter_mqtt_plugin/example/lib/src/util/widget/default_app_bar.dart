@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mqtt_plugin_example/src/core/config/routes.dart';
 import 'package:get/get.dart';
 
 class DefaultAppBar extends StatelessWidget with PreferredSizeWidget {
-  DefaultAppBar({Key? key, this.onBack, this.isHideBackButton = false}) : super(key: key);
+  DefaultAppBar({Key? key, this.onBack, this.isHideBackButton = false, this.onLogout})
+      : super(key: key);
 
   VoidCallback? onBack;
   bool isHideBackButton;
+  VoidCallback? onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,9 @@ class DefaultAppBar extends StatelessWidget with PreferredSizeWidget {
             return IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {
-                if(onBack != null){
+                if (onBack != null) {
                   onBack!();
-                }else{
+                } else {
                   Get.back();
                 }
               },
@@ -32,6 +33,19 @@ class DefaultAppBar extends StatelessWidget with PreferredSizeWidget {
           },
         ),
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: const Icon(
+            Icons.logout,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            if (onLogout != null) {
+              onLogout!();
+            }
+          },
+        )
+      ],
     );
   }
 

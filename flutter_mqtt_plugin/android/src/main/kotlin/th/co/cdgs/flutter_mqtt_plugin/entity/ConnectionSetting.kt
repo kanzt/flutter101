@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Connection(
+data class ConnectionSetting(
     @SerializedName("isRequiredSSL")
-    val isRequiredSSL: Boolean,
+    val isRequiredSSL: Boolean?,
     @SerializedName("hostname")
-    val hostname: String,
+    val hostname: String?,
     @SerializedName("password")
-    val password: String,
+    val password: String?,
     @SerializedName("userName")
-    val userName: String,
+    val userName: String?,
     @SerializedName("topic")
-    val topic: String,
+    val topic: String?,
     @SerializedName("clientId")
-    val clientId: String,
+    val clientId: String?,
 ) : Parcelable

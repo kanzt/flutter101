@@ -23,11 +23,11 @@ class Routes {
       ),
       GetPage(
         name: consumerPage,
-        page: () => const ConsumerPage(),
+        page: () => ConsumerPage(),
       ),
       GetPage(
         name: consumerNoAnimPage,
-        page: () => const ConsumerPage(),
+        page: () => ConsumerPage(),
         transition: Transition.noTransition
       ),
       GetPage(

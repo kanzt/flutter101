@@ -1,5 +1,6 @@
 
-import 'package:flutter_mqtt_plugin/entity/config.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_mqtt_plugin/entity/initialization_settings.dart';
 
 import 'flutter_mqtt_plugin_platform_interface.dart';
 
@@ -20,11 +21,11 @@ class FlutterMqttPlugin {
     return FlutterMqttPluginPlatform.instance.getPendingNotification();
   }
 
-  void connectMQTT(Config config) {
-     FlutterMqttPluginPlatform.instance.connectMQTT(config);
+  void connectMQTT(InitializationSettings initializationSettings) {
+     FlutterMqttPluginPlatform.instance.connectMQTT(initializationSettings);
   }
 
-  void disconnectMQTT() {
-    FlutterMqttPluginPlatform.instance.disconnectMQTT();
+  Future<bool?> disconnectMQTT() {
+    return FlutterMqttPluginPlatform.instance.disconnectMQTT();
   }
 }

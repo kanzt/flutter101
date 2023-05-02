@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_mqtt_plugin/entity/config.dart';
+import 'package:flutter_mqtt_plugin/entity/initialization_settings.dart';
 
 import 'flutter_mqtt_plugin_platform_interface.dart';
 
@@ -48,7 +48,13 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPluginPlatform {
   }
 
   @override
-  void connectMQTT(Config config) {
-    methodChannel.invokeMethod('connectMQTT', config.toJson());
+  void connectMQTT(InitializationSettings initializationSettings) {
+    methodChannel.invokeMethod('connectMQTT', initializationSettings.toJson());
+  }
+
+  @override
+  Future<bool?> disconnectMQTT() async {
+    final result = await methodChannel.invokeMethod<bool>('disconnectMQTT');
+    return result;
   }
 }

@@ -4,28 +4,28 @@
 
 import 'dart:convert';
 
-Config configFromJson(String str) => Config.fromJson(json.decode(str));
+ConnectionSetting connectionSettingFromJson(String str) => ConnectionSetting.fromJson(json.decode(str));
 
-String configToJson(Config data) => json.encode(data.toJson());
+String connectionSettingToJson(ConnectionSetting data) => json.encode(data.toJson());
 
-class Config {
-  Config({
+class ConnectionSetting {
+  ConnectionSetting({
     required this.isRequiredSsl,
     required this.hostname,
     required this.password,
     required this.username,
-    required this.clientId,
-    required this.topic,
+    this.clientId,
+    this.topic,
   });
 
   bool isRequiredSsl;
   String hostname;
   String password;
   String username;
-  String clientId;
-  String topic;
+  String? clientId;
+  String? topic;
 
-  factory Config.fromJson(Map<String, dynamic> json) => Config(
+  factory ConnectionSetting.fromJson(Map<String, dynamic> json) => ConnectionSetting(
     isRequiredSsl: json["isRequiredSSL"],
     hostname: json["hostname"],
     password: json["password"],

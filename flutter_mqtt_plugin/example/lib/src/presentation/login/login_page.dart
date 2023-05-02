@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mqtt_plugin_example/src/presentation/login/login_page_controller.dart';
-import 'package:flutter_mqtt_plugin_example/src/util/extensions/size_util.dart';
 import 'package:get/get.dart';
 
 class LoginPage extends StatelessWidget {

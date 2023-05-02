@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mqtt_plugin_example/src/presentation/consumer/consumer_page_controller.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/notification/notification_service.dart';
 import 'package:flutter_mqtt_plugin_example/src/util/widget/default_app_bar.dart';
 import 'package:get/get.dart';
 
 class ConsumerPage extends StatelessWidget {
-  const ConsumerPage({Key? key}) : super(key: key);
+  ConsumerPage({Key? key}) : super(key: key);
+
+  final ConsumerPageController consumerPageController =
+  Get.put(ConsumerPageController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: DefaultAppBar(
         isHideBackButton : true,
+        onLogout: () {
+          consumerPageController.logout();
+        },
       ),
       body: Stack(
         children: [

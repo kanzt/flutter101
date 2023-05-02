@@ -1,27 +1,46 @@
 package th.co.cdgs.flutter_mqtt_plugin.util
 
+import android.util.Log
 import io.flutter.plugin.common.MethodCall
-import th.co.cdgs.flutter_mqtt_plugin.entity.Connection
+import th.co.cdgs.flutter_mqtt_plugin.entity.ConnectionSetting
+import th.co.cdgs.flutter_mqtt_plugin.entity.NotificationSetting
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CHANNEL_ID_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CHANNEL_NAME_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CLIENT_ID_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CONNECTION_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_HOSTNAME_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_IS_REQUIRED_SSL_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_NOTIFICATION_ICON_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_PASSWORD_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_TOPIC_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_USERNAME_KEY
 
 sealed class FlutterMqttCall {
     data class ConnectMqtt(
-        val connection: Connection,
+        val connectionSetting: ConnectionSetting,
+        val notificationSettings: NotificationSetting
     ) : FlutterMqttCall() {
         companion object KEYS {
+            const val CONNECT_MQTT_CONNECTION_KEY = "connectionSetting"
             const val CONNECT_MQTT_HOSTNAME_KEY = "hostname"
             const val CONNECT_MQTT_USERNAME_KEY = "username"
             const val CONNECT_MQTT_PASSWORD_KEY = "password"
             const val CONNECT_MQTT_CLIENT_ID_KEY = "clientId"
             const val CONNECT_MQTT_TOPIC_KEY = "topic"
             const val CONNECT_MQTT_IS_REQUIRED_SSL_KEY = "isRequiredSSL"
+
+
+            const val CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY = "notificationSettings"
+            const val CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY = "androidNotificationSetting"
+            const val CONNECT_MQTT_CHANNEL_NAME_KEY = "channelName"
+            const val CONNECT_MQTT_CHANNEL_ID_KEY = "channelId"
+            const val CONNECT_MQTT_NOTIFICATION_ICON_KEY = "notificationIcon"
         }
     }
+
+    object GetNotificationAppLaunchDetails : FlutterMqttCall()
 
     object Disconnect : FlutterMqttCall()
 
@@ -47,23 +66,54 @@ object Extractor {
     fun extractFlutterMqttCallFromRawMethodName(call: MethodCall): FlutterMqttCall =
         when (PossibleFlutterMqttCall.fromRawMethodName(call.method)) {
             PossibleFlutterMqttCall.CONNECT_MQTT -> {
-                val username = call.argument<String>(CONNECT_MQTT_USERNAME_KEY)!!
-                val password = call.argument<String>(CONNECT_MQTT_PASSWORD_KEY)!!
-                val hostname = call.argument<String>(CONNECT_MQTT_HOSTNAME_KEY)!!
-                val clientId = call.argument<String>(CONNECT_MQTT_CLIENT_ID_KEY)!!
-                val topic = call.argument<String>(CONNECT_MQTT_TOPIC_KEY)!!
-                val isRequiredSSL = call.argument<Boolean>(CONNECT_MQTT_IS_REQUIRED_SSL_KEY) ?: false
+                val arguments = call.arguments as Map<*, *>?
 
-                FlutterMqttCall.ConnectMqtt(Connection(
-                    userName = username,
-                    password = password,
-                    hostname = hostname,
-                    clientId = clientId,
-                    topic = topic,
-                    isRequiredSSL = isRequiredSSL
-                ))
+                // Connection configuration
+                val connectionSetting =
+                    readConnectionSetting(arguments?.get(CONNECT_MQTT_CONNECTION_KEY) as Map<*, *>?)
+
+                // Notification configuration
+                val notificationSetting =
+                    readAndroidNotificationSetting(arguments?.get(CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY) as Map<*, *>?)
+
+                FlutterMqttCall.ConnectMqtt(
+                    connectionSetting = connectionSetting,
+                    notificationSettings = notificationSetting,
+                )
             }
             PossibleFlutterMqttCall.DISCONNECT -> FlutterMqttCall.Disconnect
             PossibleFlutterMqttCall.UNKNOWN -> FlutterMqttCall.Unknown
         }
+
+    private fun readConnectionSetting(connectionSettingMap: Map<*, *>?): ConnectionSetting {
+        val username = connectionSettingMap?.get(CONNECT_MQTT_USERNAME_KEY) as String?
+        val password = connectionSettingMap?.get(CONNECT_MQTT_PASSWORD_KEY) as String?
+        val hostname = connectionSettingMap?.get(CONNECT_MQTT_HOSTNAME_KEY) as String?
+        val clientId = connectionSettingMap?.get(CONNECT_MQTT_CLIENT_ID_KEY) as String?
+        val topic = connectionSettingMap?.get(CONNECT_MQTT_TOPIC_KEY) as String?
+        val isRequiredSSL = connectionSettingMap?.get(CONNECT_MQTT_IS_REQUIRED_SSL_KEY) as Boolean?
+
+        return ConnectionSetting(
+            userName = username,
+            password = password,
+            hostname = hostname,
+            clientId = clientId,
+            topic = topic,
+            isRequiredSSL = isRequiredSSL
+        )
+    }
+
+    private fun readAndroidNotificationSetting(notificationSettingMap: Map<*, *>?): NotificationSetting {
+        val androidNotificationSettingMap =  notificationSettingMap?.get(CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY) as Map<*, *>?
+        val channelId = androidNotificationSettingMap?.get(CONNECT_MQTT_CHANNEL_ID_KEY) as String?
+        val channelName = androidNotificationSettingMap?.get(CONNECT_MQTT_CHANNEL_NAME_KEY) as String?
+        val notificationIcon =
+            androidNotificationSettingMap?.get(CONNECT_MQTT_NOTIFICATION_ICON_KEY) as String?
+
+        return NotificationSetting(
+            channelId = channelId,
+            channelName = channelName,
+            notificationIcon = notificationIcon,
+        )
+    }
 }

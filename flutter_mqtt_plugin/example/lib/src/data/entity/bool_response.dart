@@ -6,18 +6,18 @@ import 'dart:convert';
 
 import 'package:flutter_mqtt_plugin_example/src/core/remote/entity/serializable.dart';
 
-TokenResponse tokenResponseFromJson(String str) => TokenResponse.fromJson(json.decode(str));
+BoolResponse boolResponseFromJson(String str) => BoolResponse.fromJson(json.decode(str));
 
-String tokenResponseToJson(TokenResponse data) => json.encode(data.toJson());
+String boolResponseToJson(BoolResponse data) => json.encode(data.toJson());
 
-class TokenResponse extends Serializable {
-  TokenResponse({
+class BoolResponse extends Serializable {
+  BoolResponse({
     required this.result,
   });
 
   bool result;
 
-  factory TokenResponse.fromJson(Map<String, dynamic> json) => TokenResponse(
+  factory BoolResponse.fromJson(Map<String, dynamic> json) => BoolResponse(
     result: json["result"],
   );
 

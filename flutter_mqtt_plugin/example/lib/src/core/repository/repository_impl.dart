@@ -5,10 +5,11 @@ import 'package:flutter_mqtt_plugin_example/src/core/remote/entity/api_response.
 import 'package:flutter_mqtt_plugin_example/src/core/remote/service_api.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/remote/service_manager.dart';
 import 'package:flutter_mqtt_plugin_example/src/core/repository/repository.dart';
+import 'package:flutter_mqtt_plugin_example/src/data/entity/bool_response.dart';
 import 'package:flutter_mqtt_plugin_example/src/data/entity/login_request.dart';
 import 'package:flutter_mqtt_plugin_example/src/data/entity/login_response.dart';
+import 'package:flutter_mqtt_plugin_example/src/data/entity/logout_request.dart';
 import 'package:flutter_mqtt_plugin_example/src/data/entity/token_request.dart';
-import 'package:flutter_mqtt_plugin_example/src/data/entity/token_response.dart';
 import 'package:get/get.dart';
 
 class RepositoryImpl extends Repository {
@@ -41,7 +42,7 @@ class RepositoryImpl extends Repository {
   }
 
   @override
-  Future<TokenResponse?> token(TokenRequest tokenRequest) async {
+  Future<BoolResponse?> token(TokenRequest tokenRequest) async {
     final dynamic response = await Get.find<ServiceManager>().request(
       serviceApi.token.copyWith(
         data: ApiRequest(request: tokenRequest).toJson(),
@@ -50,8 +51,24 @@ class RepositoryImpl extends Repository {
     );
 
     if (response != null) {
-      return TokenResponse.fromJson(json.decode(response));
+      return BoolResponse.fromJson(json.decode(response));
     }
+    return null;
+  }
+
+  @override
+  Future<BoolResponse?> logout(LogoutRequest logoutRequest) async {
+    final dynamic response = await Get.find<ServiceManager>().request(
+      serviceApi.logout.copyWith(
+        data: ApiRequest(request: logoutRequest).toJson(),
+      ),
+      isPendingDialog: true,
+    );
+
+    if (response != null) {
+      return BoolResponse.fromJson(json.decode(response));
+    }
+
     return null;
   }
 }

@@ -35,7 +35,6 @@ class ApiResponse<T extends Serializable> {
     );
   }
 
-  @override
   Map<String, dynamic> toJson() => {
         "isSuccess": isSuccess,
         "code": code,
