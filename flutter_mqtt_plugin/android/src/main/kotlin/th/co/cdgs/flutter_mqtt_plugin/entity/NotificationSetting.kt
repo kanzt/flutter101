@@ -12,4 +12,6 @@ data class NotificationSetting(
     val channelName : String?,
     @SerializedName("notificationIcon")
     val notificationIcon : String?,
+    @SerializedName("sound")
+    val sound : String?,
 ): Parcelable

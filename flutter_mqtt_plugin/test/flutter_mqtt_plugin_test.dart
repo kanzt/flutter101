@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin.dart';
-import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin_platform_interface.dart';
-import 'package:flutter_mqtt_plugin/flutter_mqtt_plugin_method_channel.dart';
+import 'package:flutter_mqtt_plugin/src/flutter_mqtt_plugin_platform_interface.dart';
+import 'package:flutter_mqtt_plugin/src/flutter_mqtt_plugin_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockFlutterMqttPluginPlatform

@@ -1,19 +1,18 @@
 package th.co.cdgs.flutter_mqtt_plugin.util
 
-import android.util.Log
 import io.flutter.plugin.common.MethodCall
 import th.co.cdgs.flutter_mqtt_plugin.entity.ConnectionSetting
 import th.co.cdgs.flutter_mqtt_plugin.entity.NotificationSetting
-import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_PLATFORM_NOTIFICATION_SETTING_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CHANNEL_ID_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CHANNEL_NAME_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CLIENT_ID_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_CONNECTION_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_HOSTNAME_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_IS_REQUIRED_SSL_KEY
-import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_NOTIFICATION_ICON_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_PASSWORD_KEY
+import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_SOUND_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_TOPIC_KEY
 import th.co.cdgs.flutter_mqtt_plugin.util.FlutterMqttCall.ConnectMqtt.KEYS.CONNECT_MQTT_USERNAME_KEY
 
@@ -32,11 +31,11 @@ sealed class FlutterMqttCall {
             const val CONNECT_MQTT_IS_REQUIRED_SSL_KEY = "isRequiredSSL"
 
 
-            const val CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY = "notificationSettings"
-            const val CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY = "androidNotificationSetting"
+            const val CONNECT_MQTT_PLATFORM_NOTIFICATION_SETTING_KEY = "platformNotificationSetting"
             const val CONNECT_MQTT_CHANNEL_NAME_KEY = "channelName"
             const val CONNECT_MQTT_CHANNEL_ID_KEY = "channelId"
             const val CONNECT_MQTT_NOTIFICATION_ICON_KEY = "notificationIcon"
+            const val CONNECT_MQTT_SOUND_KEY = "sound"
         }
     }
 
@@ -74,7 +73,8 @@ object Extractor {
 
                 // Notification configuration
                 val notificationSetting =
-                    readAndroidNotificationSetting(arguments?.get(CONNECT_MQTT_NOTIFICATION_SETTINGS_KEY) as Map<*, *>?)
+                    readAndroidNotificationSetting(arguments?.get(
+                        CONNECT_MQTT_PLATFORM_NOTIFICATION_SETTING_KEY) as Map<*, *>?)
 
                 FlutterMqttCall.ConnectMqtt(
                     connectionSetting = connectionSetting,
@@ -103,17 +103,18 @@ object Extractor {
         )
     }
 
-    private fun readAndroidNotificationSetting(notificationSettingMap: Map<*, *>?): NotificationSetting {
-        val androidNotificationSettingMap =  notificationSettingMap?.get(CONNECT_MQTT_ANDROID_NOTIFICATION_SETTING_KEY) as Map<*, *>?
-        val channelId = androidNotificationSettingMap?.get(CONNECT_MQTT_CHANNEL_ID_KEY) as String?
-        val channelName = androidNotificationSettingMap?.get(CONNECT_MQTT_CHANNEL_NAME_KEY) as String?
+    private fun readAndroidNotificationSetting(platformNotificationSetting: Map<*, *>?): NotificationSetting {
+        val channelId = platformNotificationSetting?.get(CONNECT_MQTT_CHANNEL_ID_KEY) as String?
+        val channelName = platformNotificationSetting?.get(CONNECT_MQTT_CHANNEL_NAME_KEY) as String?
         val notificationIcon =
-            androidNotificationSettingMap?.get(CONNECT_MQTT_NOTIFICATION_ICON_KEY) as String?
+            platformNotificationSetting?.get(CONNECT_MQTT_NOTIFICATION_ICON_KEY) as String?
+        val sound = platformNotificationSetting?.get(CONNECT_MQTT_SOUND_KEY) as String?
 
         return NotificationSetting(
             channelId = channelId,
             channelName = channelName,
             notificationIcon = notificationIcon,
+            sound = sound,
         )
     }
 }
