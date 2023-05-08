@@ -116,6 +116,10 @@ object SharedPreferenceHelper {
         return ctx.prefs().getString(KEY_CHANNEL_ID, null)
     }
 
+    fun getCallbackHandle(ctx: Context) : Long? {
+        return ctx.prefs().getLong(KEY_DISPATCHER_HANDLE_KEY, -1)
+    }
+
     fun clearPrefs(ctx: Context) {
         ctx.prefs().edit().clear().apply()
     }

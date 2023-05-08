@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -23,7 +25,12 @@ import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
 import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe
 import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.loader.FlutterLoader
+import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.NotificationPayload
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
@@ -35,9 +42,14 @@ import th.co.cdgs.flutter_mqtt.util.isNullOrBlankOrEmpty
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
+
 class HiveMqttNotificationServiceWorker(
     val context: Context, val params: WorkerParameters
 ) : CoroutineWorker(context, params) {
+
+    private var engine: FlutterEngine? = null
+    private var workerMethodChannel: MethodChannel? = null
+
 
     private val gsonBuilder by lazy {
         return@lazy GsonBuilder().create()
@@ -120,9 +132,52 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private fun notifyToFlutter(jsonMessage: String, mqtt3Publish: Mqtt3Publish?) {
-        // TODO : Implementation ส่ง Notification ไปฝั่ง Flutter
-        mqtt3Publish?.acknowledge()
+    /**
+     * Send notification to Flutter side
+     */
+    private fun notifyToFlutter(notificationPayload: String, mqtt3Publish: Mqtt3Publish?) {
+        // TODO : ทดสอบการส่งข้อมุลไปฝั่ง Flutter
+        Handler(Looper.getMainLooper()).post {
+            // Code to update the UI goes here
+            val arguments = mapOf("payload" to notificationPayload)
+            workerMethodChannel?.invokeMethod(
+                "didReceiveNotificationResponse",
+                arguments,
+                object : MethodChannel.Result {
+                    override fun notImplemented() {
+                        Log.d(TAG, "notImplemented")
+                    }
+
+                    override fun error(
+                        errorCode: String,
+                        errorMessage: String?,
+                        errorDetails: Any?
+                    ) {
+                        Log.d(TAG, "error")
+                    }
+
+                    override fun success(receivedResult: Any?) {
+                        Log.d(TAG, "success")
+                        mqtt3Publish?.acknowledge()
+                    }
+                })
+        }
+
+
+//        val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
+//        callbackHandle?.let {
+//            val callbackInfo =
+//                FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+//            val dartBundlePath = flutterLoader.findAppBundlePath()
+//
+//            engine?.dartExecutor?.executeDartCallback(
+//                DartExecutor.DartCallback(
+//                    applicationContext.assets,
+//                    dartBundlePath,
+//                    callbackInfo
+//                )
+//            )
+//        }
     }
 
     override suspend fun doWork(): Result {
@@ -138,6 +193,9 @@ class HiveMqttNotificationServiceWorker(
 
             Log.d(TAG, "isConnected : $isConnected | mqtt3AsyncClient : $mqtt3AsyncClient")
             if (!isConnected && mqtt3AsyncClient == null) {
+
+                prepareFlutterEngine()
+
                 connect(
                     MQTTConnectionSetting(
                         hostname = hostname,
@@ -154,6 +212,29 @@ class HiveMqttNotificationServiceWorker(
         } catch (e: Exception) {
             Log.d(TAG, "exception in doWork ${e.message}")
             Result.failure()
+        }
+    }
+
+    private suspend fun prepareFlutterEngine() {
+        withContext(Dispatchers.Main) {
+            engine = FlutterEngine(applicationContext)
+
+            if (!flutterLoader.initialized()) {
+                flutterLoader.startInitialization(applicationContext)
+            }
+
+            flutterLoader.ensureInitializationCompleteAsync(
+                applicationContext,
+                null,
+                Handler(Looper.getMainLooper())
+            ) {
+                engine?.let {
+                    workerMethodChannel = MethodChannel(
+                        it.dartExecutor.binaryMessenger,
+                        "th.co.cdgs/flutter_mqtt/worker"
+                    )
+                }
+            }
         }
     }
 
@@ -220,6 +301,7 @@ class HiveMqttNotificationServiceWorker(
         private var topic: String? = null
         private var mqtt3AsyncClient: Mqtt3AsyncClient? = null
         var isConnected: Boolean = false
+        private val flutterLoader = FlutterLoader()
 
         private fun getDrawableResourceId(context: Context, name: String): Int {
             return context.resources.getIdentifier(name, "mipmap", context.packageName)

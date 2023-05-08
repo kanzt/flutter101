@@ -6,12 +6,12 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://192.168.1.39:8080/api/v1/",
+      baseURL: "http://172.20.10.2:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
             mqttConnectionSetting: MQTTConnectionSetting(
               isRequiredSsl: false,
-              hostname: "192.168.1.39",
+              hostname: "172.20.10.2",
               password: "mqtt-mobile",
               username: "mqtt-mobile",
             ),

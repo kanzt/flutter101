@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_interface.dart';
 
-// TODO : ตรวจสอบว่า Class นี้มีไว้ทำอะไร เมื่อตรวจสอบเสร็จแล้วต้องไปเขียนฝั่ง Native ด้วย
+/// ใช้เป็นตัวเรียก Callback
+/// TODO : รอดูว่าจะใช้หรือจะลบออก
 // ignore_for_file: public_member_api_docs, avoid_annotating_with_dynamic
 @pragma('vm:entry-point')
 void callbackDispatcher() {
