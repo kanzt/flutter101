@@ -26,8 +26,10 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe
 import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -136,16 +138,14 @@ class HiveMqttNotificationServiceWorker(
      * Send notification to Flutter side
      */
     private fun notifyToFlutter(notificationPayload: String, mqtt3Publish: Mqtt3Publish?) {
-        // TODO : ทดสอบการส่งข้อมุลไปฝั่ง Flutter
         Handler(Looper.getMainLooper()).post {
-            // Code to update the UI goes here
             val arguments = mapOf("payload" to notificationPayload)
             workerMethodChannel?.invokeMethod(
                 "didReceiveNotificationResponse",
                 arguments,
                 object : MethodChannel.Result {
                     override fun notImplemented() {
-                        Log.d(TAG, "notImplemented")
+                        Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
                     }
 
                     override fun error(
@@ -153,31 +153,15 @@ class HiveMqttNotificationServiceWorker(
                         errorMessage: String?,
                         errorDetails: Any?
                     ) {
-                        Log.d(TAG, "error")
+                        Log.d(TAG, "didReceiveNotificationResponse result : error")
                     }
 
                     override fun success(receivedResult: Any?) {
-                        Log.d(TAG, "success")
+                        Log.d(TAG, "didReceiveNotificationResponse result : success")
                         mqtt3Publish?.acknowledge()
                     }
                 })
         }
-
-
-//        val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
-//        callbackHandle?.let {
-//            val callbackInfo =
-//                FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-//            val dartBundlePath = flutterLoader.findAppBundlePath()
-//
-//            engine?.dartExecutor?.executeDartCallback(
-//                DartExecutor.DartCallback(
-//                    applicationContext.assets,
-//                    dartBundlePath,
-//                    callbackInfo
-//                )
-//            )
-//        }
     }
 
     override suspend fun doWork(): Result {
@@ -194,7 +178,7 @@ class HiveMqttNotificationServiceWorker(
             Log.d(TAG, "isConnected : $isConnected | mqtt3AsyncClient : $mqtt3AsyncClient")
             if (!isConnected && mqtt3AsyncClient == null) {
 
-                prepareFlutterEngine()
+                startFlutterEngine()
 
                 connect(
                     MQTTConnectionSetting(
@@ -215,9 +199,11 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private suspend fun prepareFlutterEngine() {
+    private suspend fun startFlutterEngine() {
         withContext(Dispatchers.Main) {
-            engine = FlutterEngine(applicationContext)
+            if (engine == null) {
+                engine = FlutterEngine(applicationContext)
+            }
 
             if (!flutterLoader.initialized()) {
                 flutterLoader.startInitialization(applicationContext)
@@ -229,19 +215,39 @@ class HiveMqttNotificationServiceWorker(
                 Handler(Looper.getMainLooper())
             ) {
                 engine?.let {
+                    val dispatchHandle =
+                        SharedPreferenceHelper.getDispatchHandle(applicationContext)
+                    if (dispatchHandle == -1L) {
+                        Log.w(
+                            TAG,
+                            "Callback information could not be retrieved"
+                        )
+                        return@ensureInitializationCompleteAsync
+                    }
+
+                    val callbackInfo =
+                        FlutterCallbackInformation.lookupCallbackInformation(dispatchHandle)
+                    val dartBundlePath = flutterLoader.findAppBundlePath()
                     workerMethodChannel = MethodChannel(
-                        it.dartExecutor.binaryMessenger,
-                        "th.co.cdgs/flutter_mqtt/worker"
+                        it.dartExecutor,
+                        "th.co.cdgs/flutter_mqtt"
+                    )
+
+                    it.dartExecutor.executeDartCallback(
+                        DartExecutor.DartCallback(
+                            applicationContext.assets,
+                            dartBundlePath,
+                            callbackInfo
+                        )
                     )
                 }
             }
+
         }
     }
 
     private suspend fun connect(MQTTConnectionSetting: MQTTConnectionSetting) {
-        Log.d(TAG, "Before coroutineScope")
         coroutineScope {
-            Log.d(TAG, "begin coroutineScope")
             val clientId = MQTTConnectionSetting.clientId
             topic = MQTTConnectionSetting.topic
             Log.d(TAG, "ClientId is $clientId")
@@ -272,9 +278,7 @@ class HiveMqttNotificationServiceWorker(
 
                 subscribeNotification(topic!!)
             }
-            Log.d(TAG, "end coroutineScope")
         }
-        Log.d(TAG, "After coroutineScope")
     }
 
     private fun subscribeNotification(topic: String) {

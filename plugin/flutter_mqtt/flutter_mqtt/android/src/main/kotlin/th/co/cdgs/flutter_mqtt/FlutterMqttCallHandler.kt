@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -41,9 +42,15 @@ class FlutterMqttCallHandler(private val ctx: Context) : MethodChannel.MethodCal
             is FlutterMqttCall.Initialize -> {
                 InitializeHandler().handle(ctx, extractedCall, result)
             }
+
+            is FlutterMqttCall.GetCallbackHandle -> {
+                GetCallBackHandle.handle(ctx, extractedCall, result)
+            }
+
             is FlutterMqttCall.CancelAll -> {
                 CancelAllHandler.handle(ctx, extractedCall, result)
             }
+
             is FlutterMqttCall.Unknown -> {
                 UnknownTaskHandler.handle(ctx, extractedCall, result)
             }
@@ -66,6 +73,7 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
         convertedCall: FlutterMqttCall.Initialize,
         result: MethodChannel.Result
     ) {
+        // Validation
         if (
             hasInvalidIcon(
                 context,
@@ -81,6 +89,8 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
             return
         }
 
+
+        // Save configuration
         this.ctx = context
         createNotificationChannel(
             context,
@@ -91,6 +101,8 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
         saveMQTTConnectionSetting(convertedCall.MQTTConnectionSetting)
         saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.callbackHandle)
 
+
+        // Request notification permission and then start worker
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (
                 ContextCompat.checkSelfPermission(
@@ -251,6 +263,26 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
 //    }
 //
 //}
+
+private object GetCallBackHandle : CallHandler<FlutterMqttCall.GetCallbackHandle> {
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.GetCallbackHandle,
+        result: MethodChannel.Result
+    ) {
+        val handle: Long = SharedPreferenceHelper.getCallbackHandle(context)
+
+        if (handle != -1L) {
+            result.success(handle)
+        } else {
+            result.error(
+                "callback_handle_not_found",
+                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+                null
+            )
+        }
+    }
+}
 
 private object CancelAllHandler : CallHandler<FlutterMqttCall.CancelAll> {
     override fun handle(

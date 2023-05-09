@@ -1,12 +1,12 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mqtt/flutter_mqtt.dart';
 import 'package:flutter_mqtt/src/callback_dispatcher.dart';
 import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_interface.dart';
 
 const MethodChannel _channel = MethodChannel("th.co.cdgs/flutter_mqtt");
-const MethodChannel _workerChannel = MethodChannel("th.co.cdgs/flutter_mqtt/worker");
 
 /// An implementation of a local notifications platform using method channels.
 class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
@@ -69,7 +69,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
         onDidReceiveBackgroundNotificationResponse,
   }) async {
     _ondidReceiveNotificationResponse = onDidReceiveNotificationResponse;
-    _workerChannel.setMethodCallHandler(_handleMethod);
+    _channel.setMethodCallHandler(_handleMethod);
 
     final Map<String, Object> arguments = initializationSettings.toMap();
 
@@ -80,7 +80,11 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   }
 
   Future<void> _handleMethod(MethodCall call) async {
-    print("OK");
+
+    if (kDebugMode) {
+      print("_handleMethod is working");
+    }
+
     switch (call.method) {
       case 'didReceiveNotificationResponse':
         _ondidReceiveNotificationResponse?.call(

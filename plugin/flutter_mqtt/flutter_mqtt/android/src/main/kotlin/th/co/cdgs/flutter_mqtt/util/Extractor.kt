@@ -44,6 +44,8 @@ sealed class FlutterMqttCall {
         }
     }
 
+    object GetCallbackHandle : FlutterMqttCall()
+
     object CancelAll : FlutterMqttCall()
 
     object Unknown : FlutterMqttCall()
@@ -52,7 +54,8 @@ sealed class FlutterMqttCall {
 object Extractor {
     private enum class PossibleFlutterMqttCall(val rawMethodName: String?) {
         INITIALIZE("initialize"),
-        DISCONNECT("cancelAll"),
+        CANCEL_ALL("cancelAll"),
+        GET_CALLBACK_HANDLE("getCallbackHandle"),
 
         UNKNOWN(null);
 
@@ -97,7 +100,8 @@ object Extractor {
                     callbackHandle = callbackHandle,
                 )
             }
-            PossibleFlutterMqttCall.DISCONNECT -> FlutterMqttCall.CancelAll
+            PossibleFlutterMqttCall.GET_CALLBACK_HANDLE -> FlutterMqttCall.GetCallbackHandle
+            PossibleFlutterMqttCall.CANCEL_ALL -> FlutterMqttCall.CancelAll
             PossibleFlutterMqttCall.UNKNOWN -> FlutterMqttCall.Unknown
         }
 

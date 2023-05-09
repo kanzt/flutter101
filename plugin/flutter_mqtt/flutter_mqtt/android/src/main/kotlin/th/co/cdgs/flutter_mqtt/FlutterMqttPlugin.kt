@@ -3,6 +3,7 @@ package th.co.cdgs.flutter_mqtt
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.NotificationManagerCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -47,6 +48,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     }
 
     private fun sendNotificationPayloadMessage(intent: Intent): Boolean {
+        Log.d(TAG, "sendNotificationPayloadMessage is working...")
         if (SELECT_NOTIFICATION == intent.action) {
             val notificationResponse: Map<String, Any?> = extractNotificationResponseMap(intent)
             if (SELECT_FOREGROUND_NOTIFICATION_ACTION == intent.action) {
@@ -99,6 +101,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
+        Log.d(TAG, "onNewIntent is working...")
         val res = sendNotificationPayloadMessage(intent)
         if (res && mainActivity != null) {
             mainActivity!!.intent = intent

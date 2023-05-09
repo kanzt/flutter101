@@ -14,6 +14,8 @@ object SharedPreferenceHelper {
         "th.co.cdgs.flutter_mqtt_plugin.util.KEY_IS_REQUIRED_SSL"
     private const val KEY_DISPATCHER_HANDLE_KEY =
         "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CALLBACK_DISPATCHER_HANDLE_KEY"
+    private const val KEY_CALLBACK_HANDLE_KEY =
+        "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CALLBACK_HANDLE_KEY"
     private const val KEY_CHANNEL_NAME = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_NAME"
     private const val KEY_CHANNEL_ID = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_ID"
     private fun Context.prefs() = getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE)
@@ -28,7 +30,7 @@ object SharedPreferenceHelper {
     fun setCallbackHandle(ctx: Context, callbackHandle: Long) {
         ctx.prefs()
             .edit()
-            .putLong(KEY_DISPATCHER_HANDLE_KEY, callbackHandle)
+            .putLong(KEY_CALLBACK_HANDLE_KEY, callbackHandle)
             .apply()
     }
 
@@ -116,7 +118,11 @@ object SharedPreferenceHelper {
         return ctx.prefs().getString(KEY_CHANNEL_ID, null)
     }
 
-    fun getCallbackHandle(ctx: Context) : Long? {
+    fun getCallbackHandle(ctx: Context) : Long {
+        return ctx.prefs().getLong(KEY_CALLBACK_HANDLE_KEY, -1)
+    }
+
+    fun getDispatchHandle(ctx: Context) : Long {
         return ctx.prefs().getLong(KEY_DISPATCHER_HANDLE_KEY, -1)
     }
 
