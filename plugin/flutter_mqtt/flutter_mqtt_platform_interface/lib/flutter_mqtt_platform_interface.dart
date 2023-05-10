@@ -36,4 +36,9 @@ abstract class FlutterMqttPlatform extends PlatformInterface {
   Future<void> cancelAll() async {
     throw UnimplementedError('cancelAll() has not been implemented');
   }
+
+
+  Stream<NotificationResponse?> onReceiveNotification(){
+    throw UnimplementedError('onReceiveNotification() has not been implemented');
+  }
 }

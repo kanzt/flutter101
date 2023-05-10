@@ -78,6 +78,7 @@ class ActiveNotification {
   final String? tag;
 }
 
+// TODO : ปรับให้เหลือแต่ Field ที่เราสนใจ
 /// Details of a Notification Action that was triggered.
 class NotificationResponse {
   /// Constructs an instance of [NotificationResponse]

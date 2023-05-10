@@ -33,6 +33,8 @@ import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
+import th.co.cdgs.flutter_mqtt.FlutterMqttStreamHandler
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.NotificationPayload
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
@@ -129,7 +131,7 @@ class HiveMqttNotificationServiceWorker(
                 notify(GROUP_PUSH_NOTIFICATION_ID, groupPushNotificationBuilder.build())
 
                 // Send notification to Flutter side
-                notifyToFlutter(jsonMessage, it)
+                notifyToFlutter(jsonMessage, notificationId, it)
             }
         }
     }
@@ -137,9 +139,9 @@ class HiveMqttNotificationServiceWorker(
     /**
      * Send notification to Flutter side
      */
-    private fun notifyToFlutter(notificationPayload: String, mqtt3Publish: Mqtt3Publish?) {
+    private fun notifyToFlutter(notificationPayload: String, notificationId: Int, mqtt3Publish: Mqtt3Publish?) {
         Handler(Looper.getMainLooper()).post {
-            val arguments = mapOf("payload" to notificationPayload)
+            val arguments = mapOf("payload" to notificationPayload, "notificationId" to notificationId)
             workerMethodChannel?.invokeMethod(
                 "didReceiveNotificationResponse",
                 arguments,
@@ -161,6 +163,8 @@ class HiveMqttNotificationServiceWorker(
                         mqtt3Publish?.acknowledge()
                     }
                 })
+
+            FlutterMqttStreamHandler.notificationEventChannelSink?.success(arguments)
         }
     }
 
