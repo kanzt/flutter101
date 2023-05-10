@@ -110,6 +110,16 @@ class FlutterMqttPlugin {
     return true;
   }
 
+  Stream<NotificationResponse?> onReceivedNotification() {
+    if (kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.linux) {
+      throw Exception('This plugin is not support this platform');
+    }
+
+    return FlutterMqttPlatform.instance.onReceiveNotification();
+  }
+
   /// Cancels/removes all notifications.
   ///
   Future<void> cancelAll() async {

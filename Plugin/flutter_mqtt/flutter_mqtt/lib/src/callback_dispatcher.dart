@@ -10,7 +10,7 @@ void callbackDispatcher() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  const MethodChannel channel = MethodChannel('th.co.cdgs/flutter_mqtt');
+  const MethodChannel channel = MethodChannel(METHOD_CHANNEL);
 
   channel.invokeMethod<int>('getCallbackHandle').then((int? handle) {
     final DidReceiveBackgroundNotificationResponseCallback? callback =
