@@ -53,7 +53,8 @@ class HiveMqttNotificationServiceWorker(
 
     private var engine: FlutterEngine? = null
     private var workerMethodChannel: MethodChannel? = null
-
+    private val flutterLoader = FlutterLoader()
+    private lateinit var channelId: String
 
     private val gsonBuilder by lazy {
         return@lazy GsonBuilder().create()
@@ -306,11 +307,9 @@ class HiveMqttNotificationServiceWorker(
     companion object {
         private val TAG = HiveMqttNotificationServiceWorker::class.java.simpleName
 
-        private lateinit var channelId: String
         private var topic: String? = null
         private var mqtt3AsyncClient: Mqtt3AsyncClient? = null
         var isConnected: Boolean = false
-        private val flutterLoader = FlutterLoader()
 
         private fun getDrawableResourceId(context: Context, name: String): Int {
             return context.resources.getIdentifier(name, "mipmap", context.packageName)
@@ -336,6 +335,7 @@ class HiveMqttNotificationServiceWorker(
                                 Log.d(TAG, "Clearing static data...")
                                 isConnected = false
                                 mqtt3AsyncClient = null
+                                topic = null
                                 successCallback?.invoke()
                             }
                         }
