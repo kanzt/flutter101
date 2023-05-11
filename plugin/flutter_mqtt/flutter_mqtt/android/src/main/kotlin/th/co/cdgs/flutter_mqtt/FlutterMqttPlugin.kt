@@ -63,6 +63,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
         mainActivity = null
     }
 
+    // TODO : รอตรวจสอบ ถ้าไม่ได้ใช้งานต้องลบออก
     override fun onNewIntent(intent: Intent): Boolean {
         Log.d(TAG, "onNewIntent is working...")
         val res = sendNotificationPayloadMessage(intent)
