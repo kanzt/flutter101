@@ -47,6 +47,31 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
         channel.setMethodCallHandler(null)
     }
 
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        mainActivity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        mainActivity = null
+    }
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        Log.d(TAG, "onNewIntent is working...")
+        val res = sendNotificationPayloadMessage(intent)
+        if (res && mainActivity != null) {
+            mainActivity!!.intent = intent
+        }
+        return res
+    }
+
     private fun sendNotificationPayloadMessage(intent: Intent): Boolean {
         Log.d(TAG, "sendNotificationPayloadMessage is working...")
         if (SELECT_NOTIFICATION == intent.action) {
@@ -82,30 +107,5 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
             notificationResponseMap[NOTIFICATION_RESPONSE_TYPE] = 1
         }
         return notificationResponseMap
-    }
-
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        mainActivity = binding.activity
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-        mainActivity = null
-    }
-
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        mainActivity = binding.activity
-    }
-
-    override fun onDetachedFromActivity() {
-        mainActivity = null
-    }
-
-    override fun onNewIntent(intent: Intent): Boolean {
-        Log.d(TAG, "onNewIntent is working...")
-        val res = sendNotificationPayloadMessage(intent)
-        if (res && mainActivity != null) {
-            mainActivity!!.intent = intent
-        }
-        return res
     }
 }
