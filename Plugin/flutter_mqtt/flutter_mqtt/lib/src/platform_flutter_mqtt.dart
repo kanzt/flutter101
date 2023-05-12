@@ -40,6 +40,7 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
             result['notificationLaunchedApp'],
             notificationResponse: notificationResponse == null
                 ? null
+            // TODO : ปรับเป็น Response ที่ต้องการ
                 : NotificationResponse(
                     id: notificationResponse['notificationId'],
                     actionId: notificationResponse['actionId'],
@@ -54,6 +55,7 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
         : null;
   }
 
+  // TODO : 12/05/2023 เตรียมลบออก
   @override
   Stream<NotificationResponse?> onReceiveNotification() {
     return notificationEventChannel

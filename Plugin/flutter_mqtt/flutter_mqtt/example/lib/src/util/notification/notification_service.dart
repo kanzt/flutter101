@@ -12,8 +12,9 @@ import 'package:get/get.dart';
 @pragma('vm:entry-point')
 void onReceivedBackgroundNotification(
     NotificationResponse notificationResponse) async {
-  // TODO : เปลี่ยนให้เป็นฟังก์ชันจัดการเมื่อได้รับ Notification ขณะอยู่ใน Terminated state
-  print("onReceivedBackgroundNotification is working...");
+  await SharedPreference.write(
+      SharedPreference.KEY_RECENT_NOTIFICATION, notificationResponse?.payload);
+  FlutterAppBadger.updateBadgeCount(50);
 }
 
 class NotificationService extends GetxService {
@@ -23,6 +24,16 @@ class NotificationService extends GetxService {
   ValueNotifier<String?> selectedNotification = ValueNotifier(null);
 
   Future<void> initialize() async {
+    final NotificationAppLaunchDetails? notificationAppLaunchDetails =
+        await _plugin.getNotificationAppLaunchDetails();
+
+    if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
+     // TODO : จัดการเมื่อเปิดแอปผ่าน Notification
+    }
+
+    recentNotification.value =
+        await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
+
     _plugin.initialize(
       FlavorConfig.instance.values.initializationSettings,
       onDidReceiveNotificationResponse: _onReceivedNotification,

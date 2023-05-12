@@ -65,7 +65,9 @@ class FlutterMqttPlugin {
 
   // TODO : ลบ onDidReceiveBackgroundNotificationResponse หลังตรวจสอบว่าไม่ได้ใช้
   /// Initializes the plugin.
-  ///
+  /// The [onDidReceiveNotificationResponse] is fired when receive notification in Foreground and Background state
+  /// The [onDidReceiveBackgroundNotificationResponse] is fired when user tap on notification in Foreground and Background state
+  /// The [onDidReceiveBackgroundNotificationResponse] is fired when receive notification in Terminated state
   /// Call this method on application before using the plugin further.
   Future<bool?> initialize(
     InitializationSettings initializationSettings, {
@@ -74,9 +76,7 @@ class FlutterMqttPlugin {
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
   }) async {
-    if (kIsWeb ||
-        defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+    if (!_isSupportPlatform()) {
       throw Exception('This plugin is not support this platform');
     }
 
@@ -113,19 +113,49 @@ class FlutterMqttPlugin {
     return true;
   }
 
+  // TODO : 12/05/2023 เตรียมลบออก
   Stream<NotificationResponse?> onReceivedNotification() {
-    if (kIsWeb ||
-        defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+    if (!_isSupportPlatform()) {
       throw Exception('This plugin is not support this platform');
     }
 
     return FlutterMqttPlatform.instance.onReceiveNotification();
   }
 
+  /// Returns info on if a notification created from this plugin had been used
+  /// to launch the application.
+  ///
+  /// An example of how this could be used is to change the initial route of
+  /// your application when it starts up. If the plugin isn't running on either
+  /// Android, iOS then an instance of the
+  /// `NotificationAppLaunchDetails` class is returned with
+  /// `didNotificationLaunchApp` set to false.
+  Future<NotificationAppLaunchDetails?>
+      getNotificationAppLaunchDetails() async {
+    if (!_isSupportPlatform()) {
+      throw Exception('This plugin is not support this platform');
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return await resolvePlatformSpecificImplementation<
+              AndroidFlutterMqttPlugin>()
+          ?.getNotificationAppLaunchDetails();
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      // TODO : เปิดใช้งาน iOS
+      // return await resolvePlatformSpecificImplementation<
+      //         IOSFlutterLocalNotificationsPlugin>()
+      //     ?.getNotificationAppLaunchDetails();
+    }
+  }
+
   /// Cancels/removes all notifications.
+  /// // TODO : ปรับแก้ Logic ก่อนเรียกให้ทำงาน
   ///
   Future<void> cancelAll() async {
     await FlutterMqttPlatform.instance.cancelAll();
+  }
+
+  bool _isSupportPlatform(){
+    return (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
   }
 }

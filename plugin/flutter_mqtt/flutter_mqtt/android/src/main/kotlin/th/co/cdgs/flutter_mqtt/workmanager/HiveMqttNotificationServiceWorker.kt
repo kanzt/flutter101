@@ -145,37 +145,46 @@ class HiveMqttNotificationServiceWorker(
         val scope = CoroutineScope(Job() + Dispatchers.Main)
         scope.launch {
             coroutineScope {
-                startFlutterEngine()
+                val sendNotification: () -> Unit = {
+                    val channel = if (SharedPreferenceHelper.isTaskRemove(context)) {
+                        Log.d(TAG, "Using workerMethodChannel")
+                        workerMethodChannel
+                    } else {
+                        Log.d(TAG, "Using FlutterMqttPlugin.channel")
+                        FlutterMqttPlugin.channel
+                    }
 
-                val arguments = mapOf(
-                    NOTIFICATION_PAYLOAD to notificationPayload,
-                    NOTIFICATION_ID to notificationId
-                )
-                val channel: MethodChannel? = FlutterMqttPlugin.channel ?: workerMethodChannel
-                channel?.invokeMethod(
-                    "didReceiveNotificationResponse",
-                    arguments,
-                    object : MethodChannel.Result {
-                        override fun notImplemented() {
-                            Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
-                        }
+                    val arguments = mapOf(
+                        NOTIFICATION_PAYLOAD to notificationPayload,
+                        NOTIFICATION_ID to notificationId
+                    )
 
-                        override fun error(
-                            errorCode: String,
-                            errorMessage: String?,
-                            errorDetails: Any?
-                        ) {
-                            Log.d(TAG, "didReceiveNotificationResponse result : error")
-                        }
+                    channel?.invokeMethod(
+                        "didReceiveNotificationResponse",
+                        arguments,
+                        object : MethodChannel.Result {
+                            override fun notImplemented() {
+                                Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
+                            }
 
-                        override fun success(receivedResult: Any?) {
-                            Log.d(TAG, "didReceiveNotificationResponse result : success")
-                            mqtt3Publish?.acknowledge()
-                        }
-                    })
+                            override fun error(
+                                errorCode: String,
+                                errorMessage: String?,
+                                errorDetails: Any?
+                            ) {
+                                Log.d(TAG, "didReceiveNotificationResponse result : error")
+                            }
 
-                // TODO : ถ้า MethodChannel สามารถสั่งอัพเดท UI ได้จะลบบรรทัดนี้ออก
-                // FlutterMqttStreamHandler.notificationEventChannelSink?.success(arguments)
+                            override fun success(receivedResult: Any?) {
+                                Log.d(TAG, "didReceiveNotificationResponse result : success")
+                                mqtt3Publish?.acknowledge()
+                            }
+                        })
+                }
+
+                startFlutterEngineIfNecessary(sendNotification)
+
+                sendNotification.invoke()
             }
             scope.cancel()
         }
@@ -214,10 +223,12 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private suspend fun startFlutterEngine() {
-        withContext(Dispatchers.Main) {
-            Log.d(TAG, "startFlutterEngine is working...")
-            if (FlutterMqttPlugin.channel == null) {
+    /**
+     * Start FlutterEngine for background isolate
+     */
+    private suspend fun startFlutterEngineIfNecessary(callback: (() -> Unit)?): Boolean {
+        return withContext(Dispatchers.Main) {
+            if (SharedPreferenceHelper.isTaskRemove(context) && workerMethodChannel == null) {
                 if (engine == null) {
                     engine = FlutterEngine(applicationContext)
                 }
@@ -266,9 +277,14 @@ class HiveMqttNotificationServiceWorker(
                                         )
                                     }
                                 }
+                                "backgroundChannelInitialized" -> {
+                                    Log.d(TAG, "backgroundChannelInitialized is working...")
+                                    callback?.invoke()
+                                }
                             }
                         }
 
+                        Log.d(TAG, "it.dartExecutor.executeDartCallback is working")
                         it.dartExecutor.executeDartCallback(
                             DartExecutor.DartCallback(
                                 applicationContext.assets,
@@ -278,7 +294,10 @@ class HiveMqttNotificationServiceWorker(
                         )
                     }
                 }
+
+                return@withContext true
             }
+            return@withContext false
         }
     }
 

@@ -18,6 +18,7 @@ object SharedPreferenceHelper {
         "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CALLBACK_HANDLE_KEY"
     private const val KEY_CHANNEL_NAME = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_NAME"
     private const val KEY_CHANNEL_ID = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_ID"
+    private const val KEY_IS_TASK_REMOVE = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_IS_TASK_REMOVE"
     private fun Context.prefs() = getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE)
 
     fun setDispatcherHandle(ctx: Context, dispatcherHandle: Long) {
@@ -45,6 +46,13 @@ object SharedPreferenceHelper {
         ctx.prefs()
             .edit()
             .putString(KEY_CHANNEL_NAME, channelName)
+            .apply()
+    }
+
+    fun setIsTaskRemove(ctx: Context, isTaskRemove: Boolean) {
+        ctx.prefs()
+            .edit()
+            .putBoolean(KEY_IS_TASK_REMOVE, isTaskRemove)
             .apply()
     }
 
@@ -124,6 +132,10 @@ object SharedPreferenceHelper {
 
     fun getDispatchHandle(ctx: Context) : Long {
         return ctx.prefs().getLong(KEY_DISPATCHER_HANDLE_KEY, -1)
+    }
+
+    fun isTaskRemove(ctx: Context): Boolean {
+        return ctx.prefs().getBoolean(KEY_IS_TASK_REMOVE, false)
     }
 
     fun clearPrefs(ctx: Context) {

@@ -19,7 +19,10 @@ import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 import th.co.cdgs.flutter_mqtt.service.DetectTaskRemoveService
 import th.co.cdgs.flutter_mqtt.util.Extractor
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_LAUNCHED_APP
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.createNotificationChannel
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.hasInvalidIcon
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
 import th.co.cdgs.flutter_mqtt.util.Validation.hasInvalidMQTTConnectionConfig
@@ -42,15 +45,15 @@ class FlutterMqttCallHandler(private val ctx: Context) : MethodChannel.MethodCal
             is FlutterMqttCall.Initialize -> {
                 InitializeHandler().handle(ctx, extractedCall, result)
             }
-
             is FlutterMqttCall.GetCallbackHandle -> {
                 GetCallBackHandle.handle(ctx, extractedCall, result)
             }
-
+            is FlutterMqttCall.GetNotificationAppLaunchDetails -> {
+                GetNotificationAppLaunchDetailsHandler().handle(ctx, extractedCall, result)
+            }
             is FlutterMqttCall.CancelAll -> {
                 CancelAllHandler.handle(ctx, extractedCall, result)
             }
-
             is FlutterMqttCall.Unknown -> {
                 UnknownTaskHandler.handle(ctx, extractedCall, result)
             }
@@ -66,6 +69,7 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
 
     companion object {
         private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 36
+        private val TAG = InitializeHandler::class.java.simpleName
     }
 
     override fun handle(
@@ -208,7 +212,108 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
     override fun onDetachedFromActivity() {
         activity = null
     }
+
 }
+
+private class GetNotificationAppLaunchDetailsHandler :
+    CallHandler<FlutterMqttCall.GetNotificationAppLaunchDetails>, ActivityAware {
+    private var mainActivity: Activity? = null
+
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.GetNotificationAppLaunchDetails,
+        result: MethodChannel.Result
+    ) {
+        val notificationAppLaunchDetails: MutableMap<String, Any> = HashMap()
+        var notificationLaunchedApp = false
+        Log.d("GetNotificationAppLaunchDetailsHandler", "GetNotificationAppLaunchDetailsHandler is working")
+        if (mainActivity != null) {
+            val launchIntent: Intent? = mainActivity?.intent
+            notificationLaunchedApp =
+                (launchIntent != null &&
+                        (SELECT_NOTIFICATION == launchIntent.action) &&
+                        !launchedActivityFromHistory(launchIntent))
+
+            if (notificationLaunchedApp) {
+                notificationAppLaunchDetails["notificationResponse"] =
+                    extractNotificationResponseMap(
+                        launchIntent!!
+                    )
+            }
+        }
+
+        notificationAppLaunchDetails[NOTIFICATION_LAUNCHED_APP] = notificationLaunchedApp
+        result.success(notificationAppLaunchDetails)
+    }
+
+    private fun launchedActivityFromHistory(intent: Intent?): Boolean {
+        return (intent != null
+                && intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY
+                == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        mainActivity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        mainActivity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        mainActivity = null
+    }
+}
+
+private object GetCallBackHandle : CallHandler<FlutterMqttCall.GetCallbackHandle> {
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.GetCallbackHandle,
+        result: MethodChannel.Result
+    ) {
+        val handle: Long = SharedPreferenceHelper.getCallbackHandle(context)
+
+        if (handle != -1L) {
+            result.success(handle)
+        } else {
+            result.error(
+                "callback_handle_not_found",
+                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+                null
+            )
+        }
+    }
+}
+
+private object CancelAllHandler : CallHandler<FlutterMqttCall.CancelAll> {
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.CancelAll,
+        result: MethodChannel.Result
+    ) {
+        HiveMqttNotificationServiceWorker.disconnect {
+            SharedPreferenceHelper.clearPrefs(context)
+            WorkManagerRequestHelper.cancelNotificationWorker(context)
+        }
+
+        result.success(true)
+    }
+}
+
+private object UnknownTaskHandler : CallHandler<FlutterMqttCall.Unknown> {
+    override fun handle(
+        context: Context,
+        convertedCall: FlutterMqttCall.Unknown,
+        result: MethodChannel.Result
+    ) {
+        result.notImplemented()
+    }
+}
+
 
 //private class GetNotificationGetLaunchDetails :
 //    CallHandler<FlutterMqttCall.GetNotificationAppLaunchDetails>,
@@ -263,48 +368,3 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
 //    }
 //
 //}
-
-private object GetCallBackHandle : CallHandler<FlutterMqttCall.GetCallbackHandle> {
-    override fun handle(
-        context: Context,
-        convertedCall: FlutterMqttCall.GetCallbackHandle,
-        result: MethodChannel.Result
-    ) {
-        val handle: Long = SharedPreferenceHelper.getCallbackHandle(context)
-
-        if (handle != -1L) {
-            result.success(handle)
-        } else {
-            result.error(
-                "callback_handle_not_found",
-                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
-                null
-            )
-        }
-    }
-}
-
-private object CancelAllHandler : CallHandler<FlutterMqttCall.CancelAll> {
-    override fun handle(
-        context: Context,
-        convertedCall: FlutterMqttCall.CancelAll,
-        result: MethodChannel.Result
-    ) {
-        HiveMqttNotificationServiceWorker.disconnect {
-            SharedPreferenceHelper.clearPrefs(context)
-            WorkManagerRequestHelper.cancelNotificationWorker(context)
-        }
-
-        result.success(true)
-    }
-}
-
-private object UnknownTaskHandler : CallHandler<FlutterMqttCall.Unknown> {
-    override fun handle(
-        context: Context,
-        convertedCall: FlutterMqttCall.Unknown,
-        result: MethodChannel.Result
-    ) {
-        result.notImplemented()
-    }
-}

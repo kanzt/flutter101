@@ -3,6 +3,7 @@ package th.co.cdgs.flutter_mqtt
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 
+// TODO : 12/05/2023 ไม่ได้ใช้งานแล้วเตรียมลบออก
 class FlutterMqttStreamHandler(private val messenger: BinaryMessenger) : EventChannel.StreamHandler {
     companion object{
         var onTokenUpdateEventSink: EventChannel.EventSink? = null

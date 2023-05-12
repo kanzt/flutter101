@@ -17,6 +17,8 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_RESPONSE_TYPE
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
+import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
 
 /** FlutterMqttPlugin */
 class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
@@ -51,6 +53,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         mainActivity = binding.activity
         binding.addOnNewIntentListener(this)
+        SharedPreferenceHelper.setIsTaskRemove(context, false)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -60,14 +63,16 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         mainActivity = binding.activity
         binding.addOnNewIntentListener(this)
+        SharedPreferenceHelper.setIsTaskRemove(context, false)
     }
 
     override fun onDetachedFromActivity() {
         mainActivity = null
+        SharedPreferenceHelper.setIsTaskRemove(context, true)
     }
 
     /**
-     * Get trigger when user tap to open notification
+     * Get trigger when user tap to open notification in Foreground state & Background state
      */
     override fun onNewIntent(intent: Intent): Boolean {
         Log.d(TAG, "onNewIntent is working...")
@@ -78,41 +83,13 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
         return res
     }
 
-    // TODO : ปรับ Logic พร้อมเปลี่ยน Argument เป็นรูปบบที่ต้องการ
     private fun sendNotificationPayloadMessage(intent: Intent): Boolean {
         Log.d(TAG, "sendNotificationPayloadMessage is working...")
         if (SELECT_NOTIFICATION == intent.action) {
             val notificationResponse: Map<String, Any?> = extractNotificationResponseMap(intent)
-            if (SELECT_FOREGROUND_NOTIFICATION_ACTION == intent.action) {
-                if (intent.getBooleanExtra(
-                        CANCEL_NOTIFICATION,
-                        false
-                    )
-                ) {
-                    NotificationManagerCompat.from(context)
-                        .cancel(
-                            notificationResponse[NOTIFICATION_ID] as Int
-                        )
-                }
-            }
             channel?.invokeMethod("onMessageOpenedApp", notificationResponse)
             return true
         }
         return false
-    }
-
-    private fun extractNotificationResponseMap(intent: Intent): Map<String, Any?> {
-        val notificationResponseMap: MutableMap<String, Any?> = HashMap()
-        notificationResponseMap[NOTIFICATION_ID] = intent.getIntExtra(NOTIFICATION_ID, 0)
-        notificationResponseMap[ACTION_ID] = intent.getStringExtra(ACTION_ID)
-        notificationResponseMap[NOTIFICATION_PAYLOAD] = intent.getStringExtra(NOTIFICATION_PAYLOAD)
-
-        if (SELECT_NOTIFICATION == intent.action) {
-            notificationResponseMap[NOTIFICATION_RESPONSE_TYPE] = 0
-        }
-        if (SELECT_FOREGROUND_NOTIFICATION_ACTION == intent.action) {
-            notificationResponseMap[NOTIFICATION_RESPONSE_TYPE] = 1
-        }
-        return notificationResponseMap
     }
 }

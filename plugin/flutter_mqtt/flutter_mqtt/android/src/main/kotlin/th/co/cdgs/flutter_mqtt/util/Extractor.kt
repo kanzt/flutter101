@@ -46,6 +46,8 @@ sealed class FlutterMqttCall {
 
     object GetCallbackHandle : FlutterMqttCall()
 
+    object GetNotificationAppLaunchDetails : FlutterMqttCall()
+
     object CancelAll : FlutterMqttCall()
 
     object Unknown : FlutterMqttCall()
@@ -56,6 +58,7 @@ object Extractor {
         INITIALIZE("initialize"),
         CANCEL_ALL("cancelAll"),
         GET_CALLBACK_HANDLE("getCallbackHandle"),
+        GET_NOTIFICATION_APP_LAUNCH_DETAILS("getNotificationAppLaunchDetails"),
 
         UNKNOWN(null);
 
@@ -101,6 +104,7 @@ object Extractor {
                 )
             }
             PossibleFlutterMqttCall.GET_CALLBACK_HANDLE -> FlutterMqttCall.GetCallbackHandle
+            PossibleFlutterMqttCall.GET_NOTIFICATION_APP_LAUNCH_DETAILS -> FlutterMqttCall.GetNotificationAppLaunchDetails
             PossibleFlutterMqttCall.CANCEL_ALL -> FlutterMqttCall.CancelAll
             PossibleFlutterMqttCall.UNKNOWN -> FlutterMqttCall.Unknown
         }
