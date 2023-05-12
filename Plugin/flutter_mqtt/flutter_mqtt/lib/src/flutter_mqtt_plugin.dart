@@ -63,12 +63,14 @@ class FlutterMqttPlugin {
     return null;
   }
 
+  // TODO : ลบ onDidReceiveBackgroundNotificationResponse หลังตรวจสอบว่าไม่ได้ใช้
   /// Initializes the plugin.
   ///
   /// Call this method on application before using the plugin further.
   Future<bool?> initialize(
     InitializationSettings initializationSettings, {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+    OnOpenedNotificationCallback? onOpenedNotification,
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
   }) async {
@@ -88,6 +90,7 @@ class FlutterMqttPlugin {
           ?.initialize(
         initializationSettings.android!,
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+        onOpenedNotification: onOpenedNotification,
         onDidReceiveBackgroundNotificationResponse:
             onDidReceiveBackgroundNotificationResponse,
       );

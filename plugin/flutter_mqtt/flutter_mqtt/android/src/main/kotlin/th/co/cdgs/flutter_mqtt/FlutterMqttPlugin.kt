@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.annotation.NonNull
 import androidx.core.app.NotificationManagerCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -25,7 +24,6 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private lateinit var channel: MethodChannel
     private var mainActivity: Activity? = null
     private lateinit var context: Context
     private lateinit var flutterMqttCallHandler: FlutterMqttCallHandler
@@ -33,22 +31,24 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
 
     companion object {
         private val TAG = FlutterMqttPlugin::class.java.simpleName
+        var channel: MethodChannel? = null
     }
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         flutterMqttCallHandler = FlutterMqttCallHandler(flutterPluginBinding.applicationContext)
         flutterMqttStreamHandler = FlutterMqttStreamHandler(flutterPluginBinding.binaryMessenger)
         context = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "th.co.cdgs/flutter_mqtt")
-        channel.setMethodCallHandler(flutterMqttCallHandler)
+        channel?.setMethodCallHandler(flutterMqttCallHandler)
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel?.setMethodCallHandler(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         mainActivity = binding.activity
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -57,13 +57,16 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         mainActivity = binding.activity
+        binding.addOnNewIntentListener(this)
     }
 
     override fun onDetachedFromActivity() {
         mainActivity = null
     }
 
-    // TODO : รอตรวจสอบ ถ้าไม่ได้ใช้งานต้องลบออก
+    /**
+     * Get trigger when user tap to open notification
+     */
     override fun onNewIntent(intent: Intent): Boolean {
         Log.d(TAG, "onNewIntent is working...")
         val res = sendNotificationPayloadMessage(intent)
@@ -89,7 +92,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
                         )
                 }
             }
-            channel.invokeMethod("didReceiveNotificationResponse", notificationResponse)
+            channel?.invokeMethod("onMessageOpenedApp", notificationResponse)
             return true
         }
         return false

@@ -9,6 +9,13 @@ import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_int
 /// Constants
 const NOTIFICATION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/notification";
 const METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt";
+const WORKER_METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt/worker";
+
+/// Arguments
+const NOTIFICATION_PAYLOAD = "payload";
+const NOTIFICATION_ID = "notificationId";
+const DISPATCHER_HANDLE = "dispatcher_handle";
+const CALLBACK_HANDLE = "callback_handle";
 
 /// MethodChannel & EventChannel
 const MethodChannel _channel = MethodChannel(METHOD_CHANNEL);
@@ -53,8 +60,8 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
         .receiveBroadcastStream(NOTIFICATION_EVENT_CHANNEL)
         .map(
           (data) => NotificationResponse(
-              payload: data["payload"],
-              id: data["notificationId"],
+              payload: data[NOTIFICATION_PAYLOAD],
+              id: data[NOTIFICATION_ID],
               notificationResponseType:
                   NotificationResponseType.selectedNotification),
         );
@@ -63,7 +70,8 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
 
 /// Android implementation of the Flutter MQTT plugin.
 class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
-  DidReceiveNotificationResponseCallback? _ondidReceiveNotificationResponse;
+  DidReceiveNotificationResponseCallback? _onDidReceiveNotificationResponse;
+  OnOpenedNotificationCallback? _onOpenedNotification;
 
   /// Initializes the plugin.
   ///
@@ -84,10 +92,13 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   Future<bool> initialize(
     AndroidInitializationSettings initializationSettings, {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+    OnOpenedNotificationCallback? onOpenedNotification,
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
   }) async {
-    _ondidReceiveNotificationResponse = onDidReceiveNotificationResponse;
+    _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
+    _onOpenedNotification = onOpenedNotification;
+
     _channel.setMethodCallHandler(_handleMethod);
 
     final Map<String, Object> arguments = initializationSettings.toMap();
@@ -99,6 +110,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   }
 
   // TODO : ทดสอบว่ามีการเรียกใช้งานไหม ถ้าไม่มีให้ลบออก ทดสอบครั้งที่ 1 ไม่มีการใช้งาน
+  // TODO : ปรับ NotificationResponse ไปเป็นรูปแบบที่ต้องการใช้งาน
   Future<void> _handleMethod(MethodCall call) async {
     if (kDebugMode) {
       print("_handleMethod is working");
@@ -106,14 +118,26 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 
     switch (call.method) {
       case 'didReceiveNotificationResponse':
-        _ondidReceiveNotificationResponse?.call(
+        _onDidReceiveNotificationResponse?.call(
           NotificationResponse(
-            id: call.arguments['notificationId'],
-            actionId: call.arguments['actionId'],
-            input: call.arguments['input'],
-            payload: call.arguments['payload'],
-            notificationResponseType: NotificationResponseType
-                .values[call.arguments['notificationResponseType']],
+            id: call.arguments[NOTIFICATION_ID],
+            actionId: null,
+            input: null,
+            payload: call.arguments[NOTIFICATION_PAYLOAD],
+            notificationResponseType:
+                NotificationResponseType.selectedNotification,
+          ),
+        );
+        break;
+      case 'onMessageOpenedApp':
+        _onOpenedNotification?.call(
+          NotificationResponse(
+            id: call.arguments[NOTIFICATION_ID],
+            actionId: null,
+            input: null,
+            payload: call.arguments[NOTIFICATION_PAYLOAD],
+            notificationResponseType:
+                NotificationResponseType.selectedNotification,
           ),
         );
         break;
@@ -126,6 +150,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 /// iOS implementation of the Flutter MQTT plugin.
 class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   DidReceiveNotificationResponseCallback? _ondidReceiveNotificationResponse;
+  OnOpenedNotificationCallback? _onOpenedNotification;
 }
 
 /// Checks [didReceiveBackgroundNotificationResponseCallback], if not `null`,
@@ -150,7 +175,7 @@ void _evaluateBackgroundNotificationCallback(
     final CallbackHandle? dispatcher =
         PluginUtilities.getCallbackHandle(callbackDispatcher);
 
-    arguments['dispatcher_handle'] = dispatcher!.toRawHandle();
-    arguments['callback_handle'] = callback!.toRawHandle();
+    arguments[DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
+    arguments[CALLBACK_HANDLE] = callback!.toRawHandle();
   }
 }

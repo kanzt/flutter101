@@ -30,15 +30,12 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
-import th.co.cdgs.flutter_mqtt.FlutterMqttStreamHandler
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
-import th.co.cdgs.flutter_mqtt.entity.NotificationPayload
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_PUSH_NOTIFICATION_ID
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
@@ -48,7 +45,7 @@ import java.util.function.Consumer
 
 
 class HiveMqttNotificationServiceWorker(
-    val context: Context, val params: WorkerParameters
+    private val context: Context, private val params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
     private var engine: FlutterEngine? = null
@@ -86,7 +83,7 @@ class HiveMqttNotificationServiceWorker(
             with(NotificationManagerCompat.from(context)) {
 
                 val notificationId = System.currentTimeMillis().toInt()
-                val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
+                // val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
 
                 val intent = getLaunchIntent(context)?.also {
                     it.action = SELECT_NOTIFICATION
@@ -140,33 +137,47 @@ class HiveMqttNotificationServiceWorker(
     /**
      * Send notification to Flutter side
      */
-    private fun notifyToFlutter(notificationPayload: String, notificationId: Int, mqtt3Publish: Mqtt3Publish?) {
-        Handler(Looper.getMainLooper()).post {
-            val arguments = mapOf("payload" to notificationPayload, "notificationId" to notificationId)
-            workerMethodChannel?.invokeMethod(
-                "didReceiveNotificationResponse",
-                arguments,
-                object : MethodChannel.Result {
-                    override fun notImplemented() {
-                        Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
-                    }
+    private fun notifyToFlutter(
+        notificationPayload: String,
+        notificationId: Int,
+        mqtt3Publish: Mqtt3Publish?
+    ) {
+        val scope = CoroutineScope(Job() + Dispatchers.Main)
+        scope.launch {
+            coroutineScope {
+                startFlutterEngine()
 
-                    override fun error(
-                        errorCode: String,
-                        errorMessage: String?,
-                        errorDetails: Any?
-                    ) {
-                        Log.d(TAG, "didReceiveNotificationResponse result : error")
-                    }
+                val arguments = mapOf(
+                    NOTIFICATION_PAYLOAD to notificationPayload,
+                    NOTIFICATION_ID to notificationId
+                )
+                val channel: MethodChannel? = FlutterMqttPlugin.channel ?: workerMethodChannel
+                channel?.invokeMethod(
+                    "didReceiveNotificationResponse",
+                    arguments,
+                    object : MethodChannel.Result {
+                        override fun notImplemented() {
+                            Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
+                        }
 
-                    override fun success(receivedResult: Any?) {
-                        Log.d(TAG, "didReceiveNotificationResponse result : success")
-                        mqtt3Publish?.acknowledge()
-                    }
-                })
+                        override fun error(
+                            errorCode: String,
+                            errorMessage: String?,
+                            errorDetails: Any?
+                        ) {
+                            Log.d(TAG, "didReceiveNotificationResponse result : error")
+                        }
 
-            // TODO : ถ้า MethodChannel สามารถสั่งอัพเดท UI ได้จะลบบรรทัดนี้ออก
-            FlutterMqttStreamHandler.notificationEventChannelSink?.success(arguments)
+                        override fun success(receivedResult: Any?) {
+                            Log.d(TAG, "didReceiveNotificationResponse result : success")
+                            mqtt3Publish?.acknowledge()
+                        }
+                    })
+
+                // TODO : ถ้า MethodChannel สามารถสั่งอัพเดท UI ได้จะลบบรรทัดนี้ออก
+                // FlutterMqttStreamHandler.notificationEventChannelSink?.success(arguments)
+            }
+            scope.cancel()
         }
     }
 
@@ -183,8 +194,6 @@ class HiveMqttNotificationServiceWorker(
 
             Log.d(TAG, "isConnected : $isConnected | mqtt3AsyncClient : $mqtt3AsyncClient")
             if (!isConnected && mqtt3AsyncClient == null) {
-
-                startFlutterEngine()
 
                 connect(
                     MQTTConnectionSetting(
@@ -207,48 +216,69 @@ class HiveMqttNotificationServiceWorker(
 
     private suspend fun startFlutterEngine() {
         withContext(Dispatchers.Main) {
-            if (engine == null) {
-                engine = FlutterEngine(applicationContext)
-            }
+            Log.d(TAG, "startFlutterEngine is working...")
+            if (FlutterMqttPlugin.channel == null) {
+                if (engine == null) {
+                    engine = FlutterEngine(applicationContext)
+                }
 
-            if (!flutterLoader.initialized()) {
-                flutterLoader.startInitialization(applicationContext)
-            }
+                if (!flutterLoader.initialized()) {
+                    flutterLoader.startInitialization(applicationContext)
+                }
 
-            flutterLoader.ensureInitializationCompleteAsync(
-                applicationContext,
-                null,
-                Handler(Looper.getMainLooper())
-            ) {
-                engine?.let {
-                    val dispatchHandle =
-                        SharedPreferenceHelper.getDispatchHandle(applicationContext)
-                    if (dispatchHandle == -1L) {
-                        Log.w(
-                            TAG,
-                            "Callback information could not be retrieved"
+                flutterLoader.ensureInitializationCompleteAsync(
+                    applicationContext,
+                    null,
+                    Handler(Looper.getMainLooper())
+                ) {
+                    engine?.let {
+                        val dispatchHandle =
+                            SharedPreferenceHelper.getDispatchHandle(applicationContext)
+                        if (dispatchHandle == -1L) {
+                            Log.w(
+                                TAG,
+                                "Callback information could not be retrieved"
+                            )
+                            return@ensureInitializationCompleteAsync
+                        }
+
+                        val callbackInfo =
+                            FlutterCallbackInformation.lookupCallbackInformation(dispatchHandle)
+                        val dartBundlePath = flutterLoader.findAppBundlePath()
+                        workerMethodChannel = MethodChannel(
+                            it.dartExecutor,
+                            "th.co.cdgs/flutter_mqtt/worker"
                         )
-                        return@ensureInitializationCompleteAsync
+
+                        workerMethodChannel?.setMethodCallHandler { call, result ->
+                            when (call.method) {
+                                "getCallbackHandle" -> {
+                                    val handle: Long =
+                                        SharedPreferenceHelper.getCallbackHandle(context)
+
+                                    if (handle != -1L) {
+                                        result.success(handle)
+                                    } else {
+                                        result.error(
+                                            "callback_handle_not_found",
+                                            "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+                                            null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        it.dartExecutor.executeDartCallback(
+                            DartExecutor.DartCallback(
+                                applicationContext.assets,
+                                dartBundlePath,
+                                callbackInfo
+                            )
+                        )
                     }
-
-                    val callbackInfo =
-                        FlutterCallbackInformation.lookupCallbackInformation(dispatchHandle)
-                    val dartBundlePath = flutterLoader.findAppBundlePath()
-                    workerMethodChannel = MethodChannel(
-                        it.dartExecutor,
-                        "th.co.cdgs/flutter_mqtt"
-                    )
-
-                    it.dartExecutor.executeDartCallback(
-                        DartExecutor.DartCallback(
-                            applicationContext.assets,
-                            dartBundlePath,
-                            callbackInfo
-                        )
-                    )
                 }
             }
-
         }
     }
 

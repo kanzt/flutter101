@@ -10,16 +10,19 @@ import android.os.Build.VERSION_CODES
 
 object NotificationHelper {
     const val GROUP_PUSH_NOTIFICATION_ID = 1
-    const val NOTIFICATION_PAYLOAD = "NOTIFICATION_PAYLOAD"
-    const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
-    const val CANCEL_NOTIFICATION = "CANCEL_NOTIFICATION"
-    const val SELECT_FOREGROUND_NOTIFICATION_ACTION = "SELECT_FOREGROUND_NOTIFICATION_ACTION"
-    const val NOTIFICATION_RESPONSE_TYPE = "notificationResponseType"
     const val GROUP_KEY_MESSAGE =
         "th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker"
 
-    const val NOTIFICATION_ID = "NOTIFICATION_ID"
-    const val ACTION_ID = "ACTION_ID"
+    // Arguments
+    const val NOTIFICATION_ID = "notificationId"
+    const val ACTION_ID = "actionId"
+    const val NOTIFICATION_PAYLOAD = "payload"
+    const val NOTIFICATION_RESPONSE_TYPE = "notificationResponseType"
+
+    // Intent action
+    const val SELECT_NOTIFICATION = "SELECT_NOTIFICATION"
+    const val CANCEL_NOTIFICATION = "CANCEL_NOTIFICATION"
+    const val SELECT_FOREGROUND_NOTIFICATION_ACTION = "SELECT_FOREGROUND_NOTIFICATION_ACTION"
 
     fun createNotificationChannel(
         context: Context,

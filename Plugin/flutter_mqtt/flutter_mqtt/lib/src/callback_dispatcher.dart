@@ -7,12 +7,14 @@ import 'package:flutter_mqtt/flutter_mqtt.dart';
 // ignore_for_file: public_member_api_docs, avoid_annotating_with_dynamic
 @pragma('vm:entry-point')
 void callbackDispatcher() {
+  print("callbackDispatcher is working...");
+
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  const MethodChannel channel = MethodChannel(METHOD_CHANNEL);
+  const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
 
-  channel.invokeMethod<int>('getCallbackHandle').then((int? handle) {
+  workerChannel.invokeMethod<int>('getCallbackHandle').then((int? handle) {
     final DidReceiveBackgroundNotificationResponseCallback? callback =
         handle == null
             ? null
@@ -20,7 +22,8 @@ void callbackDispatcher() {
                     CallbackHandle.fromRawHandle(handle))
                 as DidReceiveBackgroundNotificationResponseCallback?;
 
-    channel.setMethodCallHandler((call) async {
+    workerChannel.setMethodCallHandler((call) async {
+      print("workerChannel.setMethodCallHandler is working...");
       switch (call.method) {
         case 'didReceiveNotificationResponse':
           callback?.call(

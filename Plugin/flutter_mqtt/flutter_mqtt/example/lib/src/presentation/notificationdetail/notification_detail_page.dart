@@ -29,11 +29,12 @@ class NotificationDetailPage extends StatelessWidget {
               ),
             ),
             ValueListenableBuilder(
-              valueListenable: Get.find<NotificationService>().recentNotification,
-              builder: (BuildContext context, String? value, Widget? child) {
+              valueListenable: Get.find<NotificationService>().selectedNotification,
+              builder: (BuildContext context, String? value,
+                  Widget? child) {
                 return Text(value ?? "");
               },
-            )
+            ),
           ],
         ),
       ),

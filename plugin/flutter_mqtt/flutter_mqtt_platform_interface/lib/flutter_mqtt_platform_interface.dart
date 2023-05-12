@@ -25,6 +25,7 @@ abstract class FlutterMqttPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  // TODO : ถ้าไม่ได้ใช้จะต้องลบ
   /// Returns info on if a notification had been used to launch the application.
   Future<NotificationAppLaunchDetails?>
   getNotificationAppLaunchDetails() async {
