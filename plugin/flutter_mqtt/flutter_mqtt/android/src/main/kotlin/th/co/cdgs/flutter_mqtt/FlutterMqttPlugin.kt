@@ -35,6 +35,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        Log.d(TAG, "onAttachedToEngine is working...")
         flutterMqttCallHandler = FlutterMqttCallHandler(flutterPluginBinding.applicationContext)
         flutterMqttStreamHandler = FlutterMqttStreamHandler(flutterPluginBinding.binaryMessenger)
         context = flutterPluginBinding.applicationContext
@@ -43,6 +44,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        Log.d(TAG, "onDetachedFromEngine is working...")
         channel?.setMethodCallHandler(null)
     }
 
@@ -76,6 +78,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener {
         return res
     }
 
+    // TODO : ปรับ Logic พร้อมเปลี่ยน Argument เป็นรูปบบที่ต้องการ
     private fun sendNotificationPayloadMessage(intent: Intent): Boolean {
         Log.d(TAG, "sendNotificationPayloadMessage is working...")
         if (SELECT_NOTIFICATION == intent.action) {
