@@ -147,7 +147,7 @@ class HiveMqttNotificationServiceWorker(
         val scope = CoroutineScope(Job() + Dispatchers.Main)
         scope.launch {
             coroutineScope {
-                val sendNotification: () -> Unit = {
+                val onBackgroundChannelInitialized: () -> Unit = {
                     val channel = if (SharedPreferenceHelper.isTaskRemove(context)) {
                         Log.d(TAG, "Using workerMethodChannel")
                         workerMethodChannel
@@ -184,7 +184,7 @@ class HiveMqttNotificationServiceWorker(
                         })
                 }
 
-                val isStartFlutterEngine = startFlutterEngineIfNecessary(sendNotification)
+                val isStartFlutterEngine = startFlutterEngineIfNecessary(onBackgroundChannelInitialized)
 
                 if (!isStartFlutterEngine) {
                     sendNotification.invoke()
@@ -230,7 +230,7 @@ class HiveMqttNotificationServiceWorker(
     /**
      * Start FlutterEngine for background isolate
      */
-    private suspend fun startFlutterEngineIfNecessary(callback: (() -> Unit)?): Boolean {
+    private suspend fun startFlutterEngineIfNecessary(onBackgroundChannelInitialized: (() -> Unit)?): Boolean {
         return withContext(Dispatchers.Main) {
             if (SharedPreferenceHelper.isTaskRemove(context) && workerMethodChannel == null) {
                 if (engine == null) {
@@ -283,7 +283,7 @@ class HiveMqttNotificationServiceWorker(
                                 }
                                 "backgroundChannelInitialized" -> {
                                     Log.d(TAG, "backgroundChannelInitialized is working...")
-                                    callback?.invoke()
+                                    onBackgroundChannelInitialized?.invoke()
                                 }
                             }
                         }
