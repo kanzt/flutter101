@@ -41,16 +41,18 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
             notificationResponse: notificationResponse == null
                 ? null
             // TODO : ปรับเป็น Response ที่ต้องการ
-                : NotificationResponse(
-                    id: notificationResponse['notificationId'],
-                    actionId: notificationResponse['actionId'],
-                    input: notificationResponse['input'],
-                    notificationResponseType: NotificationResponseType.values[
-                        notificationResponse['notificationResponseType']],
-                    payload: notificationResponse.containsKey('payload')
-                        ? notificationResponse['payload']
-                        : null,
-                  ),
+                :
+
+            NotificationResponse(
+              id: null,
+              actionId: null,
+              input: null,
+              payload: notificationResponse.containsKey('payload')
+                  ? notificationResponse['payload']
+                  : null,
+              notificationResponseType:
+              NotificationResponseType.selectedNotificationAction,
+            ),
           )
         : null;
   }

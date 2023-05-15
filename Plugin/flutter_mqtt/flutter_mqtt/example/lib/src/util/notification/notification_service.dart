@@ -15,6 +15,7 @@ void onReceivedBackgroundNotification(
   await SharedPreference.write(
       SharedPreference.KEY_RECENT_NOTIFICATION, notificationResponse?.payload);
   FlutterAppBadger.updateBadgeCount(50);
+  print("Accept message : ${notificationResponse.payload}");
 }
 
 class NotificationService extends GetxService {
@@ -28,7 +29,7 @@ class NotificationService extends GetxService {
         await _plugin.getNotificationAppLaunchDetails();
 
     if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
-     // TODO : จัดการเมื่อเปิดแอปผ่าน Notification
+      _onOpenedNotification(notificationAppLaunchDetails?.notificationResponse);
     }
 
     recentNotification.value =

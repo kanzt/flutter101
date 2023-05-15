@@ -31,6 +31,8 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
@@ -182,9 +184,11 @@ class HiveMqttNotificationServiceWorker(
                         })
                 }
 
-                startFlutterEngineIfNecessary(sendNotification)
+                val isStartFlutterEngine = startFlutterEngineIfNecessary(sendNotification)
 
-                sendNotification.invoke()
+                if (!isStartFlutterEngine) {
+                    sendNotification.invoke()
+                }
             }
             scope.cancel()
         }
@@ -284,7 +288,6 @@ class HiveMqttNotificationServiceWorker(
                             }
                         }
 
-                        Log.d(TAG, "it.dartExecutor.executeDartCallback is working")
                         it.dartExecutor.executeDartCallback(
                             DartExecutor.DartCallback(
                                 applicationContext.assets,
