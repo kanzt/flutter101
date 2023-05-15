@@ -11,9 +11,9 @@ class NotificationDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: DefaultAppBar(
-        onBack: () {
-          Get.offAllNamed(Routes.consumerPage);
-        },
+        // onBack: () {
+        //   Get.offAllNamed(Routes.consumerPage);
+        // },
       ),
       body: Container(
         padding: const EdgeInsets.all(8),
