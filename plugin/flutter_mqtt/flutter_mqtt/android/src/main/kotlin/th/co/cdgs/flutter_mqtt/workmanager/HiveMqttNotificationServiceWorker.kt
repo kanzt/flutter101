@@ -187,7 +187,7 @@ class HiveMqttNotificationServiceWorker(
                 val isStartFlutterEngine = startFlutterEngineIfNecessary(onBackgroundChannelInitialized)
 
                 if (!isStartFlutterEngine) {
-                    sendNotification.invoke()
+                    onBackgroundChannelInitialized.invoke()
                 }
             }
             scope.cancel()
