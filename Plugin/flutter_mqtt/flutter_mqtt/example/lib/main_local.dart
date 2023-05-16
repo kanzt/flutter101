@@ -19,7 +19,15 @@ void main() {
               channelId: 'push_notification',
               channelName: 'Push notification',
               notificationIcon: 'ic_notification',
-            )),
+              actions: [
+                AndroidNotificationAction(
+                  urlLaunchActionId,
+                  'Action 1',
+                  icon: DrawableResourceAndroidBitmap('food'),
+                  contextual: true,
+                ),
+              ]
+            ),),
       ),
     ),
   );

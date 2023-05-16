@@ -1,3 +1,5 @@
+import 'package:flutter_mqtt/src/platform_specifics/android/notification_details.dart';
+
 /// Plugin initialization settings for Android.
 class AndroidInitializationSettings {
   /// Constructs an instance of [AndroidInitializationSettings].
@@ -69,6 +71,7 @@ class PlatformNotificationSetting {
     required this.notificationIcon,
     required this.channelId,
     required this.channelName,
+    this.actions,
   });
 
   /// Specifies the default icon for notifications.
@@ -78,22 +81,32 @@ class PlatformNotificationSetting {
   final String channelId;
   final String channelName;
 
-  factory PlatformNotificationSetting.fromJson(Map<String, dynamic> json) =>
-      PlatformNotificationSetting(
-        notificationIcon: json["notificationIcon"],
-        channelId: json["channelId"],
-        channelName: json["channelName"],
-      );
+  /// Notification action
+  final List<AndroidNotificationAction>? actions;
 
-  Map<String, dynamic> toJson() => {
-        "notificationIcon": notificationIcon,
-        "channelId": channelId,
-        "channelName": channelName,
-      };
+  // factory PlatformNotificationSetting.fromJson(Map<String, dynamic> json) =>
+  //     PlatformNotificationSetting(
+  //       notificationIcon: json["notificationIcon"],
+  //       channelId: json["channelId"],
+  //       channelName: json["channelName"],
+  //       actions: json["actions"] ??
+  //           List<AndroidNotificationAction>.from(json["actions"]
+  //               .map((x) => AndroidNotificationAction.fromJson(x))),
+  //     );
+  //
+  // Map<String, dynamic> toJson() => {
+  //       "notificationIcon": notificationIcon,
+  //       "channelId": channelId,
+  //       "channelName": channelName,
+  //       "actions": actions != null
+  //           ? List<dynamic>.from(actions!.map((x) => x.toJson()))
+  //           : null,
+  //     };
 
-  Map<String, Object> toMap() => <String, Object>{
+  Map<String, dynamic> toMap() => <String, dynamic>{
         'notificationIcon': notificationIcon,
         "channelId": channelId,
         "channelName": channelName,
+        "actions": actions,
       };
 }
