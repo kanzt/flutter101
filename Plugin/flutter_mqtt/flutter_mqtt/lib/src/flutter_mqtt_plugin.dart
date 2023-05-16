@@ -63,10 +63,9 @@ class FlutterMqttPlugin {
     return null;
   }
 
-  // TODO : ลบ onDidReceiveBackgroundNotificationResponse หลังตรวจสอบว่าไม่ได้ใช้
   /// Initializes the plugin.
   /// The [onDidReceiveNotificationResponse] is fired when receive notification in Foreground and Background state
-  /// The [onDidReceiveBackgroundNotificationResponse] is fired when user tap on notification in Foreground and Background state
+  /// The [onOpenedNotification] is fired when user tap on notification in Foreground and Background state
   /// The [onDidReceiveBackgroundNotificationResponse] is fired when receive notification in Terminated state
   /// Call this method on application before using the plugin further.
   Future<bool?> initialize(
@@ -111,15 +110,6 @@ class FlutterMqttPlugin {
     //   );
     // }
     return true;
-  }
-
-  // TODO : 12/05/2023 เตรียมลบออก
-  Stream<NotificationResponse?> onReceivedNotification() {
-    if (!_isSupportPlatform()) {
-      throw Exception('This plugin is not support this platform');
-    }
-
-    return FlutterMqttPlatform.instance.onReceiveNotification();
   }
 
   /// Returns info on if a notification created from this plugin had been used

@@ -25,7 +25,6 @@ abstract class FlutterMqttPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  // TODO : ถ้าไม่ได้ใช้จะต้องลบ
   /// Returns info on if a notification had been used to launch the application.
   Future<NotificationAppLaunchDetails?>
   getNotificationAppLaunchDetails() async {
@@ -36,10 +35,5 @@ abstract class FlutterMqttPlatform extends PlatformInterface {
   /// Unsubscribe to notification server
   Future<void> cancelAll() async {
     throw UnimplementedError('cancelAll() has not been implemented');
-  }
-
-  // TODO : อาจจะลบออกและย้ายจาก StreamHandler ไปเป็น MethodChannelHandler แทน
-  Stream<NotificationResponse?> onReceiveNotification(){
-    throw UnimplementedError('onReceiveNotification() has not been implemented');
   }
 }

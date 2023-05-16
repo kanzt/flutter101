@@ -43,10 +43,6 @@ class NotificationService extends GetxService {
           onReceivedBackgroundNotification,
     );
 
-    // TODO : ถ้า MethodChannel สามารถสั่งอัพเดท UI ได้จะลบบรรทัดนี้ออก
-    // _plugin.onReceivedNotification().listen((notificationResponse) {
-    //   _onReceivedNotification(notificationResponse);
-    // });
   }
 
   void _onOpenedNotification(NotificationResponse? details) async {

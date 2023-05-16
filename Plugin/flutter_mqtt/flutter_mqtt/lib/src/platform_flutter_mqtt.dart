@@ -56,20 +56,6 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
           )
         : null;
   }
-
-  // TODO : 12/05/2023 เตรียมลบออก
-  @override
-  Stream<NotificationResponse?> onReceiveNotification() {
-    return notificationEventChannel
-        .receiveBroadcastStream(NOTIFICATION_EVENT_CHANNEL)
-        .map(
-          (data) => NotificationResponse(
-              payload: data[NOTIFICATION_PAYLOAD],
-              id: data[NOTIFICATION_ID],
-              notificationResponseType:
-                  NotificationResponseType.selectedNotification),
-        );
-  }
 }
 
 /// Android implementation of the Flutter MQTT plugin.
@@ -113,7 +99,6 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     return await _channel.invokeMethod('initialize', arguments);
   }
 
-  // TODO : ทดสอบว่ามีการเรียกใช้งานไหม ถ้าไม่มีให้ลบออก ทดสอบครั้งที่ 1 ไม่มีการใช้งาน
   // TODO : ปรับ NotificationResponse ไปเป็นรูปแบบที่ต้องการใช้งาน
   Future<void> _handleMethod(MethodCall call) async {
     if (kDebugMode) {
