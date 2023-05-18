@@ -7,9 +7,11 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class PlatformNotificationSetting(
     @SerializedName("channelId")
-    val channelId : String?,
+    val channelId: String?,
     @SerializedName("channelName")
-    val channelName : String?,
+    val channelName: String?,
     @SerializedName("notificationIcon")
-    val notificationIcon : String?,
-): Parcelable
+    val notificationIcon: String?,
+    @SerializedName("actions")
+    val actions: List<String>?,
+) : Parcelable

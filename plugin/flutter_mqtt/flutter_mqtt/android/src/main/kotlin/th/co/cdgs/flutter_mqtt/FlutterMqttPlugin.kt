@@ -152,6 +152,8 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
      * Initilize MQTT notification
      */
     private fun initialize(convertedCall: FlutterMqttCall.Initialize, result: MethodChannel.Result) {
+        Log.d(TAG, convertedCall.platformNotificationSettings.actions.toString())
+
         // Validation
         if (
             ResourceHelper.hasInvalidIcon(
@@ -211,6 +213,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
     private fun savePlatformNotificationSetting(platformNotificationSettings: PlatformNotificationSetting) {
         SharedPreferenceHelper.setChannelId(context, platformNotificationSettings.channelId!!)
         SharedPreferenceHelper.setChannelName(context, platformNotificationSettings.channelName!!)
+        SharedPreferenceHelper.setAndroidNotificationAction(context, platformNotificationSettings.actions)
     }
 
     /**

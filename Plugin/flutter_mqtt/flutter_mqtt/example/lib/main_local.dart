@@ -9,25 +9,31 @@ void main() {
       baseURL: "http://10.0.2.2:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
-            mqttConnectionSetting: MQTTConnectionSetting(
-              isRequiredSsl: false,
-              hostname: "10.0.2.2",
-              password: "mqtt-mobile",
-              username: "mqtt-mobile",
-            ),
-            platformNotificationSetting: const PlatformNotificationSetting(
+          mqttConnectionSetting: MQTTConnectionSetting(
+            isRequiredSsl: false,
+            hostname: "10.0.2.2",
+            password: "mqtt-mobile",
+            username: "mqtt-mobile",
+          ),
+          platformNotificationSetting: const PlatformNotificationSetting(
               channelId: 'push_notification',
               channelName: 'Push notification',
               notificationIcon: 'ic_notification',
               actions: [
                 AndroidNotificationAction(
-                  urlLaunchActionId,
+                  'id_1',
                   'Action 1',
                   icon: DrawableResourceAndroidBitmap('food'),
                   contextual: true,
                 ),
-              ]
-            ),),
+                AndroidNotificationAction(
+                  'id_2',
+                  'Action 2',
+                  icon: DrawableResourceAndroidBitmap('food'),
+                  contextual: true,
+                ),
+              ]),
+        ),
       ),
     ),
   );

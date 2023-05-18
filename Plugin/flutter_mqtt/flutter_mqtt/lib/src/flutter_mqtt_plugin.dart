@@ -64,9 +64,9 @@ class FlutterMqttPlugin {
   }
 
   /// Initializes the plugin.
-  /// The [onDidReceiveNotificationResponse] is fired when receive notification in Foreground and Background state
+  /// The [onDidReceiveNotificationResponse] is fired when a notification is received in Foreground and Background state
   /// The [onOpenedNotification] is fired when user tap on notification in Foreground and Background state
-  /// The [onDidReceiveBackgroundNotificationResponse] is fired when receive notification in Terminated state
+  /// The [onDidReceiveBackgroundNotificationResponse] is fired when a notification is received in Terminated state
   /// Call this method on application before using the plugin further.
   Future<bool?> initialize(
     InitializationSettings initializationSettings, {

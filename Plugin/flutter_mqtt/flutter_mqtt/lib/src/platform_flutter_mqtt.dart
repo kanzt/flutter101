@@ -68,17 +68,13 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   /// Call this method on application before using the
   /// plugin further.
   ///
-  /// The [onDidReceiveNotificationResponse] callback is fired when the user
-  /// selects a notification or notification action that should show the
-  /// application/user interface.
-  /// application was running. To handle when a notification launched an
-  /// application, use [getNotificationAppLaunchDetails]. For notification
-  /// actions that don't show the application/user interface, the
-  /// [onDidReceiveBackgroundNotificationResponse] callback is invoked on
-  /// a background isolate. Functions passed to the
-  /// [onDidReceiveBackgroundNotificationResponse]
-  /// callback need to be annotated with the `@pragma('vm:entry-point')`
+  /// The [onDidReceiveNotificationResponse] callback is fired when a notification is received in Foreground and Background state
+  /// The [onOpenedNotification] is fired when user tap on notification in Foreground and Background state
+  /// The [onDidReceiveBackgroundNotificationResponse] is fired when a notification is received in Terminated state, callback need to be annotated with the `@pragma('vm:entry-point')`
   /// annotation to ensure they are not stripped out by the Dart compiler.
+  ///
+  /// To handle when a notification launched an
+  /// application, use [getNotificationAppLaunchDetails].
   Future<bool> initialize(
     AndroidInitializationSettings initializationSettings, {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
@@ -91,7 +87,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 
     _channel.setMethodCallHandler(_handleMethod);
 
-    final Map<String, Object> arguments = initializationSettings.toMap();
+    final Map<String, dynamic> arguments = initializationSettings.toMap();
 
     _evaluateBackgroundNotificationCallback(
         onDidReceiveBackgroundNotificationResponse, arguments);
@@ -152,7 +148,7 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 void _evaluateBackgroundNotificationCallback(
   DidReceiveBackgroundNotificationResponseCallback?
       didReceiveBackgroundNotificationResponseCallback,
-  Map<String, Object> arguments,
+  Map<String, dynamic> arguments,
 ) {
   if (didReceiveBackgroundNotificationResponseCallback != null) {
     final CallbackHandle? callback = PluginUtilities.getCallbackHandle(

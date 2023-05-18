@@ -1,6 +1,7 @@
 package th.co.cdgs.flutter_mqtt.workmanager
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
@@ -8,10 +9,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.GsonBuilder
@@ -32,13 +37,19 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
+import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PendingBackgroundNotification
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.ACTION_ID
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_PUSH_NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDrawableResourceId
+import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getIconFromSource
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
 import th.co.cdgs.flutter_mqtt.util.isNullOrBlankOrEmpty
 import java.util.concurrent.TimeUnit
@@ -52,6 +63,7 @@ class HiveMqttNotificationServiceWorker(
     private var engine: FlutterEngine? = null
     private var workerMethodChannel: MethodChannel? = null
     private val flutterLoader = FlutterLoader()
+    private var androidNotificationAction: List<AndroidNotificationAction>? = null
     private lateinit var channelId: String
     private var pendingBackgroundNotification: MutableList<PendingBackgroundNotification> =
         mutableListOf()
@@ -88,18 +100,19 @@ class HiveMqttNotificationServiceWorker(
                 val notificationId = System.currentTimeMillis().toInt()
                 // val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
 
-                val intent = getLaunchIntent(context)?.also {
+                val pendingIntent = getLaunchIntent(context)?.also {
                     it.action = SELECT_NOTIFICATION
                     it.putExtra(
                         NOTIFICATION_PAYLOAD, jsonMessage
                     )
+                }.let {
+                    PendingIntent.getActivity(
+                        context,
+                        notificationId,
+                        it,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
                 }
-                val pendingIntent = PendingIntent.getActivity(
-                    context,
-                    notificationId,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
 
                 val pushNotificationBuilder = NotificationCompat.Builder(
                     context, channelId
@@ -115,6 +128,9 @@ class HiveMqttNotificationServiceWorker(
                     )
                     setCategory(Notification.CATEGORY_MESSAGE)
                 }
+
+                // TODO : เปิดใช้งาน
+                // addAndroidNotificationAction(pushNotificationBuilder, notificationId)
 
                 val groupPushNotificationBuilder = NotificationCompat.Builder(
                     context, channelId
@@ -137,6 +153,73 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
+    private fun addAndroidNotificationAction(notificationBuilder: NotificationCompat.Builder, notificationId: Int) {
+        if (androidNotificationAction != null) {
+            // Space out request codes by 16 so even with 16 actions they won't clash
+             var requestCode: Int = notificationId * 16
+            androidNotificationAction?.forEach { action ->
+                var icon: IconCompat? = null
+                if (!action.icon.isNullOrBlankOrEmpty() && action.iconSource != null) {
+                    icon =
+                        getIconFromSource(context, action.icon as Any, action.iconSource!!);
+                }
+
+                var actionIntent: Intent? = null
+                if (action.showsUserInterface != null && action.showsUserInterface!!) {
+                    actionIntent = getLaunchIntent(context)?.also {
+                        it.action = SELECT_FOREGROUND_NOTIFICATION_ACTION
+                    }
+
+                } else {
+                    // TODO : เขียน BoardcastReceiver
+                    // actionIntent = Intent(context, ActionBroadcastReceiver::class.java)
+                    // actionIntent.action = ActionBroadcastReceiver.ACTION_TAPPED
+                }
+
+                actionIntent?.apply {
+                    putExtra(NOTIFICATION_ID, notificationId)
+                    putExtra(ACTION_ID, action.id)
+                    putExtra(CANCEL_NOTIFICATION, action.cancelNotification)
+                    // TODO : ใส่ Payload
+                    putExtra(NOTIFICATION_PAYLOAD, "")
+                }
+
+                val actionFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                @SuppressLint("UnspecifiedImmutableFlag")
+                val actionPendingIntent =
+                    if (action.showsUserInterface != null && action.showsUserInterface!!) PendingIntent.getActivity(
+                        context,
+                        requestCode++,
+                        actionIntent,
+                        actionFlags
+                    ) else PendingIntent.getBroadcast(
+                        context, requestCode++,
+                        actionIntent!!, actionFlags
+                    )
+
+
+                val actionTitleSpannable: Spannable = SpannableString(action.title)
+                if (action.titleColor != null) {
+                    actionTitleSpannable.setSpan(
+                        ForegroundColorSpan(action.titleColor!!), 0, actionTitleSpannable.length, 0
+                    )
+                }
+                val actionBuilder = NotificationCompat.Action.Builder(icon, actionTitleSpannable, actionPendingIntent)
+
+
+                if (action.contextual != null) {
+                    actionBuilder.setContextual(action.contextual!!)
+                }
+                if (action.showsUserInterface != null) {
+                    actionBuilder.setShowsUserInterface(action.showsUserInterface!!)
+                }
+
+                // TODO : ทดสอบ
+                notificationBuilder.addAction(actionBuilder.build())
+            }
+        }
+    }
+
     /**
      * Send notification to Flutter side
      */
@@ -149,7 +232,11 @@ class HiveMqttNotificationServiceWorker(
         scope.launch {
             coroutineScope {
 
-                val isStartBackgroundChannel = startBackgroundChannelIfNecessary(notificationId, notificationPayload, mqtt3Publish)
+                val isStartBackgroundChannel = startBackgroundChannelIfNecessary(
+                    notificationId,
+                    notificationPayload,
+                    mqtt3Publish
+                )
 
                 if (!isStartBackgroundChannel) {
                     val channel = if (isAppInTerminatedState()) {
@@ -189,7 +276,10 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private fun buildNotificationArguments(notificationId: Int, notificationPayload: String): Map<String, Any> {
+    private fun buildNotificationArguments(
+        notificationId: Int,
+        notificationPayload: String
+    ): Map<String, Any> {
         return mapOf(
             NOTIFICATION_PAYLOAD to notificationPayload,
             NOTIFICATION_ID to notificationId
@@ -206,6 +296,7 @@ class HiveMqttNotificationServiceWorker(
             val topic = SharedPreferenceHelper.getTopic(context) ?: return Result.failure()
             val isRequiredSSL = SharedPreferenceHelper.isRequiredSSL(context)
             channelId = SharedPreferenceHelper.getChannelId(context) ?: return Result.failure()
+            androidNotificationAction = SharedPreferenceHelper.getAndroidNotificationAction(context)
 
             Log.d(TAG, "isConnected : $isConnected | mqtt3AsyncClient : $mqtt3AsyncClient")
             if (!isConnected && mqtt3AsyncClient == null) {
@@ -300,10 +391,16 @@ class HiveMqttNotificationServiceWorker(
                                     pendingBackgroundNotification.forEach { notification ->
                                         workerMethodChannel?.invokeMethod(
                                             "didReceiveNotificationResponse",
-                                            buildNotificationArguments(notification.notificationId, notification.payload),
+                                            buildNotificationArguments(
+                                                notification.notificationId,
+                                                notification.payload
+                                            ),
                                             object : MethodChannel.Result {
                                                 override fun notImplemented() {
-                                                    Log.d(TAG, "didReceiveNotificationResponse result : notImplemented")
+                                                    Log.d(
+                                                        TAG,
+                                                        "didReceiveNotificationResponse result : notImplemented"
+                                                    )
                                                 }
 
                                                 override fun error(
@@ -311,13 +408,21 @@ class HiveMqttNotificationServiceWorker(
                                                     errorMessage: String?,
                                                     errorDetails: Any?
                                                 ) {
-                                                    Log.d(TAG, "didReceiveNotificationResponse result : error")
+                                                    Log.d(
+                                                        TAG,
+                                                        "didReceiveNotificationResponse result : error"
+                                                    )
                                                 }
 
                                                 override fun success(receivedResult: Any?) {
-                                                    Log.d(TAG, "didReceiveNotificationResponse result : success")
+                                                    Log.d(
+                                                        TAG,
+                                                        "didReceiveNotificationResponse result : success"
+                                                    )
                                                     notification.mqtt3Publish?.acknowledge()
-                                                    pendingBackgroundNotification.remove(notification)
+                                                    pendingBackgroundNotification.remove(
+                                                        notification
+                                                    )
                                                 }
                                             })
                                     }
@@ -403,10 +508,6 @@ class HiveMqttNotificationServiceWorker(
         private var topic: String? = null
         private var mqtt3AsyncClient: Mqtt3AsyncClient? = null
         var isConnected: Boolean = false
-
-        private fun getDrawableResourceId(context: Context, name: String): Int {
-            return context.resources.getIdentifier(name, "mipmap", context.packageName)
-        }
 
         fun disconnect(
             successCallback: (() -> Unit)? = null, failedCallback: (() -> Unit)? = null

@@ -14,7 +14,8 @@ class AndroidInitializationSettings {
   /// MQTT configuration
   final MQTTConnectionSetting mqttConnectionSetting;
 
-  Map<String, Object> toMap() => <String, Object>{
+
+  Map<String, dynamic> toMap() => <String, dynamic>{
         'platformNotificationSetting': platformNotificationSetting.toMap(),
         "mqttConnectionSetting": mqttConnectionSetting.toMap(),
       };
@@ -36,25 +37,6 @@ class MQTTConnectionSetting {
   String username;
   String? clientId;
   String? topic;
-
-  factory MQTTConnectionSetting.fromJson(Map<String, dynamic> json) =>
-      MQTTConnectionSetting(
-        isRequiredSsl: json["isRequiredSSL"],
-        hostname: json["hostname"],
-        password: json["password"],
-        username: json["username"],
-        clientId: json["clientId"],
-        topic: json["topic"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "isRequiredSSL": isRequiredSsl,
-        "hostname": hostname,
-        "password": password,
-        "username": username,
-        "clientId": clientId,
-        "topic": topic,
-      };
 
   Map<String, Object> toMap() => <String, Object>{
         'isRequiredSSL': isRequiredSsl,
@@ -84,29 +66,38 @@ class PlatformNotificationSetting {
   /// Notification action
   final List<AndroidNotificationAction>? actions;
 
-  // factory PlatformNotificationSetting.fromJson(Map<String, dynamic> json) =>
-  //     PlatformNotificationSetting(
-  //       notificationIcon: json["notificationIcon"],
-  //       channelId: json["channelId"],
-  //       channelName: json["channelName"],
-  //       actions: json["actions"] ??
-  //           List<AndroidNotificationAction>.from(json["actions"]
-  //               .map((x) => AndroidNotificationAction.fromJson(x))),
-  //     );
-  //
-  // Map<String, dynamic> toJson() => {
-  //       "notificationIcon": notificationIcon,
-  //       "channelId": channelId,
-  //       "channelName": channelName,
-  //       "actions": actions != null
-  //           ? List<dynamic>.from(actions!.map((x) => x.toJson()))
-  //           : null,
-  //     };
 
   Map<String, dynamic> toMap() => <String, dynamic>{
         'notificationIcon': notificationIcon,
         "channelId": channelId,
         "channelName": channelName,
-        "actions": actions,
-      };
+      }..addAll(_convertActionsToMap(actions));
+
+  Map<String, Object> _convertActionsToMap(
+      List<AndroidNotificationAction>? actions) {
+    if (actions == null) {
+      return <String, Object>{};
+    }
+    return <String, Object>{
+      'actions': actions
+          .map(
+            (AndroidNotificationAction e) => <String, dynamic>{
+          'id': e.id,
+          'title': e.title,
+          'titleColorAlpha': e.titleColor?.alpha,
+          'titleColorRed': e.titleColor?.red,
+          'titleColorGreen': e.titleColor?.green,
+          'titleColorBlue': e.titleColor?.blue,
+          if (e.icon != null) ...<String, Object>{
+            'icon': e.icon!.data,
+            'iconBitmapSource': e.icon!.source.index,
+          },
+          'contextual': e.contextual,
+          'showsUserInterface': e.showsUserInterface,
+          'cancelNotification': e.cancelNotification,
+        },
+      )
+          .toList(),
+    };
+  }
 }

@@ -1,8 +1,10 @@
 package th.co.cdgs.flutter_mqtt.util
 
+import android.util.Log
 import io.flutter.plugin.common.MethodCall
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
+import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CALLBACK_HANDLE_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CHANNEL_ID_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CHANNEL_NAME_KEY
@@ -38,9 +40,29 @@ sealed class FlutterMqttCall {
             const val INITIALIZE_CHANNEL_NAME_KEY = "channelName"
             const val INITIALIZE_CHANNEL_ID_KEY = "channelId"
             const val INITIALIZE_NOTIFICATION_ICON_KEY = "notificationIcon"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY = "actions"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_ID_KEY = "id"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_TITLE_KEY = "title"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_TITLE_COLOR_ALPHA_KEY =
+                "titleColorAlpha"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_TITLE_COLOR_RED_KEY = "titleColorRed"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_TITLE_COLOR_GREEN_KEY =
+                "titleColorGreen"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_TITLE_COLOR_BLUE_KEY =
+                "titleColorBlue"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_ICON_KEY = "icon"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_ICON_BITMAP_SOURCE_KEY =
+                "iconBitmapSource"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_CONTEXUAL_KEY = "contextual"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_SHOW_USER_INTERFACE_KEY =
+                "showsUserInterface"
+            const val INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_CANCEL_NOTIFICATION_KEY =
+                "cancelNotification"
+
 
             const val INITIALIZE_DISPATCHER_HANDLE_KEY = "dispatcher_handle"
             const val INITIALIZE_CALLBACK_HANDLE_KEY = "callback_handle"
+
         }
     }
 
@@ -132,11 +154,20 @@ object Extractor {
         val channelName = platformNotificationSetting?.get(INITIALIZE_CHANNEL_NAME_KEY) as String?
         val notificationIcon =
             platformNotificationSetting?.get(INITIALIZE_NOTIFICATION_ICON_KEY) as String?
+        val actions = platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<String>?
+
+//        val actions: List<AndroidNotificationAction>? =
+//            (platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<Map<String, Object>>?)?.let {
+//                it.map { action ->
+//                    return@map AndroidNotificationAction(action)
+//                }
+//            }
 
         return PlatformNotificationSetting(
             channelId = channelId,
             channelName = channelName,
             notificationIcon = notificationIcon,
+            actions = actions,
         )
     }
 }

@@ -1,6 +1,10 @@
 package th.co.cdgs.flutter_mqtt.util
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
+import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper.prefs
 
 object SharedPreferenceHelper {
 
@@ -19,6 +23,9 @@ object SharedPreferenceHelper {
     private const val KEY_CHANNEL_NAME = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_NAME"
     private const val KEY_CHANNEL_ID = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_ID"
     private const val KEY_IS_TASK_REMOVE = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_IS_TASK_REMOVE"
+    private const val KEY_ANDROID_NOTIFICATION_ACTIONS =
+        "th.co.cdgs.flutter_mqtt_plugin.util.KEY_ANDROID_NOTIFICATION_ACTIONS"
+
     private fun Context.prefs() = getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE)
 
     fun setDispatcherHandle(ctx: Context, dispatcherHandle: Long) {
@@ -42,7 +49,7 @@ object SharedPreferenceHelper {
             .apply()
     }
 
-    fun setChannelName(ctx: Context, channelName: String) {
+    fun setChannelName(ctx: Context, channelName: String?) {
         ctx.prefs()
             .edit()
             .putString(KEY_CHANNEL_NAME, channelName)
@@ -98,6 +105,21 @@ object SharedPreferenceHelper {
             .apply()
     }
 
+    fun setAndroidNotificationAction(ctx: Context, actions: List<String>?) {
+        ctx.prefs()
+            .edit()
+            .putString(KEY_ANDROID_NOTIFICATION_ACTIONS, Gson().toJson(actions))
+            .apply()
+    }
+
+    fun getAndroidNotificationAction(ctx: Context): List<AndroidNotificationAction>? {
+        return ctx.prefs().getString(KEY_ANDROID_NOTIFICATION_ACTIONS, null)?.let { actionsJson ->
+            val gson = Gson()
+            val typeToken = object : TypeToken<List<AndroidNotificationAction>>() {}.type
+            return@let gson.fromJson(actionsJson, typeToken)
+        }
+    }
+
     fun getHostname(ctx: Context): String? {
         return ctx.prefs().getString(KEY_HOSTNAME, null)
     }
@@ -126,11 +148,11 @@ object SharedPreferenceHelper {
         return ctx.prefs().getString(KEY_CHANNEL_ID, null)
     }
 
-    fun getCallbackHandle(ctx: Context) : Long {
+    fun getCallbackHandle(ctx: Context): Long {
         return ctx.prefs().getLong(KEY_CALLBACK_HANDLE_KEY, -1)
     }
 
-    fun getDispatchHandle(ctx: Context) : Long {
+    fun getDispatchHandle(ctx: Context): Long {
         return ctx.prefs().getLong(KEY_DISPATCHER_HANDLE_KEY, -1)
     }
 

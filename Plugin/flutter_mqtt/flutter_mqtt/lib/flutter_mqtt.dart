@@ -17,6 +17,8 @@ export 'src/flutter_mqtt_plugin.dart';
 export 'src/initialization_settings.dart';
 
 export 'src/platform_specifics/android//initialization_settings.dart';
+export 'src/platform_specifics/android/notification_details.dart';
+export 'src/platform_specifics/android/bitmap.dart';
 
 export 'src/platform_specifics/darwin/initialization_settings.dart';
 export 'src/platform_specifics/darwin/interruption_level.dart';
