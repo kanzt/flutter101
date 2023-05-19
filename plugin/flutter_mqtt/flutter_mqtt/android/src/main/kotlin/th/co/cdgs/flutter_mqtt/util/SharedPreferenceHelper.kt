@@ -1,6 +1,7 @@
 package th.co.cdgs.flutter_mqtt.util
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
@@ -105,10 +106,14 @@ object SharedPreferenceHelper {
             .apply()
     }
 
-    fun setAndroidNotificationAction(ctx: Context, actions: List<String>?) {
+    fun setAndroidNotificationAction(ctx: Context, actions: List<Map<String, Any>>?) {
+        val newActions = actions?.map {
+            return@map AndroidNotificationAction(it)
+        }
+
         ctx.prefs()
             .edit()
-            .putString(KEY_ANDROID_NOTIFICATION_ACTIONS, Gson().toJson(actions))
+            .putString(KEY_ANDROID_NOTIFICATION_ACTIONS, Gson().toJson(newActions))
             .apply()
     }
 

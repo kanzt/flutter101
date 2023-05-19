@@ -50,6 +50,7 @@ object NotificationHelper {
         notificationResponseMap[NOTIFICATION_ID] = intent.getIntExtra(NOTIFICATION_ID, 0)
         notificationResponseMap[ACTION_ID] = intent.getStringExtra(ACTION_ID)
         notificationResponseMap[NOTIFICATION_PAYLOAD] = intent.getStringExtra(NOTIFICATION_PAYLOAD)
+        notificationResponseMap[ACTION_ID] = intent.getStringExtra(ACTION_ID)
 
         return notificationResponseMap
     }

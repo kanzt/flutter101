@@ -4,7 +4,6 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
 data class PlatformNotificationSetting(
     @SerializedName("channelId")
     val channelId: String?,
@@ -13,5 +12,5 @@ data class PlatformNotificationSetting(
     @SerializedName("notificationIcon")
     val notificationIcon: String?,
     @SerializedName("actions")
-    val actions: List<String>?,
-) : Parcelable
+    val actions: List<Map<String, Any>>?,
+)

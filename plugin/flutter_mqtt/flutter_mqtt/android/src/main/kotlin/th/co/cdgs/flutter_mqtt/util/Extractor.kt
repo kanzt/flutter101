@@ -1,6 +1,5 @@
 package th.co.cdgs.flutter_mqtt.util
 
-import android.util.Log
 import io.flutter.plugin.common.MethodCall
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
@@ -154,7 +153,7 @@ object Extractor {
         val channelName = platformNotificationSetting?.get(INITIALIZE_CHANNEL_NAME_KEY) as String?
         val notificationIcon =
             platformNotificationSetting?.get(INITIALIZE_NOTIFICATION_ICON_KEY) as String?
-        val actions = platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<String>?
+        val actions = platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<Map<String, Any>>?
 
 //        val actions: List<AndroidNotificationAction>? =
 //            (platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<Map<String, Object>>?)?.let {

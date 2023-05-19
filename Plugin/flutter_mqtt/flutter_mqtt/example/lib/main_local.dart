@@ -1,6 +1,7 @@
 import 'package:flutter_mqtt/flutter_mqtt.dart';
 import 'package:flutter_mqtt_example/main.dart';
 import 'package:flutter_mqtt_example/src/core/flavor/flavor_config.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   FlavorConfig(
@@ -29,8 +30,13 @@ void main() {
                 AndroidNotificationAction(
                   'id_2',
                   'Action 2',
+                  titleColor: Color.fromARGB(255, 255, 0, 0),
                   icon: DrawableResourceAndroidBitmap('food'),
-                  contextual: true,
+                ),
+                AndroidNotificationAction(
+                  'id_3',
+                  'Action 3',
+                  cancelNotification: false,
                 ),
               ]),
         ),

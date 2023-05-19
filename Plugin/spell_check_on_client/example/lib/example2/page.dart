@@ -61,27 +61,30 @@ class _TestPageState extends State<TestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(36.0),
-        width: 400,
-        child: Focus(
-          onFocusChange: (hasFocus) {
-            if (!hasFocus) {
-              _handleSpellCheck(_controller.text, false);
-            }
-          },
-          child: TextFormField(
-              controller: _controller,
-              onChanged: _handleOnChange,
-              minLines: 5,
-              maxLines: 10,
-              decoration: const InputDecoration(
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black)),
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black)),
-                  disabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black)))),
+      body: Padding(
+        padding: EdgeInsets.only(top: 50),
+        child: Container(
+          padding: const EdgeInsets.all(36.0),
+          width: 400,
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus) {
+                _handleSpellCheck(_controller.text, false);
+              }
+            },
+            child: TextFormField(
+                controller: _controller,
+                onChanged: _handleOnChange,
+                minLines: 5,
+                maxLines: 10,
+                decoration: const InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black)),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black)),
+                    disabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black)))),
+          ),
         ),
       ),
     );

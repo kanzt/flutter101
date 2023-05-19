@@ -100,7 +100,11 @@ object ResourceHelper {
     }
 
     fun getDrawableResourceId(context: Context, name: String): Int {
-        return context.resources.getIdentifier(name, "mipmap", context.packageName)
+        return context.resources.getIdentifier(name, "drawable", context.packageName)
+    }
+
+    fun getDefaultAppIcon(context: Context): Int {
+        return context.resources.getIdentifier("ic_launcher", "mipmap", context.packageName)
     }
 
     private fun castObjectToByteArray(data: Any): ByteArray? {

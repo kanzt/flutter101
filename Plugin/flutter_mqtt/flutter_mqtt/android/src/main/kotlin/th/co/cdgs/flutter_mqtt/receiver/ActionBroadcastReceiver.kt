@@ -1,0 +1,84 @@
+package th.co.cdgs.flutter_mqtt.receiver
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.core.app.NotificationManagerCompat
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.EventChannel.EventSink
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
+import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
+
+class ActionBroadcastReceiver : BroadcastReceiver() {
+    private var engine : FlutterEngine? = null
+    private var eventSink : EventSink? = null
+    companion object {
+        private val TAG = ActionBroadcastReceiver::class.java.simpleName
+        const val ACTION_TAPPED =
+            "th.co.cdgs.flutter_mqtt.receiver.ActionBroadcastReceiver.ACTION_TAPPED"
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (!ACTION_TAPPED.equals(intent!!.action, ignoreCase = true)) {
+            return
+        }
+
+        val action: Map<String, Any?> = extractNotificationResponseMap(intent)
+        if (intent.getBooleanExtra(CANCEL_NOTIFICATION, false)) {
+            Log.d("Paper", (action[NOTIFICATION_ID] as Int).toString())
+            NotificationManagerCompat.from(context!!).apply {
+                cancel(action[NOTIFICATION_ID] as Int)
+            }
+        }
+
+        // TODO : Implement ต่อตรงนี้
+        startEngine(context)
+    }
+
+    private fun startEngine(context: Context?) {
+        if (engine != null) {
+            Log.e(TAG, "Engine is already initialised")
+            return
+        }
+
+        val injector = FlutterInjector.instance()
+        val loader = injector.flutterLoader()
+
+        loader.startInitialization(context!!)
+        loader.ensureInitializationComplete(context, null)
+
+        engine = FlutterEngine(context)
+
+        val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context)
+        if(dispatcherHandle == -1L){
+            Log.w(TAG, "Callback information could not be retrieved")
+            return
+        }
+
+        val dartExecutor: DartExecutor = engine!!.dartExecutor
+        initializeEventChannel(dartExecutor)
+    }
+
+    private fun initializeEventChannel(dartExecutor: DartExecutor) {
+        // TODO : เปลี่ยนชื่อ EventChannel
+        val channel = EventChannel(
+            dartExecutor.binaryMessenger, "dexterous.com/flutter/local_notifications/actions"
+        )
+        channel.setStreamHandler(object : EventChannel.StreamHandler{
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                eventSink = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                TODO("Not yet implemented")
+            }
+
+        })
+    }
+}

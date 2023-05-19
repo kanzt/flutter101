@@ -2,6 +2,7 @@ package th.co.cdgs.flutter_mqtt.entity
 
 import android.graphics.Color
 import android.os.Parcelable
+import android.util.Log
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_CANCEL_NOTIFICATION_KEY

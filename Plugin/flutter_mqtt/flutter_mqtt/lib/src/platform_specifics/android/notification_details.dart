@@ -45,6 +45,8 @@ class AndroidNotificationAction {
   /// Set whether or not this Action's PendingIntent will open a user interface.
   final bool showsUserInterface;
 
+  /// By default, Android plugin will dismiss the notification when the
+  /// user tapped on a action (this mimics the behavior on iOS).
   /// Set whether the notification should be canceled when this action is
   /// selected.
   final bool cancelNotification;

@@ -40,6 +40,7 @@ import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
 import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PendingBackgroundNotification
+import th.co.cdgs.flutter_mqtt.receiver.ActionBroadcastReceiver
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.ACTION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
@@ -48,6 +49,7 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDefaultAppIcon
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDrawableResourceId
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getIconFromSource
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
@@ -95,7 +97,7 @@ class HiveMqttNotificationServiceWorker(
                 context, Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            with(NotificationManagerCompat.from(context)) {
+            NotificationManagerCompat.from(context).apply {
 
                 val notificationId = System.currentTimeMillis().toInt()
                 // val message = gsonBuilder.fromJson(jsonMessage, NotificationPayload::class.java)
@@ -117,7 +119,7 @@ class HiveMqttNotificationServiceWorker(
                 val pushNotificationBuilder = NotificationCompat.Builder(
                     context, channelId
                 ).apply {
-                    setSmallIcon(getDrawableResourceId(context, "ic_launcher"))
+                    setSmallIcon(getDefaultAppIcon(context))
                     setGroup(GROUP_KEY_MESSAGE)
                     setContentTitle("Push notification")
                     setContentText(logMessage)
@@ -129,13 +131,12 @@ class HiveMqttNotificationServiceWorker(
                     setCategory(Notification.CATEGORY_MESSAGE)
                 }
 
-                // TODO : เปิดใช้งาน
-                // addAndroidNotificationAction(pushNotificationBuilder, notificationId)
+                addAndroidNotificationAction(pushNotificationBuilder, notificationId)
 
                 val groupPushNotificationBuilder = NotificationCompat.Builder(
                     context, channelId
                 ).apply {
-                    setSmallIcon(getDrawableResourceId(context, "ic_launcher"))
+                    setSmallIcon(getDefaultAppIcon(context))
                     setGroup(GROUP_KEY_MESSAGE)
                     setContentTitle("Push notification")
                     setContentText(logMessage)
@@ -153,27 +154,29 @@ class HiveMqttNotificationServiceWorker(
         }
     }
 
-    private fun addAndroidNotificationAction(notificationBuilder: NotificationCompat.Builder, notificationId: Int) {
+    private fun addAndroidNotificationAction(
+        notificationBuilder: NotificationCompat.Builder,
+        notificationId: Int
+    ) {
         if (androidNotificationAction != null) {
             // Space out request codes by 16 so even with 16 actions they won't clash
-             var requestCode: Int = notificationId * 16
+            var requestCode: Int = notificationId * 16
             androidNotificationAction?.forEach { action ->
                 var icon: IconCompat? = null
                 if (!action.icon.isNullOrBlankOrEmpty() && action.iconSource != null) {
                     icon =
                         getIconFromSource(context, action.icon as Any, action.iconSource!!);
                 }
-
                 var actionIntent: Intent? = null
                 if (action.showsUserInterface != null && action.showsUserInterface!!) {
+                    // TODO : ตรวจสอบว่าเขียนจัดการอะไร
                     actionIntent = getLaunchIntent(context)?.also {
                         it.action = SELECT_FOREGROUND_NOTIFICATION_ACTION
                     }
 
                 } else {
-                    // TODO : เขียน BoardcastReceiver
-                    // actionIntent = Intent(context, ActionBroadcastReceiver::class.java)
-                    // actionIntent.action = ActionBroadcastReceiver.ACTION_TAPPED
+                    actionIntent = Intent(context, ActionBroadcastReceiver::class.java)
+                    actionIntent.action = ActionBroadcastReceiver.ACTION_TAPPED
                 }
 
                 actionIntent?.apply {
@@ -185,6 +188,7 @@ class HiveMqttNotificationServiceWorker(
                 }
 
                 val actionFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+
                 @SuppressLint("UnspecifiedImmutableFlag")
                 val actionPendingIntent =
                     if (action.showsUserInterface != null && action.showsUserInterface!!) PendingIntent.getActivity(
@@ -204,7 +208,11 @@ class HiveMqttNotificationServiceWorker(
                         ForegroundColorSpan(action.titleColor!!), 0, actionTitleSpannable.length, 0
                     )
                 }
-                val actionBuilder = NotificationCompat.Action.Builder(icon, actionTitleSpannable, actionPendingIntent)
+                val actionBuilder = NotificationCompat.Action.Builder(
+                    icon,
+                    actionTitleSpannable,
+                    actionPendingIntent
+                )
 
 
                 if (action.contextual != null) {
@@ -214,7 +222,6 @@ class HiveMqttNotificationServiceWorker(
                     actionBuilder.setShowsUserInterface(action.showsUserInterface!!)
                 }
 
-                // TODO : ทดสอบ
                 notificationBuilder.addAction(actionBuilder.build())
             }
         }
