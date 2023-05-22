@@ -10,6 +10,7 @@ import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_int
 const NOTIFICATION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/notification";
 const METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt";
 const WORKER_METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt/worker";
+const ACTION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/actions";
 
 /// Arguments
 const NOTIFICATION_PAYLOAD = "payload";

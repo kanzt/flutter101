@@ -9,8 +9,10 @@ import androidx.core.app.NotificationManagerCompat
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.dart.DartExecutor.DartCallback
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
+import io.flutter.view.FlutterCallbackInformation
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
@@ -20,6 +22,7 @@ import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
 class ActionBroadcastReceiver : BroadcastReceiver() {
     private var engine: FlutterEngine? = null
     private var eventSink: EventSink? = null
+    private val cache: MutableList<Map<String, Any?>> = mutableListOf()
 
     companion object {
         private val TAG = ActionBroadcastReceiver::class.java.simpleName
@@ -44,13 +47,15 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
                     this.activeNotifications.find {
                         it.id == NotificationHelper.GROUP_PUSH_NOTIFICATION_ID
                     }?.also {
-                      this.cancelAll()
+                        this.cancelAll()
                     }
                 }
             }
         }
 
-       // startEngine(context)
+        addItem(action)
+
+        startEngine(context)
     }
 
     private fun startEngine(context: Context?) {
@@ -67,7 +72,7 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
 
         engine = FlutterEngine(context)
 
-        val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context)
+        val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context!!)
         if (dispatcherHandle == -1L) {
             Log.w(TAG, "Callback information could not be retrieved")
             return
@@ -75,6 +80,12 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
 
         val dartExecutor: DartExecutor = engine!!.dartExecutor
         initializeEventChannel(dartExecutor)
+
+        val dartBundlePath = loader.findAppBundlePath()
+        val flutterCallbackInfo = FlutterCallbackInformation.lookupCallbackInformation(dispatcherHandle)
+        dartExecutor.executeDartCallback(
+            DartCallback(context.assets, dartBundlePath, flutterCallbackInfo)
+        )
     }
 
     private fun initializeEventChannel(dartExecutor: DartExecutor) {
@@ -84,6 +95,12 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
 
         channel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                for (item in cache) {
+                    Log.d(TAG, "Submit to Dart")
+                    events!!.success(item)
+                }
+
+                cache.clear()
                 eventSink = events
             }
 
@@ -92,5 +109,14 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
             }
 
         })
+    }
+
+    private fun addItem(item: Map<String, Any?>) {
+        if (eventSink != null) {
+            Log.d(TAG, "Submit to Dart")
+            eventSink!!.success(item)
+        } else {
+            cache.add(item)
+        }
     }
 }

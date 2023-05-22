@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class DefaultAppBar extends StatelessWidget with PreferredSizeWidget {
+class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   DefaultAppBar({Key? key, this.onBack, this.isHideBackButton = false, this.onLogout})
       : super(key: key);
 
