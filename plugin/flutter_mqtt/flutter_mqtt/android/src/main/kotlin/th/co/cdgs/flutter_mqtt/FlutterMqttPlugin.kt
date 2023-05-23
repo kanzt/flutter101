@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -20,6 +21,9 @@ import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 import th.co.cdgs.flutter_mqtt.service.DetectTaskRemoveService
 import th.co.cdgs.flutter_mqtt.util.*
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
 import th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker
@@ -140,9 +144,39 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
      */
     private fun sendNotificationPayloadMessage(intent: Intent): Boolean {
         Log.d(TAG, "sendNotificationPayloadMessage is working...")
-        if (SELECT_NOTIFICATION == intent.action) {
+        if (SELECT_NOTIFICATION == intent.action || SELECT_FOREGROUND_NOTIFICATION_ACTION == intent.action) {
             val notificationResponse: Map<String, Any?> = extractNotificationResponseMap(intent)
-            channel?.invokeMethod("onMessageOpenedApp", notificationResponse)
+            if (SELECT_FOREGROUND_NOTIFICATION_ACTION == intent.action) {
+                if (intent.getBooleanExtra(
+                        CANCEL_NOTIFICATION,
+                        false
+                    )
+                ) {
+                    NotificationManagerCompat.from(context)
+                        .cancel(
+                            notificationResponse[NOTIFICATION_ID] as Int
+                        )
+                }
+            }
+
+            // TODO : แก้ไข onMessageOpenedApp ไม่ทำงานบางครั้ง
+            channel?.invokeMethod("onMessageOpenedApp", notificationResponse, object : MethodChannel.Result {
+                override fun notImplemented() {
+                    Log.d(TAG, "onMessageOpenedApp result : notImplemented")
+                }
+
+                override fun error(
+                    errorCode: String,
+                    errorMessage: String?,
+                    errorDetails: Any?
+                ) {
+                    Log.d(TAG, "onMessageOpenedApp result : error")
+                }
+
+                override fun success(receivedResult: Any?) {
+                    Log.d(TAG, "onMessageOpenedApp result : success")
+                }
+            })
             return true
         }
         return false

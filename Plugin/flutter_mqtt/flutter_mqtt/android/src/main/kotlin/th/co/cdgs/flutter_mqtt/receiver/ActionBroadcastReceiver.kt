@@ -12,12 +12,14 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.dart.DartExecutor.DartCallback
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
+import th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker
 
 class ActionBroadcastReceiver : BroadcastReceiver() {
     private var engine: FlutterEngine? = null
@@ -72,14 +74,14 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
 
         engine = FlutterEngine(context)
 
-        val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context!!)
+        val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context)
         if (dispatcherHandle == -1L) {
             Log.w(TAG, "Callback information could not be retrieved")
             return
         }
 
         val dartExecutor: DartExecutor = engine!!.dartExecutor
-        initializeEventChannel(dartExecutor)
+        initializeEventChannel(context, dartExecutor)
 
         val dartBundlePath = loader.findAppBundlePath()
         val flutterCallbackInfo = FlutterCallbackInformation.lookupCallbackInformation(dispatcherHandle)
@@ -88,12 +90,12 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun initializeEventChannel(dartExecutor: DartExecutor) {
-        val channel = EventChannel(
+    private fun initializeEventChannel(context:Context, dartExecutor: DartExecutor) {
+        val eventChannel = EventChannel(
             dartExecutor.binaryMessenger, "th.co.cdgs/flutter_mqtt/actions"
         )
 
-        channel.setStreamHandler(object : EventChannel.StreamHandler {
+        eventChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                 for (item in cache) {
                     Log.d(TAG, "Submit to Dart")
@@ -109,6 +111,30 @@ class ActionBroadcastReceiver : BroadcastReceiver() {
             }
 
         })
+
+        val methodChannel = MethodChannel(
+            dartExecutor,
+            "th.co.cdgs/flutter_mqtt/worker"
+        )
+
+        methodChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getCallbackHandle" -> {
+                    val handle: Long =
+                        SharedPreferenceHelper.getCallbackHandle(context)
+
+                    if (handle != -1L) {
+                        result.success(handle)
+                    } else {
+                        result.error(
+                            "callback_handle_not_found",
+                            "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+                            null
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun addItem(item: Map<String, Any?>) {

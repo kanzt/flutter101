@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mqtt/flutter_mqtt.dart';
@@ -15,19 +16,22 @@ void callbackDispatcher() async {
 
   const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
 
+  final handle = await workerChannel.invokeMethod<int>('getCallbackHandle');
+  final DidReceiveBackgroundNotificationResponseCallback? callback =
+  handle == null
+      ? null
+      : PluginUtilities.getCallbackFromHandle(
+      CallbackHandle.fromRawHandle(handle))
+  as DidReceiveBackgroundNotificationResponseCallback?;
+
   try {
-    final handle = await workerChannel.invokeMethod<int>('getCallbackHandle');
-    final DidReceiveBackgroundNotificationResponseCallback? callback =
-    handle == null
-        ? null
-        : PluginUtilities.getCallbackFromHandle(
-        CallbackHandle.fromRawHandle(handle))
-    as DidReceiveBackgroundNotificationResponseCallback?;
+
+    /// Handle receive notification in terminated state
     workerChannel.setMethodCallHandler((call) async {
       print("workerChannel.setMethodCallHandler is working...");
       switch (call.method) {
         case 'didReceiveNotificationResponse':
-        // TODO : แก้ไข Notification Response
+          // TODO : แก้ไข Notification Response
           callback?.call(
             NotificationResponse(
               id: null,
@@ -35,7 +39,7 @@ void callbackDispatcher() async {
               input: null,
               payload: call.arguments['payload'],
               notificationResponseType:
-              NotificationResponseType.selectedNotificationAction,
+                  NotificationResponseType.selectedNotificationAction,
             ),
           );
           break;
@@ -44,28 +48,30 @@ void callbackDispatcher() async {
       }
     });
     workerChannel.invokeMethod("backgroundChannelInitialized");
-  }catch(e){
 
+  } on MissingPluginException catch (e) {
+    if (kDebugMode) {
+      print(e.message);
+    }
   }
 
+  /// Handle notification actions
   actionEvent
       .receiveBroadcastStream()
       .map<Map<dynamic, dynamic>>((dynamic event) => event)
       .map<Map<String, dynamic>>(
           (Map<dynamic, dynamic> event) => Map.castFrom(event))
       .listen((Map<String, dynamic> event) {
-    print("actionEvent is working");
 
-    // callback?.call(
-    //   // TODO : แก้ไข Notification Response
-    //   NotificationResponse(
-    //     id: null,
-    //     actionId: null,
-    //     input: null,
-    //     payload: call.arguments['payload'],
-    //     notificationResponseType:
-    //         NotificationResponseType.selectedNotificationAction,
-    //   ),
-    // );
+    // TODO : แก้ไข Notification Response
+    callback?.call(
+      NotificationResponse(
+        id: event['notificationId'],
+        actionId: event['actionId'],
+        payload: event['payload'],
+        notificationResponseType:
+        NotificationResponseType.selectedNotificationAction,
+      ),
+    );
   });
 }

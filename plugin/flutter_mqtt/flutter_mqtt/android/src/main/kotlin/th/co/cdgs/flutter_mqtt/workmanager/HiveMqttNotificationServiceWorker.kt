@@ -131,7 +131,7 @@ class HiveMqttNotificationServiceWorker(
                     setCategory(Notification.CATEGORY_MESSAGE)
                 }
 
-                addAndroidNotificationAction(pushNotificationBuilder, notificationId)
+                addAndroidNotificationAction(pushNotificationBuilder, notificationId, jsonMessage)
 
                 val groupPushNotificationBuilder = NotificationCompat.Builder(
                     context, channelId
@@ -156,7 +156,8 @@ class HiveMqttNotificationServiceWorker(
 
     private fun addAndroidNotificationAction(
         notificationBuilder: NotificationCompat.Builder,
-        notificationId: Int
+        notificationId: Int,
+        notificationPayload: String,
     ) {
         if (androidNotificationAction != null) {
             // Space out request codes by 16 so even with 16 actions they won't clash
@@ -168,12 +169,11 @@ class HiveMqttNotificationServiceWorker(
                         getIconFromSource(context, action.icon as Any, action.iconSource!!);
                 }
                 var actionIntent: Intent? = null
+                // TODO : ทดสอบ showsUserInterface = true
                 if (action.showsUserInterface != null && action.showsUserInterface!!) {
-                    // TODO : ตรวจสอบว่าเขียนจัดการอะไร
                     actionIntent = getLaunchIntent(context)?.also {
                         it.action = SELECT_FOREGROUND_NOTIFICATION_ACTION
                     }
-
                 } else {
                     actionIntent = Intent(context, ActionBroadcastReceiver::class.java)
                     actionIntent.action = ActionBroadcastReceiver.ACTION_TAPPED
@@ -183,8 +183,7 @@ class HiveMqttNotificationServiceWorker(
                     putExtra(NOTIFICATION_ID, notificationId)
                     putExtra(ACTION_ID, action.id)
                     putExtra(CANCEL_NOTIFICATION, action.cancelNotification)
-                    // TODO : ใส่ Payload
-                    putExtra(NOTIFICATION_PAYLOAD, "")
+                    putExtra(NOTIFICATION_PAYLOAD, notificationPayload)
                 }
 
                 val actionFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -393,6 +392,7 @@ class HiveMqttNotificationServiceWorker(
                                         )
                                     }
                                 }
+
                                 "backgroundChannelInitialized" -> {
                                     Log.d(TAG, "backgroundChannelInitialized is working...")
                                     pendingBackgroundNotification.forEach { notification ->
