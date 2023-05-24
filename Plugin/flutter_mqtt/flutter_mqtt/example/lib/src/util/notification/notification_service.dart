@@ -38,7 +38,7 @@ class NotificationService extends GetxService {
     _plugin.initialize(
       FlavorConfig.instance.values.initializationSettings,
       onDidReceiveNotificationResponse: _onReceivedNotification,
-      onOpenedNotification: _onOpenedNotification,
+      onOpenNotification: _onOpenedNotification,
       onDidReceiveBackgroundNotificationResponse:
           onReceivedBackgroundNotification,
     );
