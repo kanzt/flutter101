@@ -29,7 +29,8 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationRespon
 import th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker
 
 /** FlutterMqttPlugin */
-class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener{
+class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
+    MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -60,12 +61,15 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
             is FlutterMqttCall.Initialize -> {
                 initialize(extractedCall, result)
             }
+
             is FlutterMqttCall.GetNotificationAppLaunchDetails -> {
                 getNotificationAppLaunchDetails(result)
             }
+
             is FlutterMqttCall.CancelAll -> {
                 cancelAll(result)
             }
+
             else -> result.notImplemented()
         }
 
@@ -160,23 +164,26 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
             }
 
             // TODO : แก้ไข onMessageOpenedApp ไม่ทำงานบางครั้ง
-            channel?.invokeMethod("onMessageOpenedApp", notificationResponse, object : MethodChannel.Result {
-                override fun notImplemented() {
-                    Log.d(TAG, "onMessageOpenedApp result : notImplemented")
-                }
+            channel?.invokeMethod(
+                "onMessageOpenedApp",
+                notificationResponse,
+                object : MethodChannel.Result {
+                    override fun notImplemented() {
+                        Log.d(TAG, "onMessageOpenedApp result : notImplemented")
+                    }
 
-                override fun error(
-                    errorCode: String,
-                    errorMessage: String?,
-                    errorDetails: Any?
-                ) {
-                    Log.d(TAG, "onMessageOpenedApp result : error")
-                }
+                    override fun error(
+                        errorCode: String,
+                        errorMessage: String?,
+                        errorDetails: Any?
+                    ) {
+                        Log.d(TAG, "onMessageOpenedApp result : error")
+                    }
 
-                override fun success(receivedResult: Any?) {
-                    Log.d(TAG, "onMessageOpenedApp result : success")
-                }
-            })
+                    override fun success(receivedResult: Any?) {
+                        Log.d(TAG, "onMessageOpenedApp result : success")
+                    }
+                })
             return true
         }
         return false
@@ -185,7 +192,10 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
     /**
      * Initilize MQTT notification
      */
-    private fun initialize(convertedCall: FlutterMqttCall.Initialize, result: MethodChannel.Result) {
+    private fun initialize(
+        convertedCall: FlutterMqttCall.Initialize,
+        result: MethodChannel.Result
+    ) {
         Log.d(TAG, convertedCall.platformNotificationSettings.actions.toString())
 
         // Validation
@@ -247,7 +257,10 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
     private fun savePlatformNotificationSetting(platformNotificationSettings: PlatformNotificationSetting) {
         SharedPreferenceHelper.setChannelId(context, platformNotificationSettings.channelId!!)
         SharedPreferenceHelper.setChannelName(context, platformNotificationSettings.channelName!!)
-        SharedPreferenceHelper.setAndroidNotificationAction(context, platformNotificationSettings.actions)
+        SharedPreferenceHelper.setAndroidNotificationAction(
+            context,
+            platformNotificationSettings.actions
+        )
     }
 
     /**
@@ -271,7 +284,10 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
         SharedPreferenceHelper.setPassword(context, MQTTConnectionSetting.password!!)
         SharedPreferenceHelper.setTopic(context, MQTTConnectionSetting.topic!!)
         SharedPreferenceHelper.setClientId(context, MQTTConnectionSetting.clientId!!)
-        SharedPreferenceHelper.setIsRequiredSSL(context, MQTTConnectionSetting.isRequiredSSL == true)
+        SharedPreferenceHelper.setIsRequiredSSL(
+            context,
+            MQTTConnectionSetting.isRequiredSSL == true
+        )
     }
 
     /**
@@ -294,7 +310,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
     /**
      * To disconnect from MQTT notification server
      */
-    private fun cancelAll(result: MethodChannel.Result){
+    private fun cancelAll(result: MethodChannel.Result) {
         HiveMqttNotificationServiceWorker.disconnect {
             SharedPreferenceHelper.clearPrefs(context)
             WorkManagerRequestHelper.cancelNotificationWorker(context)
@@ -325,7 +341,8 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener, Metho
             }
         }
 
-        notificationAppLaunchDetails[NotificationHelper.NOTIFICATION_LAUNCHED_APP] = notificationLaunchedApp
+        notificationAppLaunchDetails[NotificationHelper.NOTIFICATION_LAUNCHED_APP] =
+            notificationLaunchedApp
         result.success(notificationAppLaunchDetails)
     }
 
