@@ -36,6 +36,7 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
+import th.co.cdgs.flutter_mqtt.FlutterMqttBackgroundHandler
 import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
 import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
@@ -376,72 +377,48 @@ class HiveMqttNotificationServiceWorker(
                             "th.co.cdgs/flutter_mqtt/worker"
                         )
 
-                        workerMethodChannel?.setMethodCallHandler { call, result ->
-                            when (call.method) {
-                                "getReceiveBackgroundNotificationCallbackHandle" -> {
-                                    val handle: Long =
-                                        SharedPreferenceHelper.getReceiveBackgroundNotificationCallbackHandle(
-                                            context
-                                        )
+                        val flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(context){
+                            Log.d(TAG, "backgroundChannelInitialized is working...")
+                            pendingBackgroundNotification.forEach { notification ->
+                                workerMethodChannel?.invokeMethod(
+                                    "didReceiveNotificationResponse",
+                                    buildNotificationArguments(
+                                        notification.notificationId,
+                                        notification.payload
+                                    ),
+                                    object : MethodChannel.Result {
+                                        override fun notImplemented() {
+                                            Log.d(
+                                                TAG,
+                                                "didReceiveNotificationResponse (Background) result : notImplemented"
+                                            )
+                                        }
 
-                                    if (handle != -1L) {
-                                        result.success(handle)
-                                    } else {
-                                        result.error(
-                                            "receive_background_notification_callback_handle_not_found",
-                                            "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
-                                            null
-                                        )
-                                    }
-                                }
+                                        override fun error(
+                                            errorCode: String,
+                                            errorMessage: String?,
+                                            errorDetails: Any?
+                                        ) {
+                                            Log.d(
+                                                TAG,
+                                                "didReceiveNotificationResponse (Background) result : error"
+                                            )
+                                        }
 
-                                "getTapActionBackgroundNotificationCallbackHandle" -> {
-                                    result.success(null)
-                                }
-
-                                "backgroundChannelInitialized" -> {
-                                    Log.d(TAG, "backgroundChannelInitialized is working...")
-                                    pendingBackgroundNotification.forEach { notification ->
-                                        workerMethodChannel?.invokeMethod(
-                                            "didReceiveNotificationResponse",
-                                            buildNotificationArguments(
-                                                notification.notificationId,
-                                                notification.payload
-                                            ),
-                                            object : MethodChannel.Result {
-                                                override fun notImplemented() {
-                                                    Log.d(
-                                                        TAG,
-                                                        "didReceiveNotificationResponse (Background) result : notImplemented"
-                                                    )
-                                                }
-
-                                                override fun error(
-                                                    errorCode: String,
-                                                    errorMessage: String?,
-                                                    errorDetails: Any?
-                                                ) {
-                                                    Log.d(
-                                                        TAG,
-                                                        "didReceiveNotificationResponse (Background) result : error"
-                                                    )
-                                                }
-
-                                                override fun success(receivedResult: Any?) {
-                                                    Log.d(
-                                                        TAG,
-                                                        "didReceiveNotificationResponse (Background) result : success"
-                                                    )
-                                                    notification.mqtt3Publish?.acknowledge()
-                                                    pendingBackgroundNotification.remove(
-                                                        notification
-                                                    )
-                                                }
-                                            })
-                                    }
-                                }
+                                        override fun success(receivedResult: Any?) {
+                                            Log.d(
+                                                TAG,
+                                                "didReceiveNotificationResponse (Background) result : success"
+                                            )
+                                            notification.mqtt3Publish?.acknowledge()
+                                            pendingBackgroundNotification.remove(
+                                                notification
+                                            )
+                                        }
+                                    })
                             }
                         }
+                        workerMethodChannel?.setMethodCallHandler(flutterMqttBackgroundHandler)
 
                         it.dartExecutor.executeDartCallback(
                             DartExecutor.DartCallback(

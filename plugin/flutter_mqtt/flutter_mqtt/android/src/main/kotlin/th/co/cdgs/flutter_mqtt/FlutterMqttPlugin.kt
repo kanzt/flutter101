@@ -491,55 +491,34 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
     ) {
         val methodChannel =
             MethodChannel(dartExecutor.binaryMessenger, "th.co.cdgs/flutter_mqtt/worker")
-        methodChannel.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "getReceiveBackgroundNotificationCallbackHandle" -> {
-                    result.success(null)
-                }
-                "getTapActionBackgroundNotificationCallbackHandle" -> {
-                    val handle: Long =
-                        SharedPreferenceHelper.getTapActionBackgroundNotificationCallbackHandle(
-                            context
-                        )
 
-                    if (handle != -1L) {
-                        result.success(handle)
-                    } else {
-                        result.error(
-                            "tap_action_background_notification_callback_handle_not_found",
-                            "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
-                            null
-                        )
-                    }
-                }
+        val flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(context){
+            Log.d(TAG, "backgroundChannelInitialized is working...")
+            actionCache.forEach {
+                methodChannel.invokeMethod(
+                    "onTapNotification",
+                    notificationResponse,
+                    object : MethodChannel.Result {
+                        override fun success(result: Any?) {
+                            Log.d(TAG, "onTapNotification : success")
+                            actionCache.remove(it)
+                        }
 
-                "backgroundChannelInitialized" -> {
-                    Log.d(TAG, "backgroundChannelInitialized is working...")
-                    actionCache.forEach {
-                        methodChannel.invokeMethod(
-                            "onTapNotification",
-                            notificationResponse,
-                            object : MethodChannel.Result {
-                                override fun success(result: Any?) {
-                                    Log.d(TAG, "onTapNotification : success")
-                                    actionCache.remove(it)
-                                }
+                        override fun error(
+                            errorCode: String,
+                            errorMessage: String?,
+                            errorDetails: Any?
+                        ) {
+                            Log.d(TAG, "onTapNotification : error")
+                        }
 
-                                override fun error(
-                                    errorCode: String,
-                                    errorMessage: String?,
-                                    errorDetails: Any?
-                                ) {
-                                    Log.d(TAG, "onTapNotification : error")
-                                }
-
-                                override fun notImplemented() {
-                                    Log.d(TAG, "onTapNotification : notImplemented")
-                                }
-                            })
-                    }
-                }
+                        override fun notImplemented() {
+                            Log.d(TAG, "onTapNotification : notImplemented")
+                        }
+                    })
             }
         }
+
+        methodChannel.setMethodCallHandler(flutterMqttBackgroundHandler)
     }
 }

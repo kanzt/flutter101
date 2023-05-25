@@ -68,7 +68,11 @@ sealed class FlutterMqttCall {
         }
     }
 
-    object GetCallbackHandle : FlutterMqttCall()
+    object GetReceiveBackgroundNotificationCallbackHandle : FlutterMqttCall()
+
+    object GetTapActionBackgroundNotificationCallbackHandle : FlutterMqttCall()
+
+    object BackgroundChannelInitialized : FlutterMqttCall()
 
     object GetNotificationAppLaunchDetails : FlutterMqttCall()
 
@@ -81,7 +85,9 @@ object Extractor {
     private enum class PossibleFlutterMqttCall(val rawMethodName: String?) {
         INITIALIZE("initialize"),
         CANCEL_ALL("cancelAll"),
-        GET_CALLBACK_HANDLE("getReceiveBackgroundNotificationCallbackHandle"),
+        GET_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE("getReceiveBackgroundNotificationCallbackHandle"),
+        GET_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE("getTapActionBackgroundNotificationCallbackHandle"),
+        BACKGROUND_CHANNEL_INITIALIZED("backgroundChannelInitialized"),
         GET_NOTIFICATION_APP_LAUNCH_DETAILS("getNotificationAppLaunchDetails"),
 
         UNKNOWN(null);
@@ -131,7 +137,9 @@ object Extractor {
                     tapActionBackgroundNotificationCallbackHandle = tapActionBackgroundNotificationCallbackHandle,
                 )
             }
-            PossibleFlutterMqttCall.GET_CALLBACK_HANDLE -> FlutterMqttCall.GetCallbackHandle
+            PossibleFlutterMqttCall.GET_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE -> FlutterMqttCall.GetReceiveBackgroundNotificationCallbackHandle
+            PossibleFlutterMqttCall.GET_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE -> FlutterMqttCall.GetTapActionBackgroundNotificationCallbackHandle
+            PossibleFlutterMqttCall.BACKGROUND_CHANNEL_INITIALIZED -> FlutterMqttCall.BackgroundChannelInitialized
             PossibleFlutterMqttCall.GET_NOTIFICATION_APP_LAUNCH_DETAILS -> FlutterMqttCall.GetNotificationAppLaunchDetails
             PossibleFlutterMqttCall.CANCEL_ALL -> FlutterMqttCall.CancelAll
             PossibleFlutterMqttCall.UNKNOWN -> FlutterMqttCall.Unknown
