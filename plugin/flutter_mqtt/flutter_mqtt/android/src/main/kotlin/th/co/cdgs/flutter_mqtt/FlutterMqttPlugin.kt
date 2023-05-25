@@ -2,6 +2,8 @@ package th.co.cdgs.flutter_mqtt
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -20,27 +22,37 @@ import io.flutter.plugin.common.PluginRegistry.NewIntentListener
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 import th.co.cdgs.flutter_mqtt.service.DetectTaskRemoveService
-import th.co.cdgs.flutter_mqtt.util.*
+import th.co.cdgs.flutter_mqtt.util.Extractor
+import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall
+import th.co.cdgs.flutter_mqtt.util.NotificationHelper
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
+import th.co.cdgs.flutter_mqtt.util.ResourceHelper
+import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
+import th.co.cdgs.flutter_mqtt.util.Validation
+import th.co.cdgs.flutter_mqtt.util.WorkManagerRequestHelper
 import th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker
 
 /** FlutterMqttPlugin */
 class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
-    MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
+    MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener,
+    BroadcastReceiver() {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private var mainActivity: Activity? = null
     private lateinit var context: Context
+    private val cache: MutableList<Map<String, Any?>> = mutableListOf()
 
     companion object {
         private val TAG = FlutterMqttPlugin::class.java.simpleName
         private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 36
+        const val ACTION_TAPPED =
+            "th.co.cdgs.flutter_mqtt.receiver.FlutterMqttPlugin.ACTION_TAPPED"
         var channel: MethodChannel? = null
     }
 
@@ -163,13 +175,12 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
                 }
             }
 
-            // TODO : แก้ไข onMessageOpenedApp ไม่ทำงานบางครั้ง
             channel?.invokeMethod(
-                "onMessageOpenedApp",
+                "onTapNotification",
                 notificationResponse,
                 object : MethodChannel.Result {
                     override fun notImplemented() {
-                        Log.d(TAG, "onMessageOpenedApp result : notImplemented")
+                        Log.d(TAG, "onTapNotification result : notImplemented")
                     }
 
                     override fun error(
@@ -177,11 +188,11 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
                         errorMessage: String?,
                         errorDetails: Any?
                     ) {
-                        Log.d(TAG, "onMessageOpenedApp result : error")
+                        Log.d(TAG, "onTapNotification result : error")
                     }
 
                     override fun success(receivedResult: Any?) {
-                        Log.d(TAG, "onMessageOpenedApp result : success")
+                        Log.d(TAG, "onTapNotification result : success")
                     }
                 })
             return true
@@ -330,7 +341,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
             val launchIntent: Intent? = mainActivity?.intent
             notificationLaunchedApp =
                 (launchIntent != null &&
-                        (SELECT_NOTIFICATION == launchIntent.action) &&
+                        ((SELECT_NOTIFICATION == launchIntent.action) || SELECT_FOREGROUND_NOTIFICATION_ACTION == launchIntent.action) &&
                         !launchedActivityFromHistory(launchIntent))
 
             if (notificationLaunchedApp) {
@@ -353,5 +364,59 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
         return (intent != null
                 && intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY
                 == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+    }
+
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+
+        if (!ACTION_TAPPED.equals(intent!!.action, ignoreCase = true)) {
+            return
+        }
+
+        val action: Map<String, Any?> = extractNotificationResponseMap(intent)
+        if (intent.getBooleanExtra(CANCEL_NOTIFICATION, false)) {
+            NotificationManagerCompat.from(context!!).apply {
+                cancel(action[NOTIFICATION_ID] as Int)
+            }
+
+            with((context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)) {
+                if (this.activeNotifications.size == 1) {
+                    this.activeNotifications.find {
+                        it.id == NotificationHelper.GROUP_PUSH_NOTIFICATION_ID
+                    }?.also {
+                        this.cancelAll()
+                    }
+                }
+            }
+        }
+
+        onTapAction(intent)
+    }
+
+    private fun onTapAction(intent: Intent) {
+        if (intent.action == ACTION_TAPPED) {
+            val notificationResponse: Map<String, Any?> = extractNotificationResponseMap(intent)
+
+            channel?.invokeMethod(
+                "onTapNotification",
+                notificationResponse,
+                object : MethodChannel.Result {
+                    override fun success(result: Any?) {
+                        Log.d(TAG, "onTapNotification : success")
+                    }
+
+                    override fun error(
+                        errorCode: String,
+                        errorMessage: String?,
+                        errorDetails: Any?
+                    ) {
+                        Log.d(TAG, "onTapNotification : error")
+                    }
+
+                    override fun notImplemented() {
+                        Log.d(TAG, "onTapNotification : notImplemented")
+                    }
+                })
+        }
     }
 }

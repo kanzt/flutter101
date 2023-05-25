@@ -1,11 +1,9 @@
 package th.co.cdgs.flutter_mqtt.util
 
 import android.content.Context
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
-import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper.prefs
 
 object SharedPreferenceHelper {
 
@@ -161,7 +159,7 @@ object SharedPreferenceHelper {
         return ctx.prefs().getLong(KEY_DISPATCHER_HANDLE_KEY, -1)
     }
 
-    fun isTaskRemove(ctx: Context): Boolean {
+    fun isAppInTerminatedState(ctx: Context): Boolean {
         return ctx.prefs().getBoolean(KEY_IS_TASK_REMOVE, false)
     }
 

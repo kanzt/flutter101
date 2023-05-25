@@ -14,4 +14,4 @@ typedef DidReceiveBackgroundNotificationResponseCallback = void Function(
 
 
 /// Signature of callback triggered on main and background isolate when a user taps on a notification
-typedef OnOpenedNotificationCallback = void Function(NotificationResponse details);
+typedef OnTapNotificationCallback = void Function(NotificationResponse details);

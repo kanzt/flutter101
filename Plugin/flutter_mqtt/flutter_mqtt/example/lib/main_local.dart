@@ -37,6 +37,7 @@ void main() {
                   'id_3',
                   'Action 3',
                   cancelNotification: false,
+                  showsUserInterface: true,
                 ),
               ]),
         ),

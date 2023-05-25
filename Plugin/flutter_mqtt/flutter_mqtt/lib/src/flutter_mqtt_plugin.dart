@@ -65,15 +65,17 @@ class FlutterMqttPlugin {
 
   /// Initializes the plugin.
   /// The [onDidReceiveNotificationResponse] is fired when a notification is received in Foreground and Background state
-  /// The [onOpenNotification] is fired when user tap on notification in Foreground and Background state
-  /// The [onDidReceiveBackgroundNotificationResponse] is fired when a notification is received in Terminated state
+  /// The [onDidReceiveBackgroundNotificationResponse] is fired when a notification is received in Terminated state, You can't touch UI or navigation in this callback, callback need to be annotated with the `@pragma('vm:entry-point')`
+  /// The [onTapNotification] is fired when user tap on notification in Foreground and Background state
+  /// The [onTapBackgroundNotification] is fired when user tap on notification action in Terminated state and set AndroidNotificationAction.showsUserInterface = false, callback need to be annotated with the `@pragma('vm:entry-point')`
   /// Call this method on application before using the plugin further.
   Future<bool?> initialize(
     InitializationSettings initializationSettings, {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
-    OnOpenedNotificationCallback? onOpenNotification,
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
+    OnTapNotificationCallback? onTapNotification,
+    OnTapNotificationCallback? onTapBackgroundNotification,
   }) async {
     if (!_isSupportPlatform()) {
       throw Exception('This plugin is not support this platform');
@@ -89,9 +91,10 @@ class FlutterMqttPlugin {
           ?.initialize(
         initializationSettings.android!,
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-        onOpenNotification: onOpenNotification,
         onDidReceiveBackgroundNotificationResponse:
             onDidReceiveBackgroundNotificationResponse,
+        onTapNotification: onTapNotification,
+        onTapBackgroundNotification : onTapBackgroundNotification,
       );
     }
     // TODO : เปิดใช้งาน iOS
@@ -145,7 +148,8 @@ class FlutterMqttPlugin {
     await FlutterMqttPlatform.instance.cancelAll();
   }
 
-  bool _isSupportPlatform(){
-    return (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
+  bool _isSupportPlatform() {
+    return (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android);
   }
 }

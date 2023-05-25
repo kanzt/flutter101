@@ -11,9 +11,6 @@ void callbackDispatcher() async {
   print("callbackDispatcher is working...");
   WidgetsFlutterBinding.ensureInitialized();
 
-  /// EventChannel for action buttons on notification
-  const EventChannel actionEvent = EventChannel(ACTION_EVENT_CHANNEL);
-
   const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
 
   final handle = await workerChannel.invokeMethod<int>('getCallbackHandle');
@@ -47,6 +44,30 @@ void callbackDispatcher() async {
           return await Future<void>.error('Method not defined');
       }
     });
+
+    // TODO : 25/05/2023 ไม่ได้ใช้งานเตรียมลบออก
+    /// EventChannel for action buttons on notification
+    const EventChannel actionEvent = EventChannel(ACTION_EVENT_CHANNEL);
+    /// Handle notification actions
+    actionEvent
+        .receiveBroadcastStream()
+        .map<Map<dynamic, dynamic>>((dynamic event) => event)
+        .map<Map<String, dynamic>>(
+            (Map<dynamic, dynamic> event) => Map.castFrom(event))
+        .listen((Map<String, dynamic> event) {
+
+      // TODO : แก้ไข Notification Response
+      callback?.call(
+        NotificationResponse(
+          id: event['notificationId'],
+          actionId: event['actionId'],
+          payload: event['payload'],
+          notificationResponseType:
+          NotificationResponseType.selectedNotificationAction,
+        ),
+      );
+    });
+
     workerChannel.invokeMethod("backgroundChannelInitialized");
 
   } on MissingPluginException catch (e) {
@@ -54,24 +75,4 @@ void callbackDispatcher() async {
       print(e.message);
     }
   }
-
-  /// Handle notification actions
-  actionEvent
-      .receiveBroadcastStream()
-      .map<Map<dynamic, dynamic>>((dynamic event) => event)
-      .map<Map<String, dynamic>>(
-          (Map<dynamic, dynamic> event) => Map.castFrom(event))
-      .listen((Map<String, dynamic> event) {
-
-    // TODO : แก้ไข Notification Response
-    callback?.call(
-      NotificationResponse(
-        id: event['notificationId'],
-        actionId: event['actionId'],
-        payload: event['payload'],
-        notificationResponseType:
-        NotificationResponseType.selectedNotificationAction,
-      ),
-    );
-  });
 }

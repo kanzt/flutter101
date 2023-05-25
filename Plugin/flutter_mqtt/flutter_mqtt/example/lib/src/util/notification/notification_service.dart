@@ -13,9 +13,15 @@ import 'package:get/get.dart';
 void onReceivedBackgroundNotification(
     NotificationResponse notificationResponse) async {
   await SharedPreference.write(
-      SharedPreference.KEY_RECENT_NOTIFICATION, notificationResponse?.payload);
+      SharedPreference.KEY_RECENT_NOTIFICATION, notificationResponse.payload);
   FlutterAppBadger.updateBadgeCount(50);
   print("Accept message : ${notificationResponse.payload}");
+}
+
+@pragma('vm:entry-point')
+void onTapBackgroundNotification(
+    NotificationResponse notificationResponse) async {
+  print("Accept onTapBackgroundNotification : ${notificationResponse.payload}");
 }
 
 class NotificationService extends GetxService {
@@ -27,9 +33,9 @@ class NotificationService extends GetxService {
   Future<void> initialize() async {
     final NotificationAppLaunchDetails? notificationAppLaunchDetails =
         await _plugin.getNotificationAppLaunchDetails();
-
+    print("notificationAppLaunchDetails.didNotificationLaunchApp : ${notificationAppLaunchDetails?.didNotificationLaunchApp}");
     if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
-      _onOpenedNotification(notificationAppLaunchDetails?.notificationResponse);
+      _onTapNotification(notificationAppLaunchDetails?.notificationResponse);
     }
 
     recentNotification.value =
@@ -38,16 +44,18 @@ class NotificationService extends GetxService {
     _plugin.initialize(
       FlavorConfig.instance.values.initializationSettings,
       onDidReceiveNotificationResponse: _onReceivedNotification,
-      onOpenNotification: _onOpenedNotification,
       onDidReceiveBackgroundNotificationResponse:
           onReceivedBackgroundNotification,
+      onTapNotification: _onTapNotification,
+      onTapBackgroundNotification: onTapBackgroundNotification,
     );
-
   }
 
-  void _onOpenedNotification(NotificationResponse? details) async {
-    selectedNotification.value = details?.payload;
-    Get.toNamed(Routes.notificationDetailPage);
+  void _onTapNotification(NotificationResponse? details) async {
+    if (details?.actionId == null) {
+      selectedNotification.value = details?.payload;
+      Get.toNamed(Routes.notificationDetailPage);
+    }
   }
 
   void _onReceivedNotification(NotificationResponse? details) async {

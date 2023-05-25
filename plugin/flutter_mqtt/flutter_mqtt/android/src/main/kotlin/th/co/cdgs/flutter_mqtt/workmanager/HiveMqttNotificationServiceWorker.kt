@@ -40,7 +40,6 @@ import th.co.cdgs.flutter_mqtt.FlutterMqttPlugin
 import th.co.cdgs.flutter_mqtt.entity.AndroidNotificationAction
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PendingBackgroundNotification
-import th.co.cdgs.flutter_mqtt.receiver.ActionBroadcastReceiver
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.ACTION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.CANCEL_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.GROUP_KEY_MESSAGE
@@ -50,9 +49,9 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDefaultAppIcon
-import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDrawableResourceId
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getIconFromSource
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
+import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper.isAppInTerminatedState
 import th.co.cdgs.flutter_mqtt.util.isNullOrBlankOrEmpty
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -169,14 +168,15 @@ class HiveMqttNotificationServiceWorker(
                         getIconFromSource(context, action.icon as Any, action.iconSource!!);
                 }
                 var actionIntent: Intent? = null
-                // TODO : ทดสอบ showsUserInterface = true
+
+
                 if (action.showsUserInterface != null && action.showsUserInterface!!) {
                     actionIntent = getLaunchIntent(context)?.also {
                         it.action = SELECT_FOREGROUND_NOTIFICATION_ACTION
                     }
                 } else {
-                    actionIntent = Intent(context, ActionBroadcastReceiver::class.java)
-                    actionIntent.action = ActionBroadcastReceiver.ACTION_TAPPED
+                    actionIntent = Intent(context, FlutterMqttPlugin::class.java)
+                    actionIntent.action = FlutterMqttPlugin.ACTION_TAPPED
                 }
 
                 actionIntent?.apply {
@@ -245,7 +245,7 @@ class HiveMqttNotificationServiceWorker(
                 )
 
                 if (!isStartBackgroundChannel) {
-                    val channel = if (isAppInTerminatedState()) {
+                    val channel = if (isAppInTerminatedState(context)) {
                         Log.d(TAG, "Using workerMethodChannel")
                         workerMethodChannel
                     } else {
@@ -335,7 +335,7 @@ class HiveMqttNotificationServiceWorker(
         mqtt3Publish: Mqtt3Publish?
     ): Boolean {
         return withContext(Dispatchers.Main) {
-            if (isAppInTerminatedState() && workerMethodChannel == null) {
+            if (isAppInTerminatedState(context) && workerMethodChannel == null) {
                 pendingBackgroundNotification.add(
                     PendingBackgroundNotification(
                         notificationId = notificationId,
@@ -406,7 +406,7 @@ class HiveMqttNotificationServiceWorker(
                                                 override fun notImplemented() {
                                                     Log.d(
                                                         TAG,
-                                                        "didReceiveNotificationResponse result : notImplemented"
+                                                        "didReceiveNotificationResponse (Background) result : notImplemented"
                                                     )
                                                 }
 
@@ -417,14 +417,14 @@ class HiveMqttNotificationServiceWorker(
                                                 ) {
                                                     Log.d(
                                                         TAG,
-                                                        "didReceiveNotificationResponse result : error"
+                                                        "didReceiveNotificationResponse (Background) result : error"
                                                     )
                                                 }
 
                                                 override fun success(receivedResult: Any?) {
                                                     Log.d(
                                                         TAG,
-                                                        "didReceiveNotificationResponse result : success"
+                                                        "didReceiveNotificationResponse (Background) result : success"
                                                     )
                                                     notification.mqtt3Publish?.acknowledge()
                                                     pendingBackgroundNotification.remove(
@@ -503,10 +503,6 @@ class HiveMqttNotificationServiceWorker(
         val packageName = context.packageName
         val packageManager = context.packageManager
         return packageManager.getLaunchIntentForPackage(packageName)
-    }
-
-    private fun isAppInTerminatedState(): Boolean {
-        return SharedPreferenceHelper.isTaskRemove(context)
     }
 
     companion object {

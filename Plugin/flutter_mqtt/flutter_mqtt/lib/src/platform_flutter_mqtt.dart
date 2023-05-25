@@ -15,6 +15,7 @@ const ACTION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/actions";
 /// Arguments
 const NOTIFICATION_PAYLOAD = "payload";
 const NOTIFICATION_ID = "notificationId";
+const ACTION_ID = "actionId";
 const DISPATCHER_HANDLE = "dispatcher_handle";
 const CALLBACK_HANDLE = "callback_handle";
 
@@ -41,19 +42,18 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
             result['notificationLaunchedApp'],
             notificationResponse: notificationResponse == null
                 ? null
-            // TODO : ปรับเป็น Response ที่ต้องการ
-                :
-
-            NotificationResponse(
-              id: null,
-              actionId: null,
-              input: null,
-              payload: notificationResponse.containsKey('payload')
-                  ? notificationResponse['payload']
-                  : null,
-              notificationResponseType:
-              NotificationResponseType.selectedNotificationAction,
-            ),
+                // TODO : ปรับเป็น Response ที่ต้องการ
+                : NotificationResponse(
+                    id: notificationResponse[NOTIFICATION_ID],
+                    actionId: notificationResponse[ACTION_ID],
+                    input: null,
+                    payload:
+                        notificationResponse.containsKey(NOTIFICATION_PAYLOAD)
+                            ? notificationResponse[NOTIFICATION_PAYLOAD]
+                            : null,
+                    notificationResponseType:
+                        NotificationResponseType.selectedNotificationAction,
+                  ),
           )
         : null;
   }
@@ -62,7 +62,7 @@ class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
 /// Android implementation of the Flutter MQTT plugin.
 class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   DidReceiveNotificationResponseCallback? _onDidReceiveNotificationResponse;
-  OnOpenedNotificationCallback? _onOpenedNotification;
+  OnTapNotificationCallback? _onTapNotification;
 
   /// Initializes the plugin.
   ///
@@ -70,8 +70,9 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   /// plugin further.
   ///
   /// The [onDidReceiveNotificationResponse] callback is fired when a notification is received in Foreground and Background state
-  /// The [onOpenedNotification] is fired when user tap on notification in Foreground and Background state
   /// The [onDidReceiveBackgroundNotificationResponse] is fired when a notification is received in Terminated state, callback need to be annotated with the `@pragma('vm:entry-point')`
+  /// The [onTapNotification] is fired when user tap on notification in Foreground and Background state
+  /// The [onTapBackgroundNotification] is fired when user tap on notification action in Terminated state and set AndroidNotificationAction.showsUserInterface = false, callback need to be annotated with the `@pragma('vm:entry-point')`
   /// annotation to ensure they are not stripped out by the Dart compiler.
   ///
   /// To handle when a notification launched an
@@ -79,12 +80,13 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   Future<bool> initialize(
     AndroidInitializationSettings initializationSettings, {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
-    OnOpenedNotificationCallback? onOpenedNotification,
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
+    OnTapNotificationCallback? onTapNotification,
+    OnTapNotificationCallback? onTapBackgroundNotification,
   }) async {
     _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
-    _onOpenedNotification = onOpenedNotification;
+    _onTapNotification = onTapNotification;
 
     _channel.setMethodCallHandler(_handleMethod);
 
@@ -97,6 +99,16 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   }
 
   // TODO : ปรับ NotificationResponse ไปเป็นรูปแบบที่ต้องการใช้งาน
+  NotificationResponse _buildNotificationResponse(dynamic arguments) {
+    return NotificationResponse(
+      id: arguments[NOTIFICATION_ID],
+      actionId: arguments[ACTION_ID],
+      input: null,
+      payload: arguments[NOTIFICATION_PAYLOAD],
+      notificationResponseType: NotificationResponseType.selectedNotification,
+    );
+  }
+
   Future<void> _handleMethod(MethodCall call) async {
     if (kDebugMode) {
       print("_handleMethod is working");
@@ -104,28 +116,14 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 
     switch (call.method) {
       case 'didReceiveNotificationResponse':
-        _onDidReceiveNotificationResponse?.call(
-          NotificationResponse(
-            id: call.arguments[NOTIFICATION_ID],
-            actionId: null,
-            input: null,
-            payload: call.arguments[NOTIFICATION_PAYLOAD],
-            notificationResponseType:
-                NotificationResponseType.selectedNotification,
-          ),
-        );
+        _onDidReceiveNotificationResponse
+            ?.call(_buildNotificationResponse(call.arguments));
         break;
-      case 'onMessageOpenedApp':
-        _onOpenedNotification?.call(
-          NotificationResponse(
-            id: call.arguments[NOTIFICATION_ID],
-            actionId: null,
-            input: null,
-            payload: call.arguments[NOTIFICATION_PAYLOAD],
-            notificationResponseType:
-                NotificationResponseType.selectedNotification,
-          ),
-        );
+      case 'onTapNotification':
+        _onTapNotification?.call(_buildNotificationResponse(call.arguments));
+        break;
+      case 'onActionTap':
+        print("Dart: onActionTap is working");
         break;
       default:
         return await Future<void>.error('Method not defined');
@@ -136,7 +134,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 /// iOS implementation of the Flutter MQTT plugin.
 class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   DidReceiveNotificationResponseCallback? _ondidReceiveNotificationResponse;
-  OnOpenedNotificationCallback? _onOpenedNotification;
+  OnTapNotificationCallback? _onTapNotification;
 }
 
 /// Checks [didReceiveBackgroundNotificationResponseCallback], if not `null`,
