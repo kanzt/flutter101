@@ -12,7 +12,6 @@ void callbackDispatcher() async {
   if (kDebugMode) {
     print("callbackDispatcher is working...");
   }
-
   WidgetsFlutterBinding.ensureInitialized();
 
   const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
