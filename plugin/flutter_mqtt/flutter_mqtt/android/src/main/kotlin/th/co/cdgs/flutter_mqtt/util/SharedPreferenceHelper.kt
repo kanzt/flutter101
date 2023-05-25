@@ -19,6 +19,8 @@ object SharedPreferenceHelper {
         "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CALLBACK_DISPATCHER_HANDLE_KEY"
     private const val KEY_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY =
         "th.co.cdgs.flutter_mqtt_plugin.util.KEY_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY"
+    private const val KEY_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY =
+        "th.co.cdgs.flutter_mqtt_plugin.util.KEY_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY"
     private const val KEY_CHANNEL_NAME = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_NAME"
     private const val KEY_CHANNEL_ID = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_CHANNEL_ID"
     private const val KEY_IS_TASK_REMOVE = "th.co.cdgs.flutter_mqtt_plugin.util.KEY_IS_TASK_REMOVE"
@@ -38,6 +40,13 @@ object SharedPreferenceHelper {
         ctx.prefs()
             .edit()
             .putLong(KEY_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY, callbackHandle)
+            .apply()
+    }
+
+    fun setTapActionBackgroundNotificationCallbackHandle(ctx: Context, callbackHandle: Long) {
+        ctx.prefs()
+            .edit()
+            .putLong(KEY_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY, callbackHandle)
             .apply()
     }
 
@@ -153,6 +162,10 @@ object SharedPreferenceHelper {
 
     fun getReceiveBackgroundNotificationCallbackHandle(ctx: Context): Long {
         return ctx.prefs().getLong(KEY_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY, -1)
+    }
+
+    fun getTapActionBackgroundNotificationCallbackHandle(ctx: Context): Long {
+        return ctx.prefs().getLong(KEY_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY, -1)
     }
 
     fun getDispatchHandle(ctx: Context): Long {

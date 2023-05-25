@@ -12,6 +12,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -19,6 +22,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.NewIntentListener
+import io.flutter.view.FlutterCallbackInformation
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 import th.co.cdgs.flutter_mqtt.service.DetectTaskRemoveService
@@ -46,7 +50,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
     /// when the Flutter Engine is detached from the Activity
     private var mainActivity: Activity? = null
     private lateinit var context: Context
-    private val cache: MutableList<Map<String, Any?>> = mutableListOf()
+    private val actionCache: MutableList<Map<String, Any?>> = mutableListOf()
 
     companion object {
         private val TAG = FlutterMqttPlugin::class.java.simpleName
@@ -231,7 +235,11 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
         // Save configuration
         savePlatformNotificationSetting(convertedCall.platformNotificationSettings)
         saveMQTTConnectionSetting(convertedCall.MQTTConnectionSetting)
-        saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.receiveBackgroundNotificationCallbackHandle)
+        saveCallbackKeys(
+            convertedCall.dispatcherHandle,
+            convertedCall.receiveBackgroundNotificationCallbackHandle,
+            convertedCall.tapActionBackgroundNotificationCallbackHandle
+        )
 
         // Create notification channel
         NotificationHelper.createNotificationChannel(
@@ -277,12 +285,19 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
     /**
      * Work together with [initialize] function
      */
-    private fun saveCallbackKeys(dispatcherHandle: Long?, callbackHandle: Long?) {
-        dispatcherHandle?.let {
-            SharedPreferenceHelper.setDispatcherHandle(context, it)
-        }
-        callbackHandle?.let {
-            SharedPreferenceHelper.setReceiveBackgroundNotificationCallbackHandle(context, it)
+    private fun saveCallbackKeys(
+        dispatcherHandle: Long?,
+        callbackHandle: Long?,
+        tapActionBackgroundNotificationCallbackHandle: Long?
+    ) {
+        dispatcherHandle?.let { dispatcher ->
+            SharedPreferenceHelper.setDispatcherHandle(context, dispatcher)
+            callbackHandle?.let {
+                SharedPreferenceHelper.setReceiveBackgroundNotificationCallbackHandle(context, it)
+            }
+            tapActionBackgroundNotificationCallbackHandle?.let {
+                SharedPreferenceHelper.setTapActionBackgroundNotificationCallbackHandle(context, it)
+            }
         }
     }
 
@@ -390,33 +405,141 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
             }
         }
 
-        onTapAction(intent)
+        onTapAction(context!!, intent)
     }
 
-    private fun onTapAction(intent: Intent) {
+    private fun onTapAction(context: Context, intent: Intent) {
         if (intent.action == ACTION_TAPPED) {
             val notificationResponse: Map<String, Any?> = extractNotificationResponseMap(intent)
 
-            channel?.invokeMethod(
-                "onTapNotification",
+            val isStartBackgroundChannel = startBackgroundChannelIfNecessary(
+                context,
                 notificationResponse,
-                object : MethodChannel.Result {
-                    override fun success(result: Any?) {
-                        Log.d(TAG, "onTapNotification : success")
-                    }
+            )
 
-                    override fun error(
-                        errorCode: String,
-                        errorMessage: String?,
-                        errorDetails: Any?
-                    ) {
-                        Log.d(TAG, "onTapNotification : error")
-                    }
+            if(!isStartBackgroundChannel){
+                channel?.invokeMethod(
+                    "onTapNotification",
+                    notificationResponse,
+                    object : MethodChannel.Result {
+                        override fun success(result: Any?) {
+                            Log.d(TAG, "onTapNotification : success")
+                        }
 
-                    override fun notImplemented() {
-                        Log.d(TAG, "onTapNotification : notImplemented")
+                        override fun error(
+                            errorCode: String,
+                            errorMessage: String?,
+                            errorDetails: Any?
+                        ) {
+                            Log.d(TAG, "onTapNotification : error")
+                        }
+
+                        override fun notImplemented() {
+                            Log.d(TAG, "onTapNotification : notImplemented")
+                        }
+                    })
+            }
+        }
+    }
+
+    private var engine: FlutterEngine? = null
+
+    private fun startBackgroundChannelIfNecessary(context: Context?, notificationResponse: Map<String, Any?>): Boolean {
+        if (SharedPreferenceHelper.isAppInTerminatedState(context!!)) {
+            actionCache.add(notificationResponse)
+
+            if (engine != null) {
+                Log.e(TAG, "Engine is already initialised")
+                return false
+            }
+
+            val injector = FlutterInjector.instance()
+            val loader = injector.flutterLoader()
+
+            loader.startInitialization(context)
+            loader.ensureInitializationComplete(context, null)
+
+            engine = FlutterEngine(context)
+
+            val dispatcherHandle = SharedPreferenceHelper.getDispatchHandle(context)
+            if (dispatcherHandle == -1L) {
+                Log.w(TAG, "Callback information could not be retrieved")
+                return false
+            }
+
+            val dartExecutor: DartExecutor = engine!!.dartExecutor
+            initializeMethodChannel(context, dartExecutor, notificationResponse)
+
+            val dartBundlePath = loader.findAppBundlePath()
+            val flutterCallbackInfo =
+                FlutterCallbackInformation.lookupCallbackInformation(dispatcherHandle)
+            dartExecutor.executeDartCallback(
+                DartExecutor.DartCallback(context.assets, dartBundlePath, flutterCallbackInfo)
+            )
+
+            return true
+        }
+
+        return false
+
+    }
+
+    private fun initializeMethodChannel(
+        context: Context,
+        dartExecutor: DartExecutor,
+        notificationResponse: Map<String, Any?>
+    ) {
+        val methodChannel =
+            MethodChannel(dartExecutor.binaryMessenger, "th.co.cdgs/flutter_mqtt/worker")
+        methodChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getReceiveBackgroundNotificationCallbackHandle" -> {
+                    result.success(null)
+                }
+                "getTapActionBackgroundNotificationCallbackHandle" -> {
+                    val handle: Long =
+                        SharedPreferenceHelper.getTapActionBackgroundNotificationCallbackHandle(
+                            context
+                        )
+
+                    if (handle != -1L) {
+                        result.success(handle)
+                    } else {
+                        result.error(
+                            "tap_action_background_notification_callback_handle_not_found",
+                            "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+                            null
+                        )
                     }
-                })
+                }
+
+                "backgroundChannelInitialized" -> {
+                    Log.d(TAG, "backgroundChannelInitialized is working...")
+                    actionCache.forEach {
+                        methodChannel.invokeMethod(
+                            "onTapNotification",
+                            notificationResponse,
+                            object : MethodChannel.Result {
+                                override fun success(result: Any?) {
+                                    Log.d(TAG, "onTapNotification : success")
+                                    actionCache.remove(it)
+                                }
+
+                                override fun error(
+                                    errorCode: String,
+                                    errorMessage: String?,
+                                    errorDetails: Any?
+                                ) {
+                                    Log.d(TAG, "onTapNotification : error")
+                                }
+
+                                override fun notImplemented() {
+                                    Log.d(TAG, "onTapNotification : notImplemented")
+                                }
+                            })
+                    }
+                }
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_M
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_NOTIFICATION_ICON_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_PASSWORD_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_PLATFORM_NOTIFICATION_SETTING_KEY
+import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_TOPIC_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_USERNAME_KEY
 
@@ -24,6 +25,7 @@ sealed class FlutterMqttCall {
         val platformNotificationSettings: PlatformNotificationSetting,
         val dispatcherHandle: Long?,
         val receiveBackgroundNotificationCallbackHandle: Long?,
+        val tapActionBackgroundNotificationCallbackHandle: Long?,
     ) : FlutterMqttCall() {
         companion object KEYS {
             const val INITIALIZE_MQTT_CONNECTION_SETTING_KEY = "mqttConnectionSetting"
@@ -61,6 +63,7 @@ sealed class FlutterMqttCall {
 
             const val INITIALIZE_DISPATCHER_HANDLE_KEY = "dispatcher_handle"
             const val INITIALIZE_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY = "receive_background_notification_callback_handle"
+            const val INITIALIZE_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY = "tap_action_background_notification_callback_handle"
 
         }
     }
@@ -116,12 +119,16 @@ object Extractor {
                 val receiveBackgroundNotificationCallbackHandle = arguments?.get(
                     INITIALIZE_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY
                 ) as Long?
+                val tapActionBackgroundNotificationCallbackHandle = arguments?.get(
+                    INITIALIZE_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY
+                ) as Long?
 
                 FlutterMqttCall.Initialize(
                     MQTTConnectionSetting = mqttConnectionSetting,
                     platformNotificationSettings = platformNotificationSetting,
                     dispatcherHandle = dispatcherHandle,
                     receiveBackgroundNotificationCallbackHandle = receiveBackgroundNotificationCallbackHandle,
+                    tapActionBackgroundNotificationCallbackHandle = tapActionBackgroundNotificationCallbackHandle,
                 )
             }
             PossibleFlutterMqttCall.GET_CALLBACK_HANDLE -> FlutterMqttCall.GetCallbackHandle

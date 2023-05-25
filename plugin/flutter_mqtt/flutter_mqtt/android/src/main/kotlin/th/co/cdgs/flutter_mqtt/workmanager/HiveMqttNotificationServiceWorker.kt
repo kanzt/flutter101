@@ -380,17 +380,23 @@ class HiveMqttNotificationServiceWorker(
                             when (call.method) {
                                 "getReceiveBackgroundNotificationCallbackHandle" -> {
                                     val handle: Long =
-                                        SharedPreferenceHelper.getReceiveBackgroundNotificationCallbackHandle(context)
+                                        SharedPreferenceHelper.getReceiveBackgroundNotificationCallbackHandle(
+                                            context
+                                        )
 
                                     if (handle != -1L) {
                                         result.success(handle)
                                     } else {
                                         result.error(
-                                            "callback_handle_not_found",
+                                            "receive_background_notification_callback_handle_not_found",
                                             "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
                                             null
                                         )
                                     }
+                                }
+
+                                "getTapActionBackgroundNotificationCallbackHandle" -> {
+                                    result.success(null)
                                 }
 
                                 "backgroundChannelInitialized" -> {

@@ -19,9 +19,9 @@ void onReceivedBackgroundNotification(
 }
 
 @pragma('vm:entry-point')
-void onTapBackgroundNotification(
+void onTapActionBackgroundNotification(
     NotificationResponse notificationResponse) async {
-  print("Accept onTapBackgroundNotification : ${notificationResponse.payload}");
+  print("Accept onTapActionBackgroundNotification : ${notificationResponse.payload}");
 }
 
 class NotificationService extends GetxService {
@@ -47,7 +47,7 @@ class NotificationService extends GetxService {
       onDidReceiveBackgroundNotificationResponse:
           onReceivedBackgroundNotification,
       onTapNotification: _onTapNotification,
-      onTapBackgroundNotification: onTapBackgroundNotification,
+      onTapActionBackgroundNotification: onTapActionBackgroundNotification,
     );
   }
 
