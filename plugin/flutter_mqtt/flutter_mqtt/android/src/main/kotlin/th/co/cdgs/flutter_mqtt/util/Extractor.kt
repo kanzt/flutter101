@@ -4,7 +4,7 @@ import io.flutter.plugin.common.MethodCall
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY
-import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CALLBACK_HANDLE_KEY
+import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CHANNEL_ID_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CHANNEL_NAME_KEY
 import th.co.cdgs.flutter_mqtt.util.FlutterMqttCall.Initialize.KEYS.INITIALIZE_CLIENT_ID_KEY
@@ -23,7 +23,7 @@ sealed class FlutterMqttCall {
         val MQTTConnectionSetting: MQTTConnectionSetting,
         val platformNotificationSettings: PlatformNotificationSetting,
         val dispatcherHandle: Long?,
-        val callbackHandle: Long?,
+        val receiveBackgroundNotificationCallbackHandle: Long?,
     ) : FlutterMqttCall() {
         companion object KEYS {
             const val INITIALIZE_MQTT_CONNECTION_SETTING_KEY = "mqttConnectionSetting"
@@ -60,7 +60,7 @@ sealed class FlutterMqttCall {
 
 
             const val INITIALIZE_DISPATCHER_HANDLE_KEY = "dispatcher_handle"
-            const val INITIALIZE_CALLBACK_HANDLE_KEY = "callback_handle"
+            const val INITIALIZE_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY = "receive_background_notification_callback_handle"
 
         }
     }
@@ -78,7 +78,7 @@ object Extractor {
     private enum class PossibleFlutterMqttCall(val rawMethodName: String?) {
         INITIALIZE("initialize"),
         CANCEL_ALL("cancelAll"),
-        GET_CALLBACK_HANDLE("getCallbackHandle"),
+        GET_CALLBACK_HANDLE("getReceiveBackgroundNotificationCallbackHandle"),
         GET_NOTIFICATION_APP_LAUNCH_DETAILS("getNotificationAppLaunchDetails"),
 
         UNKNOWN(null);
@@ -113,15 +113,15 @@ object Extractor {
                 val dispatcherHandle = arguments?.get(
                     INITIALIZE_DISPATCHER_HANDLE_KEY
                 ) as Long?
-                val callbackHandle = arguments?.get(
-                    INITIALIZE_CALLBACK_HANDLE_KEY
+                val receiveBackgroundNotificationCallbackHandle = arguments?.get(
+                    INITIALIZE_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE_KEY
                 ) as Long?
 
                 FlutterMqttCall.Initialize(
                     MQTTConnectionSetting = mqttConnectionSetting,
                     platformNotificationSettings = platformNotificationSetting,
                     dispatcherHandle = dispatcherHandle,
-                    callbackHandle = callbackHandle,
+                    receiveBackgroundNotificationCallbackHandle = receiveBackgroundNotificationCallbackHandle,
                 )
             }
             PossibleFlutterMqttCall.GET_CALLBACK_HANDLE -> FlutterMqttCall.GetCallbackHandle

@@ -13,7 +13,7 @@ void callbackDispatcher() async {
 
   const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
 
-  final handle = await workerChannel.invokeMethod<int>('getCallbackHandle');
+  final handle = await workerChannel.invokeMethod<int>('getReceiveBackgroundNotificationCallbackHandle');
   final DidReceiveBackgroundNotificationResponseCallback? callback =
   handle == null
       ? null

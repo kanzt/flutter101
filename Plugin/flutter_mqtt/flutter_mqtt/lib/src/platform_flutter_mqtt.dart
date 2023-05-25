@@ -17,7 +17,7 @@ const NOTIFICATION_PAYLOAD = "payload";
 const NOTIFICATION_ID = "notificationId";
 const ACTION_ID = "actionId";
 const DISPATCHER_HANDLE = "dispatcher_handle";
-const CALLBACK_HANDLE = "callback_handle";
+const RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE = "receive_background_notification_callback_handle";
 
 /// MethodChannel & EventChannel
 const MethodChannel _channel = MethodChannel(METHOD_CHANNEL);
@@ -160,6 +160,6 @@ void _evaluateBackgroundNotificationCallback(
         PluginUtilities.getCallbackHandle(callbackDispatcher);
 
     arguments[DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
-    arguments[CALLBACK_HANDLE] = callback!.toRawHandle();
+    arguments[RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE] = callback!.toRawHandle();
   }
 }

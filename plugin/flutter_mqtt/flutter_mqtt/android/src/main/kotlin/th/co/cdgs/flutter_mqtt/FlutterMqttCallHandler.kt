@@ -103,7 +103,7 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
         )
         savePlatformNotificationSetting(convertedCall.platformNotificationSettings)
         saveMQTTConnectionSetting(convertedCall.MQTTConnectionSetting)
-        saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.callbackHandle)
+        saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.receiveBackgroundNotificationCallbackHandle)
 
 
         // Request notification permission and then start worker
@@ -138,7 +138,7 @@ private class InitializeHandler : CallHandler<FlutterMqttCall.Initialize>, Activ
             SharedPreferenceHelper.setDispatcherHandle(ctx, it)
         }
         callbackHandle?.let {
-            SharedPreferenceHelper.setCallbackHandle(ctx, it)
+            SharedPreferenceHelper.setReceiveBackgroundNotificationCallbackHandle(ctx, it)
         }
     }
 
@@ -275,7 +275,7 @@ private object GetCallBackHandle : CallHandler<FlutterMqttCall.GetCallbackHandle
         convertedCall: FlutterMqttCall.GetCallbackHandle,
         result: MethodChannel.Result
     ) {
-        val handle: Long = SharedPreferenceHelper.getCallbackHandle(context)
+        val handle: Long = SharedPreferenceHelper.getReceiveBackgroundNotificationCallbackHandle(context)
 
         if (handle != -1L) {
             result.success(handle)

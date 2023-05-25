@@ -231,7 +231,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
         // Save configuration
         savePlatformNotificationSetting(convertedCall.platformNotificationSettings)
         saveMQTTConnectionSetting(convertedCall.MQTTConnectionSetting)
-        saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.callbackHandle)
+        saveCallbackKeys(convertedCall.dispatcherHandle, convertedCall.receiveBackgroundNotificationCallbackHandle)
 
         // Create notification channel
         NotificationHelper.createNotificationChannel(
@@ -282,7 +282,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
             SharedPreferenceHelper.setDispatcherHandle(context, it)
         }
         callbackHandle?.let {
-            SharedPreferenceHelper.setCallbackHandle(context, it)
+            SharedPreferenceHelper.setReceiveBackgroundNotificationCallbackHandle(context, it)
         }
     }
 

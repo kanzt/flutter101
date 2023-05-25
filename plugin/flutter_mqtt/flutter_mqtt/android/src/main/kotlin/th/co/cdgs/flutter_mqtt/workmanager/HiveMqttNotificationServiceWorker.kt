@@ -378,9 +378,9 @@ class HiveMqttNotificationServiceWorker(
 
                         workerMethodChannel?.setMethodCallHandler { call, result ->
                             when (call.method) {
-                                "getCallbackHandle" -> {
+                                "getReceiveBackgroundNotificationCallbackHandle" -> {
                                     val handle: Long =
-                                        SharedPreferenceHelper.getCallbackHandle(context)
+                                        SharedPreferenceHelper.getReceiveBackgroundNotificationCallbackHandle(context)
 
                                     if (handle != -1L) {
                                         result.success(handle)
