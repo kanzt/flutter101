@@ -44,4 +44,14 @@ class ConsumerPageController extends GetxController {
       Get.offAllNamed(Routes.loginPage);
     }
   }
+
+  Future<bool?> isAllowAutoStartEnabled() async{
+    final queueName = await SharedPreference.read(SharedPreference.KEY_QUEUE_NAME);
+    if(queueName?.isNotEmpty == true){
+      final isAllowAutoStartEnabled = await repository.isAllowAutoStartEnabled(queueName!);
+      return isAllowAutoStartEnabled?.result;
+    }
+
+    return true;
+  }
 }

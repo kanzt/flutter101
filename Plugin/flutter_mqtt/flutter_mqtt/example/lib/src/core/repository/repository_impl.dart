@@ -6,6 +6,7 @@ import 'package:flutter_mqtt_example/src/core/remote/service_api.dart';
 import 'package:flutter_mqtt_example/src/core/remote/service_manager.dart';
 import 'package:flutter_mqtt_example/src/core/repository/repository.dart';
 import 'package:flutter_mqtt_example/src/data/entity/bool_response.dart';
+import 'package:flutter_mqtt_example/src/data/entity/is_allow_autostart_enabled_request.dart';
 import 'package:flutter_mqtt_example/src/data/entity/login_request.dart';
 import 'package:flutter_mqtt_example/src/data/entity/login_response.dart';
 import 'package:flutter_mqtt_example/src/data/entity/logout_request.dart';
@@ -63,6 +64,22 @@ class RepositoryImpl extends Repository {
         data: ApiRequest(request: logoutRequest).toJson(),
       ),
       isPendingDialog: true,
+    );
+
+    if (response != null) {
+      return BoolResponse.fromJson(json.decode(response));
+    }
+
+    return null;
+  }
+
+  @override
+  Future<BoolResponse?> isAllowAutoStartEnabled(String queueName) async {
+    final dynamic response = await Get.find<ServiceManager>().request(
+      serviceApi.isAllowAutoStartEnabled.copyWith(
+        data: ApiRequest(request: IsAllowAutostartEnabledRequest(queueName: queueName)).toJson(),
+      ),
+      isPendingDialog: false,
     );
 
     if (response != null) {

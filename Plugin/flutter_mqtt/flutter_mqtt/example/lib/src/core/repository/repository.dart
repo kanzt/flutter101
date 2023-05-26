@@ -10,4 +10,5 @@ abstract class Repository extends GetxService{
   Future<ApiResponse<LoginResponse>?> login(String email, String password);
   Future<BoolResponse?> token(TokenRequest tokenRequest);
   Future<BoolResponse?> logout(LogoutRequest logoutRequest);
+  Future<BoolResponse?> isAllowAutoStartEnabled(String queueName);
 }
