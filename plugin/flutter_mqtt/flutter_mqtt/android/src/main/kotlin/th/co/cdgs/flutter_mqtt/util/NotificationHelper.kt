@@ -18,7 +18,6 @@ object NotificationHelper {
     const val NOTIFICATION_ID = "notificationId"
     const val ACTION_ID = "actionId"
     const val NOTIFICATION_PAYLOAD = "payload"
-    const val NOTIFICATION_RESPONSE_TYPE = "notificationResponseType"
     const val NOTIFICATION_LAUNCHED_APP = "notificationLaunchedApp"
 
     // Intent action
@@ -44,13 +43,11 @@ object NotificationHelper {
         }
     }
 
-    // TODO : ปรับ Arguments เป็นรูปแบบที่ต้องการ
     fun extractNotificationResponseMap(intent: Intent): Map<String, Any?> {
         val notificationResponseMap: MutableMap<String, Any?> = HashMap()
         notificationResponseMap[NOTIFICATION_ID] = intent.getIntExtra(NOTIFICATION_ID, 0)
         notificationResponseMap[ACTION_ID] = intent.getStringExtra(ACTION_ID)
         notificationResponseMap[NOTIFICATION_PAYLOAD] = intent.getStringExtra(NOTIFICATION_PAYLOAD)
-        notificationResponseMap[ACTION_ID] = intent.getStringExtra(ACTION_ID)
 
         return notificationResponseMap
     }

@@ -1,8 +1,6 @@
 package th.co.cdgs.flutter_mqtt.entity
 
-import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import kotlinx.parcelize.Parcelize
 
 data class PlatformNotificationSetting(
     @SerializedName("channelId")

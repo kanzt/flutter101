@@ -33,7 +33,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
         ),
       ),
-      actions: <Widget>[
+      actions: onLogout != null ? <Widget>[
         IconButton(
           icon: const Icon(
             Icons.logout,
@@ -45,7 +45,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
             }
           },
         )
-      ],
+      ] : [],
     );
   }
 

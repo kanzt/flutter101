@@ -49,6 +49,7 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_PAYLOAD
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
+import th.co.cdgs.flutter_mqtt.util.PossibleFlutterMqttFlutterCall
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getDefaultAppIcon
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper.getIconFromSource
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
@@ -257,7 +258,7 @@ class HiveMqttNotificationServiceWorker(
                     val arguments = buildNotificationArguments(notificationId, notificationPayload)
 
                     channel?.invokeMethod(
-                        "didReceiveNotificationResponse",
+                        PossibleFlutterMqttFlutterCall.DID_RECEIVE_NOTIFICATION_RESPONSE.rawMethodName,
                         arguments,
                         object : MethodChannel.Result {
                             override fun notImplemented() {
@@ -374,14 +375,14 @@ class HiveMqttNotificationServiceWorker(
                         val dartBundlePath = flutterLoader.findAppBundlePath()
                         workerMethodChannel = MethodChannel(
                             it.dartExecutor,
-                            "th.co.cdgs/flutter_mqtt/worker"
+                            "th.co.cdgs/flutter_mqtt/background"
                         )
 
                         val flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(context){
                             Log.d(TAG, "backgroundChannelInitialized is working...")
                             pendingBackgroundNotification.forEach { notification ->
                                 workerMethodChannel?.invokeMethod(
-                                    "didReceiveNotificationResponse",
+                                    PossibleFlutterMqttFlutterCall.DID_RECEIVE_NOTIFICATION_RESPONSE.rawMethodName,
                                     buildNotificationArguments(
                                         notification.notificationId,
                                         notification.payload

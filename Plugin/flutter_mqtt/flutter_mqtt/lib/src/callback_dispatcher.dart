@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mqtt/flutter_mqtt.dart';
-import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_interface.dart';
 
 // ignore_for_file: public_member_api_docs, avoid_annotating_with_dynamic
 @pragma('vm:entry-point')
@@ -14,10 +13,11 @@ void callbackDispatcher() async {
   }
   WidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel workerChannel = MethodChannel(WORKER_METHOD_CHANNEL);
+  const MethodChannel workerChannel = MethodChannel(BACKGROUND_METHOD_CHANNEL);
 
-  final handleReceiveBackgroundNotification = await workerChannel
-      .invokeMethod<int>('getReceiveBackgroundNotificationCallbackHandle');
+  final handleReceiveBackgroundNotification =
+      await workerChannel.invokeMethod<int>(
+          METHOD_GET_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE);
   final DidReceiveBackgroundNotificationResponseCallback?
       receiveBackgroundNotificationCallback =
       handleReceiveBackgroundNotification == null
@@ -26,8 +26,9 @@ void callbackDispatcher() async {
                   handleReceiveBackgroundNotification))
               as DidReceiveBackgroundNotificationResponseCallback?;
 
-  final handleTapActionBackgroundNotification = await workerChannel
-      .invokeMethod<int>('getTapActionBackgroundNotificationCallbackHandle');
+  final handleTapActionBackgroundNotification =
+      await workerChannel.invokeMethod<int>(
+          METHOD_GET_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE);
   final OnTapNotificationCallback? tapActionBackgroundNotificationCallback =
       handleTapActionBackgroundNotification == null
           ? null
@@ -36,17 +37,20 @@ void callbackDispatcher() async {
               as OnTapNotificationCallback?;
 
   try {
-    /// Handle receive notification in terminated state
     workerChannel.setMethodCallHandler((call) async {
-      print("workerChannel.setMethodCallHandler is working...");
+      if (kDebugMode) {
+        print("workerChannel.setMethodCallHandler is working...");
+      }
       switch (call.method) {
-        case 'didReceiveNotificationResponse':
+        /// Handle receive notification in terminated state
+        case METHOD_DID_RECEIVE_NOTIFICATION_RESPONSE:
           receiveBackgroundNotificationCallback?.call(
             buildNotificationResponse(call.arguments),
           );
           break;
-      /// Handle tap notification action in terminated state
-        case 'onTapNotification':
+
+        /// Handle tap notification action in terminated state
+        case METHOD_ON_TAP_NOTIFICATION:
           tapActionBackgroundNotificationCallback?.call(
             buildNotificationResponse(call.arguments),
           );
@@ -56,8 +60,7 @@ void callbackDispatcher() async {
       }
     });
 
-    workerChannel.invokeMethod("backgroundChannelInitialized");
-
+    workerChannel.invokeMethod(METHOD_BACKGROUND_CHANNEL_INITIALIZED);
   } on MissingPluginException catch (e) {
     if (kDebugMode) {
       print("callback_dispatcher : Error");

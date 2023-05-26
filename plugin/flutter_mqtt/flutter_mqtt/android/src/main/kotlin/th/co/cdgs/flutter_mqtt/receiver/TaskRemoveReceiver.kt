@@ -3,7 +3,6 @@ package th.co.cdgs.flutter_mqtt.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import th.co.cdgs.flutter_mqtt.util.WorkManagerRequestHelper
 
 
@@ -14,7 +13,6 @@ class TaskRemoveReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "MyReceiver received event")
         if (intent.action.equals(context.packageName + ".TASK_REMOVE_RECEIVER")) {
             WorkManagerRequestHelper.startPeriodicWorker(context)
         }

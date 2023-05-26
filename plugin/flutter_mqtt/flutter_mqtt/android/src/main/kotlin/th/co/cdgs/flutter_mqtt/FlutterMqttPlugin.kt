@@ -34,9 +34,10 @@ import th.co.cdgs.flutter_mqtt.util.NotificationHelper.NOTIFICATION_ID
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_FOREGROUND_NOTIFICATION_ACTION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.SELECT_NOTIFICATION
 import th.co.cdgs.flutter_mqtt.util.NotificationHelper.extractNotificationResponseMap
+import th.co.cdgs.flutter_mqtt.util.PossibleFlutterMqttFlutterCall
 import th.co.cdgs.flutter_mqtt.util.ResourceHelper
 import th.co.cdgs.flutter_mqtt.util.SharedPreferenceHelper
-import th.co.cdgs.flutter_mqtt.util.Validation
+import th.co.cdgs.flutter_mqtt.util.ValidationHelper
 import th.co.cdgs.flutter_mqtt.util.WorkManagerRequestHelper
 import th.co.cdgs.flutter_mqtt.workmanager.HiveMqttNotificationServiceWorker
 
@@ -50,7 +51,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
     /// when the Flutter Engine is detached from the Activity
     private var mainActivity: Activity? = null
     private lateinit var context: Context
-    private val actionCache: MutableList<Map<String, Any?>> = mutableListOf()
+    private val pendingActionNotification: MutableList<Map<String, Any?>> = mutableListOf()
 
     companion object {
         private val TAG = FlutterMqttPlugin::class.java.simpleName
@@ -180,7 +181,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
             }
 
             channel?.invokeMethod(
-                "onTapNotification",
+                PossibleFlutterMqttFlutterCall.ON_TAP_NOTIFICATION.rawMethodName,
                 notificationResponse,
                 object : MethodChannel.Result {
                     override fun notImplemented() {
@@ -220,11 +221,11 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
                 convertedCall.platformNotificationSettings.notificationIcon,
                 result
             ) ||
-            Validation.hasInvalidMQTTConnectionConfig(
+            ValidationHelper.hasInvalidMQTTConnectionConfig(
                 convertedCall.MQTTConnectionSetting,
                 result
             ) ||
-            Validation.hasInvalidPlatformNotificationSetting(
+            ValidationHelper.hasInvalidPlatformNotificationSetting(
                 convertedCall.platformNotificationSettings,
                 result
             )
@@ -419,7 +420,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
 
             if(!isStartBackgroundChannel){
                 channel?.invokeMethod(
-                    "onTapNotification",
+                    PossibleFlutterMqttFlutterCall.ON_TAP_NOTIFICATION.rawMethodName,
                     notificationResponse,
                     object : MethodChannel.Result {
                         override fun success(result: Any?) {
@@ -446,7 +447,7 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
 
     private fun startBackgroundChannelIfNecessary(context: Context?, notificationResponse: Map<String, Any?>): Boolean {
         if (SharedPreferenceHelper.isAppInTerminatedState(context!!)) {
-            actionCache.add(notificationResponse)
+            pendingActionNotification.add(notificationResponse)
 
             if (engine != null) {
                 Log.e(TAG, "Engine is already initialised")
@@ -490,18 +491,18 @@ class FlutterMqttPlugin : FlutterPlugin, ActivityAware, NewIntentListener,
         notificationResponse: Map<String, Any?>
     ) {
         val methodChannel =
-            MethodChannel(dartExecutor.binaryMessenger, "th.co.cdgs/flutter_mqtt/worker")
+            MethodChannel(dartExecutor.binaryMessenger, "th.co.cdgs/flutter_mqtt/background")
 
         val flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(context){
             Log.d(TAG, "backgroundChannelInitialized is working...")
-            actionCache.forEach {
+            pendingActionNotification.forEach {
                 methodChannel.invokeMethod(
-                    "onTapNotification",
+                    PossibleFlutterMqttFlutterCall.ON_TAP_NOTIFICATION.rawMethodName,
                     notificationResponse,
                     object : MethodChannel.Result {
                         override fun success(result: Any?) {
                             Log.d(TAG, "onTapNotification : success")
-                            actionCache.remove(it)
+                            pendingActionNotification.remove(it)
                         }
 
                         override fun error(

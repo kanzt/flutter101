@@ -5,12 +5,10 @@ export 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_int
     show
     DidReceiveBackgroundNotificationResponseCallback,
     DidReceiveNotificationResponseCallback,
-    PendingNotificationRequest,
-    ActiveNotification,
-    RepeatInterval,
+    OnTapNotificationCallback,
+    OnTapActionBackgroundNotification,
     NotificationAppLaunchDetails,
-    NotificationResponse,
-    NotificationResponseType;
+    NotificationResponse;
 
 export 'src/flutter_mqtt_plugin.dart';
 

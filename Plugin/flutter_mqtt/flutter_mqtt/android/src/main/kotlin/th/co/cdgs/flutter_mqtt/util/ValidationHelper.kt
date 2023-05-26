@@ -4,7 +4,7 @@ import io.flutter.plugin.common.MethodChannel
 import th.co.cdgs.flutter_mqtt.entity.MQTTConnectionSetting
 import th.co.cdgs.flutter_mqtt.entity.PlatformNotificationSetting
 
-object Validation {
+object ValidationHelper {
     private const val INVALID_CONNECTION_ERROR_CODE = "invalid_connection_config"
     private const val INVALID_CONNECTION_CONFIG_ERROR_MESSAGE =
         ("Invalid connection configuration.Please review the values and retry again")

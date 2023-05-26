@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_mqtt/flutter_mqtt.dart';
 import 'package:flutter_mqtt_example/src/core/config/routes.dart';
@@ -33,7 +32,9 @@ class NotificationService extends GetxService {
   Future<void> initialize() async {
     final NotificationAppLaunchDetails? notificationAppLaunchDetails =
         await _plugin.getNotificationAppLaunchDetails();
+
     print("notificationAppLaunchDetails.didNotificationLaunchApp : ${notificationAppLaunchDetails?.didNotificationLaunchApp}");
+
     if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
       _onTapNotification(notificationAppLaunchDetails?.notificationResponse);
     }
@@ -55,6 +56,8 @@ class NotificationService extends GetxService {
     if (details?.actionId == null) {
       selectedNotification.value = details?.payload;
       Get.toNamed(Routes.notificationDetailPage);
+    }else{
+      print("Tap action from : ${details?.actionId}");
     }
   }
 

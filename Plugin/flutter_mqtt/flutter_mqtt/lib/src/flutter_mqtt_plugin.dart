@@ -18,9 +18,7 @@ class FlutterMqttPlugin {
   static final FlutterMqttPlugin _instance = FlutterMqttPlugin._();
 
   FlutterMqttPlugin._() {
-    if (kIsWeb ||
-        defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+    if (!_isSupportPlatform()) {
       return;
     }
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -44,9 +42,7 @@ class FlutterMqttPlugin {
           'The type argument must be a concrete subclass of '
           'FlutterMqttPlatform');
     }
-    if (kIsWeb ||
-        defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+    if (!_isSupportPlatform()) {
       return null;
     }
 
@@ -75,7 +71,7 @@ class FlutterMqttPlugin {
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
     OnTapNotificationCallback? onTapNotification,
-    OnTapNotificationCallback? onTapActionBackgroundNotification,
+    OnTapActionBackgroundNotification? onTapActionBackgroundNotification,
   }) async {
     if (!_isSupportPlatform()) {
       throw Exception('This plugin is not support this platform');
@@ -94,7 +90,7 @@ class FlutterMqttPlugin {
         onDidReceiveBackgroundNotificationResponse:
             onDidReceiveBackgroundNotificationResponse,
         onTapNotification: onTapNotification,
-        onTapActionBackgroundNotification : onTapActionBackgroundNotification,
+        onTapActionBackgroundNotification: onTapActionBackgroundNotification,
       );
     }
     // TODO : เปิดใช้งาน iOS
@@ -139,13 +135,17 @@ class FlutterMqttPlugin {
       //         IOSFlutterLocalNotificationsPlugin>()
       //     ?.getNotificationAppLaunchDetails();
     }
+
+    return null;
   }
 
   /// Cancels/removes all notifications.
-  /// // TODO : ปรับแก้ Logic ก่อนเรียกให้ทำงาน
+  /// This function support only Android for disconnecting MQTT broker
   ///
   Future<void> cancelAll() async {
-    await FlutterMqttPlatform.instance.cancelAll();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await FlutterMqttPlatform.instance.cancelAll();
+    }
   }
 
   bool _isSupportPlatform() {

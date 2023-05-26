@@ -37,7 +37,7 @@ suspend fun AlertDialog.await(
     negativeText: String? = null
 ) = suspendCancellableCoroutine<Boolean> { cont ->
     val defaultPositiveText = positiveText ?: context.resources.getString(android.R.string.ok)
-    val defaultNegativeText = negativeText ?: context.resources.getString(android.R.string.cancel)
+    // val defaultNegativeText = negativeText ?: context.resources.getString(android.R.string.cancel)
     val listener = DialogInterface.OnClickListener { _, which ->
         if (which == AlertDialog.BUTTON_POSITIVE) cont.resume(true)
         else if (which == AlertDialog.BUTTON_NEGATIVE) cont.resume(false)
@@ -61,7 +61,7 @@ suspend fun AlertDialog.await(
 }
 
 /**
- * BoardcastReceiver
+ * BroadcastReceiver
  */
 fun BroadcastReceiver.goAsync(
     context: CoroutineContext = EmptyCoroutineContext,

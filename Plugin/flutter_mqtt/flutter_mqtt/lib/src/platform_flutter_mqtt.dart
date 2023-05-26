@@ -6,52 +6,61 @@ import 'package:flutter_mqtt/flutter_mqtt.dart';
 import 'package:flutter_mqtt/src/callback_dispatcher.dart';
 import 'package:flutter_mqtt_plugin_platform_interface/flutter_mqtt_platform_interface.dart';
 
-/// Constants
-const NOTIFICATION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/notification";
-const METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt";
-const WORKER_METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt/worker";
-const ACTION_EVENT_CHANNEL = "th.co.cdgs/flutter_mqtt/actions";
-
 /// Arguments
-const NOTIFICATION_PAYLOAD = "payload";
-const NOTIFICATION_ID = "notificationId";
-const ACTION_ID = "actionId";
-const DISPATCHER_HANDLE = "dispatcher_handle";
-const RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE = "receive_background_notification_callback_handle";
-const TAP_ACTTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE = "tap_action_background_notification_callback_handle";
+const ARG_NOTIFICATION_PAYLOAD = "payload";
+const ARG_NOTIFICATION_ID = "notificationId";
+const ARG_ACTION_ID = "actionId";
+const ARG_DISPATCHER_HANDLE = "dispatcher_handle";
+const ARG_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE =
+    "receive_background_notification_callback_handle";
+const ARG_TAP_ACTTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE =
+    "tap_action_background_notification_callback_handle";
+const ARG_NOTIFICATION_RESPONSE_TYPE = "notificationResponseType";
+const ARG_NOTIFICATION_RESPONSE = "notificationResponse";
+const ARG_NOTIFICATION_LAUNCH_APP = "notificationLaunchedApp";
 
 /// MethodChannel & EventChannel
+const METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt";
+const BACKGROUND_METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt/background";
 const MethodChannel _channel = MethodChannel(METHOD_CHANNEL);
-const notificationEventChannel = EventChannel(NOTIFICATION_EVENT_CHANNEL);
 
-// TODO : ปรับ NotificationResponse ไปเป็นรูปแบบที่ต้องการใช้งาน
+/// Possible method
+const METHOD_INITIALIZE = "initialize";
+const METHOD_CANCEL_ALL = "cancelAll";
+const METHOD_GET_NOTIFICATION_APP_LAUNCH_DETAILS =
+    "getNotificationAppLaunchDetails";
+const METHOD_DID_RECEIVE_NOTIFICATION_RESPONSE =
+    "didReceiveNotificationResponse";
+const METHOD_ON_TAP_NOTIFICATION = "onTapNotification";
+const METHOD_GET_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE = "getReceiveBackgroundNotificationCallbackHandle";
+const METHOD_GET_TAP_ACTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE = "getTapActionBackgroundNotificationCallbackHandle";
+const METHOD_BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized";
+
 NotificationResponse buildNotificationResponse(dynamic arguments) {
   return NotificationResponse(
-    id: arguments[NOTIFICATION_ID],
-    actionId: arguments[ACTION_ID],
-    input: null,
-    payload: arguments[NOTIFICATION_PAYLOAD],
-    notificationResponseType: NotificationResponseType.selectedNotification,
+    id: arguments[ARG_NOTIFICATION_ID],
+    actionId: arguments[ARG_ACTION_ID],
+    payload: arguments[ARG_NOTIFICATION_PAYLOAD],
   );
 }
 
 /// An implementation of a local notifications platform using method channels.
 class MethodChannelFlutterMqttPlugin extends FlutterMqttPlatform {
   @override
-  Future<void> cancelAll() => _channel.invokeMethod('cancelAll');
+  Future<void> cancelAll() => _channel.invokeMethod(METHOD_CANCEL_ALL);
 
   @override
   Future<NotificationAppLaunchDetails?>
       getNotificationAppLaunchDetails() async {
     final Map<dynamic, dynamic>? result =
-        await _channel.invokeMethod('getNotificationAppLaunchDetails');
+        await _channel.invokeMethod(METHOD_GET_NOTIFICATION_APP_LAUNCH_DETAILS);
     final Map<dynamic, dynamic>? notificationResponse =
-        result != null && result.containsKey('notificationResponse')
-            ? result['notificationResponse']
+        result != null && result.containsKey(ARG_NOTIFICATION_RESPONSE)
+            ? result[ARG_NOTIFICATION_RESPONSE]
             : null;
     return result != null
         ? NotificationAppLaunchDetails(
-            result['notificationLaunchedApp'],
+            result[ARG_NOTIFICATION_LAUNCH_APP],
             notificationResponse: notificationResponse == null
                 ? null
                 : buildNotificationResponse(notificationResponse),
@@ -84,7 +93,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
     OnTapNotificationCallback? onTapNotification,
-    OnTapNotificationCallback? onTapActionBackgroundNotification,
+    OnTapActionBackgroundNotification? onTapActionBackgroundNotification,
   }) async {
     _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
     _onTapNotification = onTapNotification;
@@ -99,7 +108,7 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     _evaluateBackgroundTapActionCallback(
         onTapActionBackgroundNotification, arguments);
 
-    return await _channel.invokeMethod('initialize', arguments);
+    return await _channel.invokeMethod(METHOD_INITIALIZE, arguments);
   }
 
   Future<void> _handleMethod(MethodCall call) async {
@@ -108,11 +117,11 @@ class AndroidFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     }
 
     switch (call.method) {
-      case 'didReceiveNotificationResponse':
+      case METHOD_DID_RECEIVE_NOTIFICATION_RESPONSE:
         _onDidReceiveNotificationResponse
             ?.call(buildNotificationResponse(call.arguments));
         break;
-      case 'onTapNotification':
+      case METHOD_ON_TAP_NOTIFICATION:
         _onTapNotification?.call(buildNotificationResponse(call.arguments));
         break;
       default:
@@ -149,8 +158,9 @@ void _evaluateBackgroundNotificationCallback(
     final CallbackHandle? dispatcher =
         PluginUtilities.getCallbackHandle(callbackDispatcher);
 
-    arguments[DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
-    arguments[RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE] = callback!.toRawHandle();
+    arguments[ARG_DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
+    arguments[ARG_RECEIVE_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE] =
+        callback!.toRawHandle();
   }
 }
 
@@ -162,20 +172,21 @@ void _evaluateBackgroundNotificationCallback(
 /// This will add a `dispatcher_handle` and `tap_action_background_notification_callback_handle` argument to the
 /// [arguments] map when the config is correct.
 void _evaluateBackgroundTapActionCallback(
-    OnTapNotificationCallback? onTapActionBackgroundNotification,
-    Map<String, dynamic> arguments,
-    ) {
+  OnTapActionBackgroundNotification? onTapActionBackgroundNotification,
+  Map<String, dynamic> arguments,
+) {
   if (onTapActionBackgroundNotification != null) {
-    final CallbackHandle? callback = PluginUtilities.getCallbackHandle(
-        onTapActionBackgroundNotification);
+    final CallbackHandle? callback =
+        PluginUtilities.getCallbackHandle(onTapActionBackgroundNotification);
     assert(callback != null, '''
           The backgroundHandler needs to be either a static function or a top 
           level function to be accessible as a Flutter entry point.''');
 
     final CallbackHandle? dispatcher =
-    PluginUtilities.getCallbackHandle(callbackDispatcher);
+        PluginUtilities.getCallbackHandle(callbackDispatcher);
 
-    arguments[DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
-    arguments[TAP_ACTTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE] = callback!.toRawHandle();
+    arguments[ARG_DISPATCHER_HANDLE] = dispatcher!.toRawHandle();
+    arguments[ARG_TAP_ACTTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE] =
+        callback!.toRawHandle();
   }
 }

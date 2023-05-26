@@ -170,13 +170,6 @@ object Extractor {
             platformNotificationSetting?.get(INITIALIZE_NOTIFICATION_ICON_KEY) as String?
         val actions = platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<Map<String, Any>>?
 
-//        val actions: List<AndroidNotificationAction>? =
-//            (platformNotificationSetting?.get(INITIALIZE_ANDROID_NOTIFICATION_ACTIONS_KEY) as List<Map<String, Object>>?)?.let {
-//                it.map { action ->
-//                    return@map AndroidNotificationAction(action)
-//                }
-//            }
-
         return PlatformNotificationSetting(
             channelId = channelId,
             channelName = channelName,
