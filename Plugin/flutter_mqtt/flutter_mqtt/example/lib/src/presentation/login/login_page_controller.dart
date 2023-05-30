@@ -20,9 +20,9 @@ class LoginPageController extends GetxController {
       Get.dialog(
         AlertDialog(
           title: const Text('แจ้งเตือน'),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: ListBody(
-              children: const <Widget>[
+              children: <Widget>[
                 Text('กรุณาระบุอีเมล์และรหัสผ่าน'),
               ],
             ),
@@ -60,9 +60,9 @@ class LoginPageController extends GetxController {
           Get.dialog(
             AlertDialog(
               title: const Text('แจ้งเตือน'),
-              content: SingleChildScrollView(
+              content: const SingleChildScrollView(
                 child: ListBody(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text('อีเมล์หรือรหัสผ่านไม่ถูกต้อง'),
                   ],
                 ),

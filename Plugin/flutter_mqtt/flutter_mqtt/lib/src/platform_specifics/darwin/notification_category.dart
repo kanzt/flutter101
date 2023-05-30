@@ -23,4 +23,14 @@ class DarwinNotificationCategory {
 
   /// Options for how to handle notifications of this type.
   final Set<DarwinNotificationCategoryOption> options;
+
+  Map<String, Object> toMap() => <String, Object>{
+    'identifier': identifier,
+    'actions': actions
+        .map((e) => e.toMap()) // ignore: always_specify_types
+        .toList(),
+    'options': options
+        .map((e) => 1 << e.index) // ignore: always_specify_types
+        .toList(),
+  };
 }

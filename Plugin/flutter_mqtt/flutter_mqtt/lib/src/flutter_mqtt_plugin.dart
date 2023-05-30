@@ -92,22 +92,20 @@ class FlutterMqttPlugin {
         onTapNotification: onTapNotification,
         onTapActionBackgroundNotification: onTapActionBackgroundNotification,
       );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (initializationSettings.iOS == null) {
+        throw ArgumentError(
+            'iOS settings must be set when targeting iOS platform.');
+      }
+
+      return await resolvePlatformSpecificImplementation<IOSFlutterMqttPlugin>()
+          ?.initialize(
+        initializationSettings.iOS!,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+        onDidReceiveBackgroundNotificationResponse:
+            onDidReceiveBackgroundNotificationResponse,
+      );
     }
-    // TODO : เปิดใช้งาน iOS
-    // else if (defaultTargetPlatform == TargetPlatform.iOS) {
-    //   if (initializationSettings.iOS == null) {
-    //     throw ArgumentError(
-    //         'iOS settings must be set when targeting iOS platform.');
-    //   }
-    //
-    //   return await resolvePlatformSpecificImplementation<IOSFlutterMqttPlugin>()
-    //       ?.initialize(
-    //     initializationSettings.iOS!,
-    //     onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    //     onDidReceiveBackgroundNotificationResponse:
-    //         onDidReceiveBackgroundNotificationResponse,
-    //   );
-    // }
     return true;
   }
 
@@ -144,8 +142,15 @@ class FlutterMqttPlugin {
   ///
   Future<void> cancelAll() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      await FlutterMqttPlatform.instance.cancelAll();
+      await resolvePlatformSpecificImplementation<AndroidFlutterMqttPlugin>()?.cancelAll();
     }
+  }
+
+  Stream<String?>? getAPNSToken() {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return resolvePlatformSpecificImplementation<IOSFlutterMqttPlugin>()?.getAPNSToken();
+    }
+    return null;
   }
 
   bool _isSupportPlatform() {

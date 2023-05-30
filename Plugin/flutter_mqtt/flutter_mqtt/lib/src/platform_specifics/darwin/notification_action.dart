@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'notification_action_option.dart';
 
 /// Describes the notification action type.
@@ -80,4 +82,15 @@ class DarwinNotificationAction {
 
   /// The localized placeholder text to display in the text input field.
   final String? placeholder;
+
+  Map<String, Object> toMap() => <String, Object>{
+    'identifier': identifier,
+    'title': title,
+    'options': options
+        .map((e) => 1 << e.index) // ignore: always_specify_types
+        .toList(),
+    'type': describeEnum(type),
+    if (buttonTitle != null) 'buttonTitle': buttonTitle!,
+    if (placeholder != null) 'placeholder': placeholder!,
+  };
 }

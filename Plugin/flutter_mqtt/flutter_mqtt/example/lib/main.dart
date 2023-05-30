@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mqtt_example/src/core/config/routes.dart';
 import 'package:flutter_mqtt_example/src/core/di.dart';
 import 'package:flutter_mqtt_example/src/resources/theme/theme.dart';
+import 'package:flutter_mqtt_example/src/util/notification/notification_service.dart';
 import 'package:get/get.dart';
 
 void entrypoint() async {
@@ -15,6 +18,11 @@ void entrypoint() async {
 
   // DI
   await initCoreDI();
+
+  // Get APNs token for Notification in iOS
+  if(Platform.isIOS){
+    Get.find<NotificationService>().getAPNSToken();
+  }
 
   runApp(const MyApp());
 }

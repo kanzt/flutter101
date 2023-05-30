@@ -31,9 +31,4 @@ abstract class FlutterMqttPlatform extends PlatformInterface {
     throw UnimplementedError(
         'getNotificationAppLaunchDetails() has not been implemented');
   }
-
-  /// Unsubscribe to notification server
-  Future<void> cancelAll() async {
-    throw UnimplementedError('cancelAll() has not been implemented');
-  }
 }

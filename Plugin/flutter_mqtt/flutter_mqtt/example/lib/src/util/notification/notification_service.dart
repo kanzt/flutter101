@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
@@ -20,7 +21,8 @@ void onReceivedBackgroundNotification(
 @pragma('vm:entry-point')
 void onTapActionBackgroundNotification(
     NotificationResponse notificationResponse) async {
-  print("Accept onTapActionBackgroundNotification : ${notificationResponse.payload}");
+  print(
+      "Accept onTapActionBackgroundNotification : ${notificationResponse.payload}");
 }
 
 class NotificationService extends GetxService {
@@ -30,14 +32,15 @@ class NotificationService extends GetxService {
   ValueNotifier<String?> selectedNotification = ValueNotifier(null);
 
   Future<void> initialize() async {
-    final NotificationAppLaunchDetails? notificationAppLaunchDetails =
-        await _plugin.getNotificationAppLaunchDetails();
-
-    print("notificationAppLaunchDetails.didNotificationLaunchApp : ${notificationAppLaunchDetails?.didNotificationLaunchApp}");
-
-    if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
-      _onTapNotification(notificationAppLaunchDetails?.notificationResponse);
-    }
+    // TODO : Bypass iOS
+    // final NotificationAppLaunchDetails? notificationAppLaunchDetails =
+    //     await _plugin.getNotificationAppLaunchDetails();
+    //
+    // print("notificationAppLaunchDetails.didNotificationLaunchApp : ${notificationAppLaunchDetails?.didNotificationLaunchApp}");
+    //
+    // if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
+    //   _onTapNotification(notificationAppLaunchDetails?.notificationResponse);
+    // }
 
     recentNotification.value =
         await SharedPreference.read(SharedPreference.KEY_RECENT_NOTIFICATION);
@@ -46,7 +49,7 @@ class NotificationService extends GetxService {
       FlavorConfig.instance.values.initializationSettings,
       onDidReceiveNotificationResponse: _onReceivedNotification,
       onDidReceiveBackgroundNotificationResponse:
-          onReceivedBackgroundNotification,
+      onReceivedBackgroundNotification,
       onTapNotification: _onTapNotification,
       onTapActionBackgroundNotification: onTapActionBackgroundNotification,
     );
@@ -56,7 +59,7 @@ class NotificationService extends GetxService {
     if (details?.actionId == null) {
       selectedNotification.value = details?.payload;
       Get.toNamed(Routes.notificationDetailPage);
-    }else{
+    } else {
       print("Tap action from : ${details?.actionId}");
     }
   }
@@ -70,5 +73,16 @@ class NotificationService extends GetxService {
 
   Future<void> cancelAll() async {
     _plugin.cancelAll();
+  }
+
+  void getAPNSToken() {
+    if(Platform.isIOS){
+      _plugin.getAPNSToken()?.listen((event) {
+        SharedPreference.write(
+          SharedPreference.KEY_TOKEN,
+          event,
+        );
+      });
+    }
   }
 }

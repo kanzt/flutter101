@@ -7,12 +7,12 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://192.168.1.39:8080/api/v1/",
+      baseURL: "http://172.20.10.5:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
           mqttConnectionSetting: MQTTConnectionSetting(
             isRequiredSsl: false,
-            hostname: "192.168.1.39",
+            hostname: "172.20.10.5",
             password: "mqtt-mobile",
             username: "mqtt-mobile",
           ),
@@ -40,6 +40,7 @@ void main() {
                 ),
               ]),
         ),
+        iOS: const DarwinInitializationSettings(),
       ),
     ),
   );
