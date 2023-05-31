@@ -1,21 +1,29 @@
 import Flutter
 import UIKit
 
+/// MethodChannel
+let methodChannel  = "th.co.cdgs/flutter_mqtt";
 /// EventChannel
 let apnsTokenEventChannel  = "th.co.cdgs/flutter_mqtt/apnsToken";
 
 /// PreferenceKeys
 let keyIsAppInTerminatedState = "th.co.cdgs.flutter_mqtt/is_app_in_terminated_state"
 let keyRecentNotification = "th.co.cdgs.flutter_mqtt/recent_notification"
+let keyDispatcherHandle = "th.co.cdgs.flutter_mqtt/dispatcherHandle"
+let keyReceiveBackgroundNotificationCallbackHandle = "th.co.cdgs.flutter_mqtt/receiveBackgroundNotificationCallbackHandle"
+
 
 @available(iOS 13.0, *)
 public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin {
     
     private var onTokenUpdateEventSink: FlutterEventSink?
+    private var token: String?
     private var notificationPresentationOptions: UNNotificationPresentationOptions = []
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "th.co.cdgs/flutter_mqtt", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: methodChannel, binaryMessenger: registrar.messenger())
+        NotificationHandler.shared.channel = channel
+        
         let instance = FlutterMqttPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
@@ -36,20 +44,26 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     private func initialize(_ args: Initialize, _ result: @escaping FlutterResult){
         requestPushNotificationPermission(args, result)
+        
+        // Save callback for background isolated
+        if args.dispatcherHandle != nil && args.receiveBackgroundNotificationCallbackHandle != nil {
+            UserDefaults.standard.set(args.dispatcherHandle, forKey: keyDispatcherHandle)
+            UserDefaults.standard.set(args.receiveBackgroundNotificationCallbackHandle, forKey: keyReceiveBackgroundNotificationCallbackHandle)
+        }
     }
     
-    private func requestPushNotificationPermission(_ args: Initialize,_ result: @escaping FlutterResult){
+    private func requestPushNotificationPermission(_ args: Initialize?,_ result: FlutterResult?){
         var authOptions: UNAuthorizationOptions = []
         // Prompt for permission to send notifications
-        if(args.darwinInitializationSettings?.requestAlertPermission == true){
+        if(args?.darwinInitializationSettings?.requestAlertPermission == true){
             notificationPresentationOptions.insert(.alert)
             authOptions.insert(.alert)
         }
-        if(args.darwinInitializationSettings?.requestBadgePermission == true){
+        if(args?.darwinInitializationSettings?.requestBadgePermission == true){
             notificationPresentationOptions.insert(.badge)
             authOptions.insert(.badge)
         }
-        if(args.darwinInitializationSettings?.requestSoundPermission == true){
+        if(args?.darwinInitializationSettings?.requestSoundPermission == true){
             notificationPresentationOptions.insert(.sound)
             authOptions.insert(.sound)
         }
@@ -58,7 +72,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             options: authOptions,
             completionHandler: { success, _ in
                 guard success else {
-                    result(false)
+                    result?(false)
                     return
                 }
                 print("Push notification granted")
@@ -69,32 +83,31 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         )
     }
     
-    private func getNotificationSettings(_ result: @escaping FlutterResult) {
+    private func getNotificationSettings(_ result: FlutterResult?) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             print("Notification settings: \(settings)")
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
                 /// Register remote notification
                 UIApplication.shared.registerForRemoteNotifications()
-                result(true)
+                result?(true)
             }
         }
     }
     
     public override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-        let token = tokenParts.joined()
-        print("Device Token: \(token)")
+        token = tokenParts.joined()
+        print("Device Token: \(String(describing: token))")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.onTokenUpdateEventSink?(token)
+            self.onTokenUpdateEventSink?(self.token)
         }
         
     }
     
     public override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.alert, .badge, .sound])
-        // completionHandler(notificationPresentationOptions)
+        completionHandler(notificationPresentationOptions)
     }
     
     public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -106,25 +119,39 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 
 @available(iOS 13.0, *)
 extension FlutterMqttPlugin : FlutterStreamHandler {
-  
+    
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        if arguments as? String == apnsTokenEventChannel {
-            onTokenUpdateEventSink = events
+        switch Extractor.extractFlutterMqttEventChannel(arguments as? [String : Any]) {
+        case .getAPNSToken(let args) :
+            onSubscribeToTokenUpdate(events, args)
+        default:
+            return nil
         }
+        
         return nil
     }
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        if arguments as? String == apnsTokenEventChannel {
+        switch Extractor.extractFlutterMqttEventChannel(arguments as? [String : Any]) {
+        case .getAPNSToken(_) :
             onTokenUpdateEventSink = nil
+        default:
+            return nil
         }
+        
         return nil
+    }
+    
+    private func onSubscribeToTokenUpdate(_ event: @escaping FlutterEventSink, _ args: Initialize){
+        onTokenUpdateEventSink = event
+        requestPushNotificationPermission(args, nil)
     }
 }
 
+
 public class NotificationHandler {
-    var onReceivedNotificationEventSink: FlutterEventSink?
     public static let shared = NotificationHandler()
+    var channel: FlutterMethodChannel?
     
     private init() {
     }
@@ -146,18 +173,10 @@ public class NotificationHandler {
                 
                 if isApplicationRunInForeground() {
                     /// Foreground
-                    UIApplication.shared.applicationIconBadgeNumber += 2
-                    self.onReceivedNotificationEventSink?(notificationPayload)
-                
+                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: ["payload": notificationPayload])
                 } else{
                     /// Background & Terminated
-                    UIApplication.shared.applicationIconBadgeNumber += 1
-                    if let recentNotification = UserDefaults.standard.string(forKey: keyRecentNotification) {
-                        UserDefaults.standard.set("\(recentNotification)|\(String(describing: notificationPayload!))", forKey: keyRecentNotification)
-                    }else{
-                        /// First time
-                        UserDefaults.standard.set("\(notificationPayload!)", forKey: keyRecentNotification)
-                    }
+                   
                 }
             }
         }

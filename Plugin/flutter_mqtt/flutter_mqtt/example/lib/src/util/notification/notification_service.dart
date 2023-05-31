@@ -69,15 +69,16 @@ class NotificationService extends GetxService {
         SharedPreference.KEY_RECENT_NOTIFICATION, details?.payload);
     recentNotification.value = details?.payload;
     FlutterAppBadger.updateBadgeCount(50);
+    print("Notification payload (Fluter) : ${details?.payload}");
   }
 
   Future<void> cancelAll() async {
     _plugin.cancelAll();
   }
 
-  void getAPNSToken() {
+  void getAPNSToken(InitializationSettings initializationSettings) {
     if(Platform.isIOS){
-      _plugin.getAPNSToken()?.listen((event) {
+      _plugin.getAPNSToken(initializationSettings)?.listen((event) {
         SharedPreference.write(
           SharedPreference.KEY_TOKEN,
           event,

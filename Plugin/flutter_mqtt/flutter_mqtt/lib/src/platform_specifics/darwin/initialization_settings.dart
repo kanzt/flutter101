@@ -10,7 +10,6 @@ class DarwinInitializationSettings {
     this.requestAlertPermission = true,
     this.requestSoundPermission = true,
     this.requestBadgePermission = true,
-    this.onDidReceiveLocalNotification,
     this.notificationCategories = const <DarwinNotificationCategory>[],
   });
 
@@ -28,13 +27,6 @@ class DarwinInitializationSettings {
   ///
   /// Default value is true.
   final bool requestBadgePermission;
-
-
-  /// Callback for handling when a notification is triggered while the app is
-  /// in the foreground.
-  ///
-  /// This property is only applicable to iOS versions older than 10.
-  final DidReceiveLocalNotificationCallback? onDidReceiveLocalNotification;
 
   /// Configure the notification categories ([DarwinNotificationCategory])
   /// available. This allows for fine-tuning of preview display.

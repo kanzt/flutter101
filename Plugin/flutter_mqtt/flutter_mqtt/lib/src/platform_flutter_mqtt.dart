@@ -18,6 +18,7 @@ const ARG_TAP_ACTTION_BACKGROUND_NOTIFICATION_CALLBACK_HANDLE =
 const ARG_NOTIFICATION_RESPONSE_TYPE = "notificationResponseType";
 const ARG_NOTIFICATION_RESPONSE = "notificationResponse";
 const ARG_NOTIFICATION_LAUNCH_APP = "notificationLaunchedApp";
+const ARG_EVENT_NAME = "eventName";
 
 /// MethodChannel & EventChannel
 const METHOD_CHANNEL = "th.co.cdgs/flutter_mqtt";
@@ -172,15 +173,15 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
   }) async {
-    // TODO : ยังจัดการ Arguments ไม่ครบ
+    // TODO : ยังจัดการ Arguments ไม่ครบ ทำให้เหมือนของ Android ด้วย
     _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
 
     _channel.setMethodCallHandler(_handleMethod);
 
     final Map<String, Object> arguments = initializationSettings.toMap();
 
-    // _evaluateBackgroundNotificationCallback(
-    //     onDidReceiveBackgroundNotificationResponse, arguments);
+    _evaluateBackgroundNotificationCallback(
+        onDidReceiveBackgroundNotificationResponse, arguments);
 
     return await _channel.invokeMethod(METHOD_INITIALIZE, arguments);
   }
@@ -202,8 +203,12 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
   }
 
   /// Get APNS Token
-  Stream<String?> getAPNSToken() {
-    return _apnsTokenEventChannel.receiveBroadcastStream(APNS_TOKEN_EVENT_CHANNEL).cast();
+  Stream<String?> getAPNSToken(DarwinInitializationSettings iOS) {
+    return _apnsTokenEventChannel
+        .receiveBroadcastStream(<String, Object>{
+          ARG_EVENT_NAME : APNS_TOKEN_EVENT_CHANNEL,
+        }..addAll(iOS.toMap()))
+        .cast();
   }
 }
 

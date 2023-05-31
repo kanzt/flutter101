@@ -146,9 +146,13 @@ class FlutterMqttPlugin {
     }
   }
 
-  Stream<String?>? getAPNSToken() {
+  Stream<String?>? getAPNSToken(InitializationSettings initializationSettings) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return resolvePlatformSpecificImplementation<IOSFlutterMqttPlugin>()?.getAPNSToken();
+      if (initializationSettings.iOS == null) {
+        throw ArgumentError(
+            'iOS settings must be set when targeting iOS platform.');
+      }
+      return resolvePlatformSpecificImplementation<IOSFlutterMqttPlugin>()?.getAPNSToken(initializationSettings.iOS!);
     }
     return null;
   }
