@@ -75,7 +75,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                     result?(false)
                     return
                 }
-                print("Push notification granted")
+                NSLog("Push notification granted")
                 /// Register delegate
                 UNUserNotificationCenter.current().delegate = self
                 self.getNotificationSettings(result)
@@ -85,7 +85,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     private func getNotificationSettings(_ result: FlutterResult?) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("Notification settings: \(settings)")
+            NSLog("Notification settings: \(settings)")
             guard settings.authorizationStatus == .authorized else { return }
             DispatchQueue.main.async {
                 /// Register remote notification
@@ -98,7 +98,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     public override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         token = tokenParts.joined()
-        print("Device Token: \(String(describing: token))")
+        NSLog("Device Token: \(String(describing: token))")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.onTokenUpdateEventSink?(self.token)
@@ -111,7 +111,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     }
     
     public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("Failed to register: \(error)")
+        NSLog("Failed to register: \(error)")
     }
     
 }
@@ -152,6 +152,9 @@ extension FlutterMqttPlugin : FlutterStreamHandler {
 public class NotificationHandler {
     public static let shared = NotificationHandler()
     var channel: FlutterMethodChannel?
+    private var backgroundMethodChannel: FlutterMethodChannel?
+    private var flutterEngine: FlutterEngine?
+    private var pendingNotiffication:  [[String:Any]] = [[String: Any]]()
     
     private init() {
     }
@@ -169,14 +172,20 @@ public class NotificationHandler {
                 options: []) {
                 let notificationPayload = String(data: theJSONData,
                                                  encoding: .utf8)
-                print("Notification payload (Native) = \(notificationPayload!)")
+                NSLog("Notification payload (Native) = \(notificationPayload!)")
+                let payloadDict = ["payload": notificationPayload]
                 
                 if isApplicationRunInForeground() {
                     /// Foreground
-                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: ["payload": notificationPayload])
+                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
                 } else{
                     /// Background & Terminated
-                   
+                    let isStartBackgroundChannel = startBackgroundChannelIfNecessary(payloadDict as [String : Any])
+                    if isStartBackgroundChannel {
+                        backgroundMethodChannel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
+                    }else{
+                        channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
+                    }
                 }
             }
         }
@@ -188,5 +197,56 @@ public class NotificationHandler {
         /// Foreground state UIApplication.shared.applicationState.rawValue = 0
         /// Background & Terminated state UIApplication.shared.applicationState.rawValue = 2
         return UIApplication.shared.applicationState == .active
+    }
+    
+    private func startBackgroundChannelIfNecessary(_ notificationPayload: [String:Any]) -> Bool {
+        if isApplicationRunInForeground() && backgroundMethodChannel == nil  {
+            pendingNotiffication.append(notificationPayload)
+            if flutterEngine == nil {
+                flutterEngine = FlutterEngine(name: "FlutterMqttPluginIsolate", project: nil, allowHeadlessExecution: true)
+            }
+            
+            let dispatcherHandle = UserDefaults.standard.integer(forKey: keyDispatcherHandle)
+            guard dispatcherHandle != 0 else {
+                NSLog("Callback information could not be retrieved");
+                return false
+            }
+            
+            let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(Int64(dispatcherHandle))
+            guard dispatcherHandle != 0 else {
+                NSLog("Callback information could not be retrieved");
+                return false
+            }
+            
+            DispatchQueue.main.async {
+                self.backgroundMethodChannel = FlutterMethodChannel(name: "th.co.cdgs/flutter_mqtt/background", binaryMessenger: self.flutterEngine!.binaryMessenger)
+                self.backgroundMethodChannel?.setMethodCallHandler({ call, result in
+                    switch (call.method){
+                    case "backgroundChannelInitialized" :
+                        self.pendingNotiffication.forEach { notification in
+                            self.backgroundMethodChannel?.invokeMethod("didReceiveNotificationResponse", arguments: notification)
+                        }
+                    case "getReceiveBackgroundNotificationCallbackHandle":
+                        let callbackHandle = UserDefaults.standard.integer(forKey: keyReceiveBackgroundNotificationCallbackHandle)
+                        if callbackHandle != 0{
+                            result(callbackHandle)
+                        }else{
+                            result(FlutterError(code: "receive_background_notification_callback_handle_not_found"
+                                                , message: "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin", details: nil))
+                            
+                            
+                        }
+                        break
+                    default : result(FlutterMethodNotImplemented)
+                    }
+                })
+                self.flutterEngine?.run(withEntrypoint: callbackInfo!.callbackName, libraryURI: callbackInfo!.callbackLibraryPath)
+                
+            }
+            
+            return true
+        }else{
+            return false
+        }
     }
 }
