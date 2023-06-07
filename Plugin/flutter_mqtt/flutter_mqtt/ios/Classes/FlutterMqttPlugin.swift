@@ -106,14 +106,38 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         
     }
     
-    public override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler(notificationPresentationOptions)
-    }
     
     public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NSLog("Failed to register: \(error)")
     }
     
+    
+    public override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler(notificationPresentationOptions)
+    }
+    
+    
+    public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        print("get message didReceive :  \(response)")
+        
+        let userInfo = response.notification.request.content.userInfo
+        guard userInfo["aps"] is [String: AnyObject] else {
+            completionHandler()
+            return
+        }
+        
+        if let theJSONData = try? JSONSerialization.data(
+            withJSONObject: userInfo,
+            options: []) {
+            let notificationPayload = String(data: theJSONData, encoding: .utf8)
+            let payloadDict = ["payload": notificationPayload]
+            
+            NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
+            
+        }
+        
+        completionHandler()
+    }
 }
 
 
@@ -154,7 +178,7 @@ public class NotificationHandler {
     var channel: FlutterMethodChannel?
     private var backgroundMethodChannel: FlutterMethodChannel?
     private var flutterEngine: FlutterEngine?
-    private var pendingNotiffication:  [[String:Any]] = [[String: Any]]()
+    private var pendingNotification:  [[String:Any]] = [[String: Any]]()
     
     private init() {
     }
@@ -175,22 +199,16 @@ public class NotificationHandler {
                 NSLog("Notification payload (Native) = \(notificationPayload!)")
                 let payloadDict = ["payload": notificationPayload]
                 
-                if isApplicationRunInForeground() {
-                    /// Foreground
-                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
-                } else{
-                    /// Background & Terminated
-                    let isStartBackgroundChannel = startBackgroundChannelIfNecessary(payloadDict as [String : Any])
-                    if isStartBackgroundChannel {
-                        backgroundMethodChannel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
-                    }else{
-                        channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
-                    }
-                }
+                channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
+            
             }
         }
         
         completionHandler(.newData)
+    }
+    
+    public func onTapNotification(_ notificationPayload: [String:Any]){
+        channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
     }
     
     private func isApplicationRunInForeground() -> Bool {
@@ -199,9 +217,9 @@ public class NotificationHandler {
         return UIApplication.shared.applicationState == .active
     }
     
-    private func startBackgroundChannelIfNecessary(_ notificationPayload: [String:Any]) -> Bool {
-        if isApplicationRunInForeground() && backgroundMethodChannel == nil  {
-            pendingNotiffication.append(notificationPayload)
+    private func startBackgroundChannelIfNecessary(_ notificationPayload: [String:Any], _ methodName: String) -> Bool {
+        if !isApplicationRunInForeground() && backgroundMethodChannel == nil  {
+            pendingNotification.append(notificationPayload)
             if flutterEngine == nil {
                 flutterEngine = FlutterEngine(name: "FlutterMqttPluginIsolate", project: nil, allowHeadlessExecution: true)
             }
@@ -220,26 +238,16 @@ public class NotificationHandler {
             
             DispatchQueue.main.async {
                 self.backgroundMethodChannel = FlutterMethodChannel(name: "th.co.cdgs/flutter_mqtt/background", binaryMessenger: self.flutterEngine!.binaryMessenger)
-                self.backgroundMethodChannel?.setMethodCallHandler({ call, result in
-                    switch (call.method){
-                    case "backgroundChannelInitialized" :
-                        self.pendingNotiffication.forEach { notification in
-                            self.backgroundMethodChannel?.invokeMethod("didReceiveNotificationResponse", arguments: notification)
+                
+                let flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(
+                    onBackgroundInitialized: {
+                        self.pendingNotification.forEach { notification in
+                            self.backgroundMethodChannel?.invokeMethod(methodName, arguments: notification)
                         }
-                    case "getReceiveBackgroundNotificationCallbackHandle":
-                        let callbackHandle = UserDefaults.standard.integer(forKey: keyReceiveBackgroundNotificationCallbackHandle)
-                        if callbackHandle != 0{
-                            result(callbackHandle)
-                        }else{
-                            result(FlutterError(code: "receive_background_notification_callback_handle_not_found"
-                                                , message: "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin", details: nil))
-                            
-                            
-                        }
-                        break
-                    default : result(FlutterMethodNotImplemented)
+                        self.pendingNotification.removeAll()
                     }
-                })
+                )
+                self.backgroundMethodChannel?.setMethodCallHandler(flutterMqttBackgroundHandler.handle)
                 self.flutterEngine?.run(withEntrypoint: callbackInfo!.callbackName, libraryURI: callbackInfo!.callbackLibraryPath)
                 
             }

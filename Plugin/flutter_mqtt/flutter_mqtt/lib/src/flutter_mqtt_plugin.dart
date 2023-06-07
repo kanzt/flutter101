@@ -104,6 +104,7 @@ class FlutterMqttPlugin {
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
         onDidReceiveBackgroundNotificationResponse:
             onDidReceiveBackgroundNotificationResponse,
+        onTapNotification: onTapNotification,
       );
     }
     return true;

@@ -172,9 +172,11 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
+        OnTapNotificationCallback? onTapNotification,
   }) async {
     // TODO : ยังจัดการ Arguments ไม่ครบ ทำให้เหมือนของ Android ด้วย
     _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
+    _onTapNotification = onTapNotification;
 
     _channel.setMethodCallHandler(_handleMethod);
 
@@ -196,6 +198,9 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
             payload: call.arguments[ARG_NOTIFICATION_PAYLOAD],
           ),
         );
+        break;
+      case METHOD_ON_TAP_NOTIFICATION:
+        _onTapNotification?.call(buildNotificationResponse(call.arguments));
         break;
       default:
         return await Future<void>.error('Method not defined');
