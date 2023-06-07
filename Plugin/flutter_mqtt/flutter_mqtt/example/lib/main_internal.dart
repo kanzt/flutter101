@@ -7,12 +7,12 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://172.20.10.5:8080/api/v1/",
+      baseURL: "http://192.168.1.111:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
           mqttConnectionSetting: MQTTConnectionSetting(
             isRequiredSsl: false,
-            hostname: "172.20.10.5",
+            hostname: "192.168.1.111",
             password: "mqtt-mobile",
             username: "mqtt-mobile",
           ),
@@ -40,7 +40,21 @@ void main() {
                 ),
               ]),
         ),
-        iOS: const DarwinInitializationSettings(),
+        iOS: DarwinInitializationSettings(
+          notificationCategories: [
+            DarwinNotificationCategory(
+              "textCategory",
+              actions: <DarwinNotificationAction>[
+                DarwinNotificationAction.text(
+                  'text_1',
+                  'Action 1',
+                  buttonTitle: 'Send',
+                  placeholder: 'Placeholder',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );
