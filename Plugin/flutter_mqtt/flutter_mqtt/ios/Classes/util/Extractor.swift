@@ -36,8 +36,8 @@ class Extractor {
                                                     requestSoundPermission: result["requestSoundPermission"] as? Bool,
                                                     requestBadgePermission: result["requestBadgePermission"] as? Bool
                                                 ),
-                                            dispatcherHandle: result["dispatcherHandle"] as? NSNumber,
-                                            receiveBackgroundNotificationCallbackHandle: result["receiveBackgroundNotificationCallbackHandle"]as? NSNumber)
+                                            dispatcherHandle: result["dispatcher_handle"] as? NSNumber,
+                                            receiveBackgroundNotificationCallbackHandle: result["receive_background_notification_callback_handle"]as? NSNumber)
             return .initialize(initializeArgs)
         default:
             return .unknown

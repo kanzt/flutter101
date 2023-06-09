@@ -129,10 +129,9 @@ class FlutterMqttPlugin {
               AndroidFlutterMqttPlugin>()
           ?.getNotificationAppLaunchDetails();
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      // TODO : เปิดใช้งาน iOS
-      // return await resolvePlatformSpecificImplementation<
-      //         IOSFlutterLocalNotificationsPlugin>()
-      //     ?.getNotificationAppLaunchDetails();
+      return await resolvePlatformSpecificImplementation<
+              IOSFlutterMqttPlugin>()
+          ?.getNotificationAppLaunchDetails();
     }
 
     return null;

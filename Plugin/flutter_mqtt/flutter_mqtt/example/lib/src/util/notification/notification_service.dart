@@ -14,7 +14,7 @@ void onReceivedBackgroundNotification(
     NotificationResponse notificationResponse) async {
   await SharedPreference.write(
       SharedPreference.KEY_RECENT_NOTIFICATION, notificationResponse.payload);
-  FlutterAppBadger.updateBadgeCount(50);
+  FlutterAppBadger.updateBadgeCount(25);
   print("Accept message : ${notificationResponse.payload}");
 }
 
@@ -32,7 +32,7 @@ class NotificationService extends GetxService {
   ValueNotifier<String?> selectedNotification = ValueNotifier(null);
 
   Future<void> initialize() async {
-    // TODO : Bypass iOS
+    // TODO : ทำ getNotificationAppLaunchDetails ฝั่ง iOS
     // final NotificationAppLaunchDetails? notificationAppLaunchDetails =
     //     await _plugin.getNotificationAppLaunchDetails();
     //

@@ -50,11 +50,12 @@ class FlutterMqttBackgroundHandler(
         if (handle != -1L) {
             result.success(handle)
         } else {
-            result.error(
-                "receive_background_notification_callback_handle_not_found",
-                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
-                null
-            )
+            result.success(null)
+//            result.error(
+//                "receive_background_notification_callback_handle_not_found",
+//                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+//                null
+//            )
         }
     }
 
@@ -67,11 +68,12 @@ class FlutterMqttBackgroundHandler(
         if (handle != -1L) {
             result.success(handle)
         } else {
-            result.error(
-                "tap_action_background_notification_callback_handle_not_found",
-                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
-                null
-            )
+            result.success(null)
+//            result.error(
+//                "tap_action_background_notification_callback_handle_not_found",
+//                "The CallbackHandle could not be found. Please make sure it has been set when you initialize plugin",
+//                null
+//            )
         }
     }
 }
