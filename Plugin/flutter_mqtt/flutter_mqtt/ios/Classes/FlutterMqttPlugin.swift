@@ -11,6 +11,7 @@ let keyIsAppInTerminatedState = "th.co.cdgs.flutter_mqtt/is_app_in_terminated_st
 let keyRecentNotification = "th.co.cdgs.flutter_mqtt/recent_notification"
 let keyDispatcherHandle = "th.co.cdgs.flutter_mqtt/dispatcherHandle"
 let keyReceiveBackgroundNotificationCallbackHandle = "th.co.cdgs.flutter_mqtt/receiveBackgroundNotificationCallbackHandle"
+let keyTapActionBackgroundNotificattionCallbackHandle = "th.co.cdgs.flutter_mqtt/tapActionBackgroundNotificationCallbackHandle"
 let keyGetTapActionBackgroundNotificationCallbackHandle = "th.co.cdgs.flutter_mqtt/getTapActionBackgroundNotificationCallbackHandle"
 
 
@@ -38,6 +39,8 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         switch Extractor.extractFlutterMqttCallFromRawMethodName(call) {
         case .initialize(let args) :
             initialize(args, result)
+        case .getNotificationAppLaunchDetails :
+            getNotificationAppLaunchDetails(result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -57,10 +60,18 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             UserDefaults.standard.set(args.dispatcherHandle, forKey: keyDispatcherHandle)
             UserDefaults.standard.set(args.receiveBackgroundNotificationCallbackHandle, forKey: keyReceiveBackgroundNotificationCallbackHandle)
         }
+        
+        if args.dispatcherHandle != nil && args.tapActionBackgroundNotificattionCallbackHandle != nil {
+            UserDefaults.standard.set(args.dispatcherHandle, forKey: keyDispatcherHandle)
+            UserDefaults.standard.set(args.tapActionBackgroundNotificattionCallbackHandle, forKey: keyTapActionBackgroundNotificattionCallbackHandle)
+        }
     }
     
-    private func getNotificationAppLaunchDetails(){
-        
+    private func getNotificationAppLaunchDetails(_ result: @escaping FlutterResult){
+        var notificationAppLaunchDetails: [String:Any] = [String:Any]()
+        notificationAppLaunchDetails["notificationLaunchedApp"] = NotificationHandler.shared.isLaunchingAppFromNotification()
+        notificationAppLaunchDetails["notificationResponse"] = NotificationHandler.shared.getRecentTapNotification()
+        result(notificationAppLaunchDetails)
     }
     
     private func requestPushNotificationPermission(_ args: Initialize?,_ result: FlutterResult?){
@@ -147,11 +158,11 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             let payloadDict = ["payload": notificationPayload]
             
             NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
-            
         }
         
         completionHandler()
     }
+    
 }
 
 
@@ -189,11 +200,13 @@ extension FlutterMqttPlugin : FlutterStreamHandler {
 
 public class NotificationHandler {
     public static let shared = NotificationHandler()
-    static var registerPlugins: FlutterPluginRegistrantCallback?
+    private static var registerPlugins: FlutterPluginRegistrantCallback?
     private var backgroundMethodChannel: FlutterMethodChannel?
     private var flutterEngine: FlutterEngine?
     private var channel: FlutterMethodChannel?
     private var pendingNotification:  [[String:Any]] = [[String: Any]]()
+    private var launchingAppFromNotification: Bool = false
+    private var recentTapNotification: [String:Any]?
     
     private init() {
     }
@@ -204,6 +217,14 @@ public class NotificationHandler {
     
     public func setChannel(_ channel: FlutterMethodChannel){
         self.channel = channel
+    }
+    
+    public func getRecentTapNotification() -> [String:Any]? {
+        return recentTapNotification
+    }
+    
+    public func isLaunchingAppFromNotification() -> Bool {
+        return launchingAppFromNotification
     }
     
     public func onReceivedMessage(userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler:@escaping (UIBackgroundFetchResult) -> Void){
@@ -244,7 +265,25 @@ public class NotificationHandler {
     }
     
     public func onTapNotification(_ notificationPayload: [String:Any]){
-        channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+        recentTapNotification = notificationPayload
+        if isApplicationRunInForeground() {
+            /// Foreground
+            launchingAppFromNotification = false
+            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+        }else{
+            /// Terminated
+            if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
+                launchingAppFromNotification = true
+                let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
+                if !isStartBackgroundIsolate {
+                    backgroundMethodChannel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+                }
+            }else{
+                /// Background
+                launchingAppFromNotification = false
+                channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+            }
+        }
     }
     
     private func isApplicationRunInForeground() -> Bool {

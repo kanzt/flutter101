@@ -173,8 +173,8 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
     DidReceiveBackgroundNotificationResponseCallback?
         onDidReceiveBackgroundNotificationResponse,
         OnTapNotificationCallback? onTapNotification,
+        OnTapActionBackgroundNotification? onTapActionBackgroundNotification,
   }) async {
-    // TODO : ยังจัดการ Arguments ไม่ครบ ทำให้เหมือนของ Android ด้วย
     _onDidReceiveNotificationResponse = onDidReceiveNotificationResponse;
     _onTapNotification = onTapNotification;
 
@@ -184,6 +184,9 @@ class IOSFlutterMqttPlugin extends MethodChannelFlutterMqttPlugin {
 
     _evaluateBackgroundNotificationCallback(
         onDidReceiveBackgroundNotificationResponse, arguments);
+
+    _evaluateBackgroundTapActionCallback(
+        onTapActionBackgroundNotification, arguments);
 
     return await _channel.invokeMethod(METHOD_INITIALIZE, arguments);
   }

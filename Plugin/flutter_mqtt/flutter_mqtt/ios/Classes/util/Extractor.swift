@@ -3,6 +3,7 @@ import Flutter
 
 enum FlutterMqttCall {
     case initialize(Initialize)
+    case getNotificationAppLaunchDetails
     case unknown
 }
 
@@ -14,6 +15,7 @@ enum FlutterMqttEventChannel {
 class Extractor {
     private enum PossibleFlutterMqttCall: String, CaseIterable {
         case initialize = "initialize"
+        case getNotificationAppLaunchDetails = "getNotificationAppLaunchDetails"
         case unknown
         
         static func fromRawMethodName(_ metthodName: String) -> PossibleFlutterMqttCall {
@@ -37,8 +39,11 @@ class Extractor {
                                                     requestBadgePermission: result["requestBadgePermission"] as? Bool
                                                 ),
                                             dispatcherHandle: result["dispatcher_handle"] as? NSNumber,
-                                            receiveBackgroundNotificationCallbackHandle: result["receive_background_notification_callback_handle"]as? NSNumber)
+                                            receiveBackgroundNotificationCallbackHandle: result["receive_background_notification_callback_handle"]as? NSNumber,
+                                            tapActionBackgroundNotificattionCallbackHandle: result["tap_action_background_notification_callback_handle"]as? NSNumber
+            )
             return .initialize(initializeArgs)
+        case PossibleFlutterMqttCall.getNotificationAppLaunchDetails : return .getNotificationAppLaunchDetails
         default:
             return .unknown
         }
@@ -70,7 +75,7 @@ class Extractor {
                                                     requestBadgePermission: args["requestBadgePermission"] as? Bool
                                                 ),
                                             dispatcherHandle: nil,
-                                            receiveBackgroundNotificationCallbackHandle: nil
+                                            receiveBackgroundNotificationCallbackHandle: nil, tapActionBackgroundNotificattionCallbackHandle: nil
             )
             
             return .getAPNSToken(initializeArgs)
