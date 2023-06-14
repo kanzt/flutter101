@@ -23,16 +23,17 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     private var notificationPresentationOptions: UNNotificationPresentationOptions = []
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: methodChannel, binaryMessenger: registrar.messenger())
-        NotificationHandler.shared.setChannel(channel)
-        
-        let instance = FlutterMqttPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
-        registrar.addApplicationDelegate(instance)
-        
-        let tokenUpdateEventChannel = FlutterEventChannel(name: apnsTokenEventChannel, binaryMessenger: registrar.messenger())
-        tokenUpdateEventChannel.setStreamHandler(instance)
-        
+        if NotificationHandler.shared.isChannelEqualNil(){
+            let channel = FlutterMethodChannel(name: methodChannel, binaryMessenger: registrar.messenger())
+            NotificationHandler.shared.setChannel(channel)
+            
+            let instance = FlutterMqttPlugin()
+            registrar.addMethodCallDelegate(instance, channel: channel)
+            registrar.addApplicationDelegate(instance)
+            
+            let tokenUpdateEventChannel = FlutterEventChannel(name: apnsTokenEventChannel, binaryMessenger: registrar.messenger())
+            tokenUpdateEventChannel.setStreamHandler(instance)
+        }
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -49,7 +50,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
         /// Register delegate
-         UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().delegate = self
         
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -219,6 +220,10 @@ public class NotificationHandler {
         registerPlugins = callback
     }
     
+    public func isChannelEqualNil() -> Bool{
+        return self.channel == nil
+    }
+    
     public func setChannel(_ channel: FlutterMethodChannel){
         self.channel = channel
     }
@@ -247,20 +252,19 @@ public class NotificationHandler {
                 NSLog("Notification payload (Native) = \(notificationPayload!)")
                 let payloadDict = ["payload": notificationPayload]
                 
-                if isApplicationRunInForeground() {
-                    /// Foreground
-                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
-                }else{
-                    /// Terminated
+                
+                let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(payloadDict as [String : Any], "didReceiveNotificationResponse")
+                
+                if !isStartBackgroundIsolate {
+                    var channel: FlutterMethodChannel?
                     if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
-                        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(payloadDict as [String : Any], "didReceiveNotificationResponse")
-                        if !isStartBackgroundIsolate {
-                            backgroundMethodChannel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
-                        }
+                        channel = backgroundMethodChannel
+                        NSLog("Using backgroundMethodChannel")
                     }else{
-                        /// Background
-                        channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
+                        channel = self.channel
+                        NSLog("Using foregroundMethodChannel")
                     }
+                    channel?.invokeMethod("didReceiveNotificationResponse", arguments: payloadDict)
                 }
             }
         }
@@ -271,30 +275,23 @@ public class NotificationHandler {
     public func onTapNotification(_ notificationPayload: [String:Any]){
         NSLog("iOS : onTapNotification is working")
         recentTapNotification = notificationPayload
-        if isApplicationRunInForeground() {
-            /// Foreground
-            if let channel = channel {
-                channel.invokeMethod("onTapNotification", arguments: notificationPayload) { result in
-                    print(result)
-                }
-            }
+        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
+        
+        if !isStartBackgroundIsolate {
+            var channel: FlutterMethodChannel?
             launchingAppFromNotification = false
-        }else{
-            /// Terminated
             if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
-                launchingAppFromNotification = true
-                let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
-                if !isStartBackgroundIsolate {
-                    backgroundMethodChannel?.invokeMethod("onTapNotification", arguments: notificationPayload)
-                }
+                channel = backgroundMethodChannel
+                NSLog("Using backgroundMethodChannel")
             }else{
-                /// Background
-                if let channel = channel {
-                    channel.invokeMethod("onTapNotification", arguments: notificationPayload)
-                }
-                launchingAppFromNotification = false
+                channel = self.channel
+                NSLog("Using foregroundMethodChannel")
             }
+            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+        }else{
+            launchingAppFromNotification = true
         }
+        
     }
     
     private func isApplicationRunInForeground() -> Bool {
@@ -304,7 +301,7 @@ public class NotificationHandler {
     }
     
     private func startBackgroundChannelIfNecessary(_ notificationPayload: [String:Any], _ methodName: String) -> Bool {
-        if !isApplicationRunInForeground() && backgroundMethodChannel == nil  {
+        if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) && backgroundMethodChannel == nil  {
             pendingNotification.append(notificationPayload)
             
             
