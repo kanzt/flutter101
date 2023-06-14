@@ -47,7 +47,10 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     }
     
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
-        UserDefaults.standard.set(false, forKey: keyIsAppInTerminatedState)
+        
+        /// Register delegate
+         UNUserNotificationCenter.current().delegate = self
+        
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -71,6 +74,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         var notificationAppLaunchDetails: [String:Any] = [String:Any]()
         notificationAppLaunchDetails["notificationLaunchedApp"] = NotificationHandler.shared.isLaunchingAppFromNotification()
         notificationAppLaunchDetails["notificationResponse"] = NotificationHandler.shared.getRecentTapNotification()
+        UserDefaults.standard.set(false, forKey: keyIsAppInTerminatedState)
         result(notificationAppLaunchDetails)
     }
     
@@ -143,7 +147,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     
     
     public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("get message didReceive :  \(response)")
+        NSLog("get message didReceive :  \(response)")
         
         let userInfo = response.notification.request.content.userInfo
         guard userInfo["aps"] is [String: AnyObject] else {
@@ -265,11 +269,16 @@ public class NotificationHandler {
     }
     
     public func onTapNotification(_ notificationPayload: [String:Any]){
+        NSLog("iOS : onTapNotification is working")
         recentTapNotification = notificationPayload
         if isApplicationRunInForeground() {
             /// Foreground
+            if let channel = channel {
+                channel.invokeMethod("onTapNotification", arguments: notificationPayload) { result in
+                    print(result)
+                }
+            }
             launchingAppFromNotification = false
-            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
         }else{
             /// Terminated
             if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
@@ -280,8 +289,10 @@ public class NotificationHandler {
                 }
             }else{
                 /// Background
+                if let channel = channel {
+                    channel.invokeMethod("onTapNotification", arguments: notificationPayload)
+                }
                 launchingAppFromNotification = false
-                channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
             }
         }
     }
@@ -313,23 +324,21 @@ public class NotificationHandler {
                 return false
             }
             
-            DispatchQueue.main.async {
-                self.backgroundMethodChannel = FlutterMethodChannel(name: "th.co.cdgs/flutter_mqtt/background", binaryMessenger: self.flutterEngine!.binaryMessenger)
-                
-                let flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(
-                    onBackgroundInitialized: {
-                        self.pendingNotification.forEach { notification in
-                            self.backgroundMethodChannel?.invokeMethod(methodName, arguments: notification)
-                        }
-                        self.pendingNotification.removeAll()
+            self.backgroundMethodChannel = FlutterMethodChannel(name: "th.co.cdgs/flutter_mqtt/background", binaryMessenger: self.flutterEngine!.binaryMessenger)
+            
+            let flutterMqttBackgroundHandler = FlutterMqttBackgroundHandler(
+                onBackgroundInitialized: {
+                    self.pendingNotification.forEach { notification in
+                        self.backgroundMethodChannel?.invokeMethod(methodName, arguments: notification)
                     }
-                )
-                self.flutterEngine?.run(withEntrypoint: callbackInfo!.callbackName, libraryURI: callbackInfo!.callbackLibraryPath)
-                self.backgroundMethodChannel?.setMethodCallHandler(flutterMqttBackgroundHandler.handle)
-                
-                if NotificationHandler.registerPlugins != nil {
-                    NotificationHandler.registerPlugins!(self.flutterEngine!)
+                    self.pendingNotification.removeAll()
                 }
+            )
+            self.flutterEngine?.run(withEntrypoint: callbackInfo!.callbackName, libraryURI: callbackInfo!.callbackLibraryPath)
+            self.backgroundMethodChannel?.setMethodCallHandler(flutterMqttBackgroundHandler.handle)
+            
+            if NotificationHandler.registerPlugins != nil {
+                NotificationHandler.registerPlugins!(self.flutterEngine!)
             }
             
             return true
