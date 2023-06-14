@@ -36,7 +36,8 @@ class Extractor {
                                                 DarwinInitializationSettings(
                                                     requestAlertPermission: result["requestAlertPermission"] as? Bool,
                                                     requestSoundPermission: result["requestSoundPermission"] as? Bool,
-                                                    requestBadgePermission: result["requestBadgePermission"] as? Bool
+                                                    requestBadgePermission: result["requestBadgePermission"] as? Bool,
+                                                    notificationCategories: extractDarwinNotificationCategory(result["notificationCategories"] as? [[String:Any]])
                                                 ),
                                             dispatcherHandle: result["dispatcher_handle"] as? NSNumber,
                                             receiveBackgroundNotificationCallbackHandle: result["receive_background_notification_callback_handle"]as? NSNumber,
@@ -49,6 +50,65 @@ class Extractor {
         }
     }
     
+    private static func extractDarwinNotificationCategory(_ notificationCategories: [[String:Any]]?) -> [DarwinNotificationCategory]? {
+        var resultCategory: [DarwinNotificationCategory]? = []
+        if let notificationCategories = notificationCategories {
+            for category in notificationCategories {
+                var resultAction: [DarwinNotificationAction]? = []
+                let actions = category["actions"] as? [[String:Any]]?
+                if let actions = actions {
+                    for action in actions! {
+                        var resultOptions = UNNotificationActionOptions.init(rawValue: 0)
+                        let options = action["options"] as? [Int]?
+                        if let options = options {
+                            for option in options! {
+                                resultOptions.insert(UNNotificationActionOptions(rawValue: UInt(option)))
+                                // resultOptions?.append(option)
+                            }
+                        }
+                        resultAction?.append(
+                            DarwinNotificationAction(
+                                identifier: action["identifier"] as? String,
+                                title: action["title"] as? String,
+                                options: resultOptions,
+                                buttonTitle: action["buttonTitle"] as? String,
+                                placeholder: action["placeholder"] as? String
+                            )
+                        )
+                    }
+                }
+                
+                var resultOptions = UNNotificationCategoryOptions.init(rawValue: 0)
+                let options = category["options"] as? [Int]?
+                if let options = options {
+                    for option in options! {
+                        resultOptions.insert(UNNotificationCategoryOptions(rawValue: UInt(option)))
+                    }
+                }
+                
+                resultCategory?.append(
+                    DarwinNotificationCategory(
+                        identifier: category["identifier"] as? String,
+                        actions: resultAction,
+                        options: resultOptions
+                    )
+                )
+            }
+            return resultCategory
+        }
+        
+        return nil
+    }
+    
+//    private func parseNotificationCategoryOptions(_ options: [Int]?){
+//        if let options = options {
+//            var result = []
+//            for option in options {
+//                result |= option
+//            }
+//            return result
+//        }
+//    }
     
     private enum PossibleFlutterMqttEventChannel: String, CaseIterable {
         case getAPNSToken = "th.co.cdgs/flutter_mqtt/apnsToken"
@@ -72,7 +132,8 @@ class Extractor {
                                                 DarwinInitializationSettings(
                                                     requestAlertPermission: args["requestAlertPermission"] as? Bool,
                                                     requestSoundPermission: args["requestSoundPermission"] as? Bool,
-                                                    requestBadgePermission: args["requestBadgePermission"] as? Bool
+                                                    requestBadgePermission: args["requestBadgePermission"] as? Bool,
+                                                    notificationCategories: nil
                                                 ),
                                             dispatcherHandle: nil,
                                             receiveBackgroundNotificationCallbackHandle: nil, tapActionBackgroundNotificattionCallbackHandle: nil

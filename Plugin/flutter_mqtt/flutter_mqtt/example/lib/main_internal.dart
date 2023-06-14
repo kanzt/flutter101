@@ -7,12 +7,12 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://192.168.1.111:8080/api/v1/",
+      baseURL: "http://172.20.10.5:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
           mqttConnectionSetting: MQTTConnectionSetting(
             isRequiredSsl: false,
-            hostname: "192.168.1.111",
+            hostname: "172.20.10.5",
             password: "mqtt-mobile",
             username: "mqtt-mobile",
           ),
@@ -50,8 +50,10 @@ void main() {
                   'Action 1',
                   buttonTitle: 'Send',
                   placeholder: 'Placeholder',
+                  options: {DarwinNotificationActionOption.foreground, DarwinNotificationActionOption.authenticationRequired}
                 ),
               ],
+              options: {DarwinNotificationCategoryOption.allowAnnouncement, DarwinNotificationCategoryOption.allowInCarPlay}
             ),
           ],
         ),
