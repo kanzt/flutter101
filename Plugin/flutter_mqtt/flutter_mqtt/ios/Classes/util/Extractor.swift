@@ -72,7 +72,8 @@ class Extractor {
                                 title: action["title"] as? String,
                                 options: resultOptions,
                                 buttonTitle: action["buttonTitle"] as? String,
-                                placeholder: action["placeholder"] as? String
+                                placeholder: action["placeholder"] as? String,
+                                type: parseNotificationActionTypeToEnum(action["type"] as? String)
                             )
                         )
                     }
@@ -99,16 +100,6 @@ class Extractor {
         
         return nil
     }
-    
-//    private func parseNotificationCategoryOptions(_ options: [Int]?){
-//        if let options = options {
-//            var result = []
-//            for option in options {
-//                result |= option
-//            }
-//            return result
-//        }
-//    }
     
     private enum PossibleFlutterMqttEventChannel: String, CaseIterable {
         case getAPNSToken = "th.co.cdgs/flutter_mqtt/apnsToken"

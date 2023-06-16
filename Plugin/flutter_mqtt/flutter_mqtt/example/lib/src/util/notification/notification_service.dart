@@ -60,6 +60,8 @@ class NotificationService extends GetxService {
       selectedNotification.value = details?.payload;
       Get.toNamed(Routes.notificationDetailPage);
     } else {
+      selectedNotification.value = "Click from Action ${details?.actionId}";
+      Get.toNamed(Routes.notificationDetailPage);
       print("Tap action from : ${details?.actionId}");
     }
   }

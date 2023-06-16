@@ -7,12 +7,12 @@ void main() {
   FlavorConfig(
     flavor: Flavor.INTERNAL,
     values: FlavorValues(
-      baseURL: "http://172.20.10.5:8080/api/v1/",
+      baseURL: "http://192.168.1.120:8080/api/v1/",
       initializationSettings: InitializationSettings(
         android: AndroidInitializationSettings(
           mqttConnectionSetting: MQTTConnectionSetting(
             isRequiredSsl: false,
-            hostname: "172.20.10.5",
+            hostname: "192.168.1.120",
             password: "mqtt-mobile",
             username: "mqtt-mobile",
           ),
@@ -43,17 +43,32 @@ void main() {
         iOS: DarwinInitializationSettings(
           notificationCategories: [
             DarwinNotificationCategory(
-              "textCategory",
+              "plainCategory",
               actions: <DarwinNotificationAction>[
-                DarwinNotificationAction.text(
-                  'text_1',
+                DarwinNotificationAction.plain(
+                  'id_1',
                   'Action 1',
-                  buttonTitle: 'Send',
-                  placeholder: 'Placeholder',
-                  options: {DarwinNotificationActionOption.foreground, DarwinNotificationActionOption.authenticationRequired}
+                  options: {
+                    DarwinNotificationActionOption.foreground,
+                    DarwinNotificationActionOption.authenticationRequired
+                  }
+                ),
+                DarwinNotificationAction.plain(
+                    'id_2',
+                    'Action 2',
+                    options: {
+                      DarwinNotificationActionOption.foreground,
+                      DarwinNotificationActionOption.authenticationRequired
+                    }
+                ),
+                DarwinNotificationAction.plain(
+                    'id_3',
+                    'Dismiss',
+                    options: {
+                      DarwinNotificationActionOption.destructive,
+                    }
                 ),
               ],
-              options: {DarwinNotificationCategoryOption.allowAnnouncement, DarwinNotificationCategoryOption.allowInCarPlay}
             ),
           ],
         ),

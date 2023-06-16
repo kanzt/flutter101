@@ -50,7 +50,28 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
         /// Register delegate
-        UNUserNotificationCenter.current().delegate = self
+        // UNUserNotificationCenter.current().delegate = self
+        
+        /// // Check if launched from notification
+        if launchOptions != nil{
+            let notificationOption = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [String: Any]
+            if
+                let notification = notificationOption as? [String: AnyObject],
+                let aps = notification["aps"] as? [String: AnyObject] {
+                if let theJSONData = try? JSONSerialization.data(
+                    withJSONObject: aps,
+                    options: []) {
+                    let notificationPayload = String(data: theJSONData, encoding: .utf8)
+                    let payloadDict = ["payload": notificationPayload]
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4, execute: {
+                        NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
+                        }
+                    )
+                }
+            }
+            
+        }
         
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -68,6 +89,59 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         if args.dispatcherHandle != nil && args.tapActionBackgroundNotificattionCallbackHandle != nil {
             UserDefaults.standard.set(args.dispatcherHandle, forKey: keyDispatcherHandle)
             UserDefaults.standard.set(args.tapActionBackgroundNotificattionCallbackHandle, forKey: keyTapActionBackgroundNotificattionCallbackHandle)
+        }
+        
+        configureNotificationCategories(args.darwinInitializationSettings?.notificationCategories)
+    }
+    
+    private func configureNotificationCategories(_ darwinNotificationCategories: [DarwinNotificationCategory]?){
+        var notificationCategories = Set<UNNotificationCategory>()
+        var notificationActions: [UNNotificationAction] = []
+        if let darwinNotificationCategories = darwinNotificationCategories {
+            for darwinNotificationCategory in darwinNotificationCategories {
+                if let darwinNotificationActions = darwinNotificationCategory.actions{
+                    for darwinNotificationAction in darwinNotificationActions {
+                        let notificationActionType = darwinNotificationAction.type
+                        let notificationActionIdentifier = darwinNotificationAction.identifier ?? ""
+                        let notificationActionTitle = darwinNotificationAction.title ?? ""
+                        let notificationActionOptions = darwinNotificationAction.options
+                        
+                        if notificationActionType == .text {
+                            let notificationActionButtonTitle = darwinNotificationAction.buttonTitle ?? ""
+                            let notificationActionPlaceholder = darwinNotificationAction.buttonTitle ?? ""
+                            let action = UNTextInputNotificationAction(
+                                identifier: notificationActionIdentifier,
+                                title: notificationActionTitle,
+                                options: notificationActionOptions ?? [],
+                                textInputButtonTitle: notificationActionButtonTitle,
+                                textInputPlaceholder: notificationActionPlaceholder
+                            )
+                            
+                            notificationActions.append(action)
+                        }else if notificationActionType == .plain {
+                            let action = UNNotificationAction(
+                                identifier: notificationActionIdentifier,
+                                title: notificationActionTitle,
+                                options: notificationActionOptions ?? []
+                            )
+                            notificationActions.append(action)
+                        }
+                    }
+                }
+                
+                let category = UNNotificationCategory(
+                    identifier: darwinNotificationCategory.identifier ?? "",
+                    actions: notificationActions,
+                    intentIdentifiers: [],
+                    options: darwinNotificationCategory.options ?? []
+                )
+                
+                notificationCategories.insert(category)
+            }
+            
+            if notificationCategories.count > 0 {
+                UNUserNotificationCenter.current().setNotificationCategories(notificationCategories)
+            }
         }
     }
     
@@ -160,7 +234,7 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             withJSONObject: userInfo,
             options: []) {
             let notificationPayload = String(data: theJSONData, encoding: .utf8)
-            let payloadDict = ["payload": notificationPayload]
+            let payloadDict = ["payload": notificationPayload, "actionId": response.actionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" ? nil : response.actionIdentifier ]
             
             NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
         }
@@ -210,6 +284,7 @@ public class NotificationHandler {
     private var flutterEngine: FlutterEngine?
     private var channel: FlutterMethodChannel?
     private var pendingNotification:  [[String:Any]] = [[String: Any]]()
+    
     private var launchingAppFromNotification: Bool = false
     private var recentTapNotification: [String:Any]?
     
@@ -222,6 +297,14 @@ public class NotificationHandler {
     
     public func isChannelEqualNil() -> Bool{
         return self.channel == nil
+    }
+    
+    public func setLaunchingAppFromNotification(_ launchingAppFromNotification: Bool){
+        self.launchingAppFromNotification = launchingAppFromNotification
+    }
+    
+    public func setRecentTapNotification(_ recentTapNotification: [String:Any]?){
+        self.recentTapNotification = recentTapNotification
     }
     
     public func setChannel(_ channel: FlutterMethodChannel){
@@ -273,25 +356,40 @@ public class NotificationHandler {
     }
     
     public func onTapNotification(_ notificationPayload: [String:Any]){
+//        NSLog("iOS : onTapNotification is working")
+//        recentTapNotification = notificationPayload
+//        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
+//
+//        if !isStartBackgroundIsolate {
+//            var channel: FlutterMethodChannel?
+//            launchingAppFromNotification = false
+//            if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
+//                channel = backgroundMethodChannel
+//                NSLog("Using backgroundMethodChannel")
+//            }else{
+//                channel = self.channel
+//                NSLog("Using foregroundMethodChannel")
+//            }
+//            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+//        }else{
+//            launchingAppFromNotification = true
+//        }
+        
+        
+        
         NSLog("iOS : onTapNotification is working")
         recentTapNotification = notificationPayload
-        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
-        
-        if !isStartBackgroundIsolate {
-            var channel: FlutterMethodChannel?
-            launchingAppFromNotification = false
-            if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
-                channel = backgroundMethodChannel
-                NSLog("Using backgroundMethodChannel")
-            }else{
-                channel = self.channel
-                NSLog("Using foregroundMethodChannel")
-            }
-            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
-        }else{
+        var channel: FlutterMethodChannel?
+        if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
+            channel = backgroundMethodChannel
+            NSLog("Using backgroundMethodChannel")
             launchingAppFromNotification = true
+        }else{
+            channel = self.channel
+            NSLog("Using foregroundMethodChannel")
+            launchingAppFromNotification = false
         }
-        
+        channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
     }
     
     private func isApplicationRunInForeground() -> Bool {

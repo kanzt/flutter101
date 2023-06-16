@@ -17,4 +17,21 @@ struct DarwinNotificationAction{
     let options: UNNotificationActionOptions?
     let buttonTitle: String?
     let placeholder: String?
+    let type: NotificationActionType?
+}
+
+enum NotificationActionType: String {
+    case text
+    case plain
+}
+
+func parseNotificationActionTypeToEnum(_ typeString: String?) -> NotificationActionType?{
+    if let typeString = typeString{
+        if let type = NotificationActionType(rawValue: typeString) {
+            // Conversion successful
+            return type
+        }
+    }
+    // Invalid string
+    return nil
 }

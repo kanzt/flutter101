@@ -12,7 +12,7 @@ enum _DarwinNotificationActionType {
 
   /// Corresponds to the `UNTextInputNotificationAction` type defined at
   /// https://developer.apple.com/documentation/usernotifications/untextinputnotificationaction
-  text,
+  // text,
 }
 
 /// Describes the notification action itself.
@@ -36,22 +36,23 @@ class DarwinNotificationAction {
       );
 
   /// Creates a `UNTextInputNotificationAction` to collect user defined input.
-  factory DarwinNotificationAction.text(
-    String identifier,
-    String title, {
-    required String buttonTitle,
-    String? placeholder,
-    Set<DarwinNotificationActionOption> options =
-        const <DarwinNotificationActionOption>{},
-  }) =>
-      DarwinNotificationAction._(
-        _DarwinNotificationActionType.text,
-        identifier,
-        title,
-        buttonTitle: buttonTitle,
-        placeholder: placeholder,
-        options: options,
-      );
+  /// Don't use text action for now
+  // factory DarwinNotificationAction.text(
+  //   String identifier,
+  //   String title, {
+  //   required String buttonTitle,
+  //   String? placeholder,
+  //   Set<DarwinNotificationActionOption> options =
+  //       const <DarwinNotificationActionOption>{},
+  // }) =>
+  //     DarwinNotificationAction._(
+  //       _DarwinNotificationActionType.text,
+  //       identifier,
+  //       title,
+  //       buttonTitle: buttonTitle,
+  //       placeholder: placeholder,
+  //       options: options,
+  //     );
 
   const DarwinNotificationAction._(
     this.type,
