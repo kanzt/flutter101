@@ -50,27 +50,31 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         
         /// Register delegate
-        // UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().delegate = self
         
         /// // Check if launched from notification
-        if launchOptions != nil{
-            let notificationOption = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [String: Any]
-            if
-                let notification = notificationOption as? [String: AnyObject],
-                let aps = notification["aps"] as? [String: AnyObject] {
-                if let theJSONData = try? JSONSerialization.data(
-                    withJSONObject: aps,
-                    options: []) {
-                    let notificationPayload = String(data: theJSONData, encoding: .utf8)
-                    let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 4, execute: {
-                        NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
-                    })
-                }
-            }
-            
-        }
+//        if launchOptions != nil {
+//            let notificationOption = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [String: Any]
+//            if
+//                let notification = notificationOption as? [String: AnyObject],
+//                let aps = notification["aps"] as? [String: AnyObject] {
+//                if let theJSONData = try? JSONSerialization.data(
+//                    withJSONObject: aps,
+//                    options: []) {
+//                    let notificationPayload = String(data: theJSONData, encoding: .utf8)
+//                    let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
+//
+//                    NotificationHandler.shared.setIsLaunchingAppFromNotificationAlreadyTrigger(true)
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 4, execute: {
+//                        NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
+//
+//                        /// Reset
+//                        NotificationHandler.shared.setIsLaunchingAppFromNotificationAlreadyTrigger(false)
+//                    })
+//                }
+//            }
+//
+//        }
         
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -223,23 +227,23 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     public override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         NSLog("get message didReceive :  \(response)")
         
-        let userInfo = response.notification.request.content.userInfo
-        guard userInfo["aps"] is [String: AnyObject] else {
-            completionHandler()
-            return
-        }
-        
-        if let theJSONData = try? JSONSerialization.data(
-            withJSONObject: userInfo,
-            options: []) {
-            let notificationPayload = String(data: theJSONData, encoding: .utf8)
+            let userInfo = response.notification.request.content.userInfo
+            guard userInfo["aps"] is [String: AnyObject] else {
+                completionHandler()
+                return
+            }
             
-            NotificationHandler.shared.setRecentTapNotificationActionIdentifier(response.actionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" ? nil : response.actionIdentifier)
-            
-            let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
-            
-            NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
-        }
+            if let theJSONData = try? JSONSerialization.data(
+                withJSONObject: userInfo,
+                options: []) {
+                let notificationPayload = String(data: theJSONData, encoding: .utf8)
+                
+                NotificationHandler.shared.setRecentTapNotificationActionIdentifier(response.actionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" ? nil : response.actionIdentifier)
+                
+                let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
+                
+                NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
+            }
         
         completionHandler()
     }
@@ -287,7 +291,9 @@ public class NotificationHandler {
     private var channel: FlutterMethodChannel?
     private var pendingNotification:  [[String:Any]] = [[String: Any]]()
     
-    private var launchingAppFromNotification: Bool = false
+    private var launchingAppFromNotification: Bool? = false
+    /// For didFinishLaunchingWithOptions
+    private var isLaunchingAppFromNotificationAlreadyTrigger: Bool? = false
     private var recentTapNotification: [String:Any]?
     private var recentTapNotificationActionIdentifier: String?
     
@@ -302,7 +308,7 @@ public class NotificationHandler {
         return self.channel == nil
     }
     
-    public func setLaunchingAppFromNotification(_ launchingAppFromNotification: Bool){
+    public func setLaunchingAppFromNotification(_ launchingAppFromNotification: Bool?){
         self.launchingAppFromNotification = launchingAppFromNotification
     }
     
@@ -326,9 +332,16 @@ public class NotificationHandler {
         self.recentTapNotificationActionIdentifier = recentTapNotificationActionIdentifier
     }
     
-    
-    public func isLaunchingAppFromNotification() -> Bool {
+    public func isLaunchingAppFromNotification() -> Bool? {
         return launchingAppFromNotification
+    }
+    
+    public func getIsLaunchingAppFromNotification() -> Bool? {
+        return self.isLaunchingAppFromNotificationAlreadyTrigger
+    }
+    
+    public func setIsLaunchingAppFromNotificationAlreadyTrigger(_ isLaunchingAppFromNotificationAlreadyTrigger: Bool?){
+        self.isLaunchingAppFromNotificationAlreadyTrigger = isLaunchingAppFromNotificationAlreadyTrigger
     }
     
     public func onReceivedMessage(userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler:@escaping (UIBackgroundFetchResult) -> Void){
@@ -368,26 +381,24 @@ public class NotificationHandler {
     }
     
     public func onTapNotification(_ notificationPayload: [String:Any]){
-//        NSLog("iOS : onTapNotification is working")
-//        recentTapNotification = notificationPayload
-//        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
-//
-//        if !isStartBackgroundIsolate {
-//            var channel: FlutterMethodChannel?
-//            launchingAppFromNotification = false
-//            if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
-//                channel = backgroundMethodChannel
-//                NSLog("Using backgroundMethodChannel")
-//            }else{
-//                channel = self.channel
-//                NSLog("Using foregroundMethodChannel")
-//            }
-//            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
-//        }else{
-//            launchingAppFromNotification = true
-//        }
-        
-        
+        //        NSLog("iOS : onTapNotification is working")
+        //        recentTapNotification = notificationPayload
+        //        let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(notificationPayload as [String : Any], "onTapNotification")
+        //
+        //        if !isStartBackgroundIsolate {
+        //            var channel: FlutterMethodChannel?
+        //            launchingAppFromNotification = false
+        //            if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
+        //                channel = backgroundMethodChannel
+        //                NSLog("Using backgroundMethodChannel")
+        //            }else{
+        //                channel = self.channel
+        //                NSLog("Using foregroundMethodChannel")
+        //            }
+        //            channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
+        //        }else{
+        //            launchingAppFromNotification = true
+        //        }
         
         NSLog("iOS : onTapNotification is working")
         recentTapNotification = notificationPayload
@@ -395,11 +406,11 @@ public class NotificationHandler {
         if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
             channel = backgroundMethodChannel
             NSLog("Using backgroundMethodChannel")
-            launchingAppFromNotification = true
+            setLaunchingAppFromNotification(true)
         }else{
             channel = self.channel
             NSLog("Using foregroundMethodChannel")
-            launchingAppFromNotification = false
+            setLaunchingAppFromNotification(false)
         }
         channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
     }
