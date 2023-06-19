@@ -62,12 +62,11 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                     withJSONObject: aps,
                     options: []) {
                     let notificationPayload = String(data: theJSONData, encoding: .utf8)
-                    let payloadDict = ["payload": notificationPayload]
+                    let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 4, execute: {
                         NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
-                        }
-                    )
+                    })
                 }
             }
             
@@ -234,7 +233,10 @@ public class FlutterMqttPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             withJSONObject: userInfo,
             options: []) {
             let notificationPayload = String(data: theJSONData, encoding: .utf8)
-            let payloadDict = ["payload": notificationPayload, "actionId": response.actionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" ? nil : response.actionIdentifier ]
+            
+            NotificationHandler.shared.setRecentTapNotificationActionIdentifier(response.actionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" ? nil : response.actionIdentifier)
+            
+            let payloadDict = ["payload": notificationPayload, "actionId": NotificationHandler.shared.getRecentTapNotificationActionIdentifier()]
             
             NotificationHandler.shared.onTapNotification(payloadDict as [String : Any])
         }
@@ -287,6 +289,7 @@ public class NotificationHandler {
     
     private var launchingAppFromNotification: Bool = false
     private var recentTapNotification: [String:Any]?
+    private var recentTapNotificationActionIdentifier: String?
     
     private init() {
     }
@@ -314,6 +317,15 @@ public class NotificationHandler {
     public func getRecentTapNotification() -> [String:Any]? {
         return recentTapNotification
     }
+    
+    public func getRecentTapNotificationActionIdentifier() -> String? {
+        return recentTapNotificationActionIdentifier
+    }
+    
+    public func setRecentTapNotificationActionIdentifier(_ recentTapNotificationActionIdentifier: String?) {
+        self.recentTapNotificationActionIdentifier = recentTapNotificationActionIdentifier
+    }
+    
     
     public func isLaunchingAppFromNotification() -> Bool {
         return launchingAppFromNotification
