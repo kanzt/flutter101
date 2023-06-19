@@ -32,7 +32,6 @@ class NotificationService extends GetxService {
   ValueNotifier<String?> selectedNotification = ValueNotifier(null);
 
   Future<void> initialize() async {
-    // TODO : ทดสอบ ฝั่ง iOS พบว่ายังทำงานไม่ถูกต้อง 09/06/2023
     final NotificationAppLaunchDetails? notificationAppLaunchDetails =
         await _plugin.getNotificationAppLaunchDetails();
 

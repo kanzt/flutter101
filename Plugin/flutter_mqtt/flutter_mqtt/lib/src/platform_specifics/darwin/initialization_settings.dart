@@ -1,7 +1,7 @@
 import '../../typedefs.dart';
 import 'notification_category.dart';
 
-// TODO : ปรับแต่งเป็นรูปแบบที่ต้องการ
+
 /// Plugin initialization settings for Darwin-based operating systems
 /// such as iOS and macOS
 class DarwinInitializationSettings {
