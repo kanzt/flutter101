@@ -354,7 +354,7 @@ public class NotificationHandler {
                     })
                 }else{
                     let isStartBackgroundIsolate = startBackgroundChannelIfNecessary(payloadDict as [String : Any], "didReceiveNotificationResponse")
-                    
+
                     if !isStartBackgroundIsolate {
                         var channel: FlutterMethodChannel?
                         if UserDefaults.standard.bool(forKey: keyIsAppInTerminatedState) {
@@ -410,9 +410,9 @@ public class NotificationHandler {
             }
             channel?.invokeMethod("onTapNotification", arguments: notificationPayload)
         }
-        
-        
-        
+
+
+
 //        NSLog("iOS : onTapNotification is working")
 //        recentTapNotification = notificationPayload
 //        var channel: FlutterMethodChannel?
