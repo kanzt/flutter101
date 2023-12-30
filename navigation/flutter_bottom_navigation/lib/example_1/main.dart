@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         return NavigatorKeys.bottomNavigationBarSecondItem;
       default:
-        return NavigatorKeys.bottomNavigationBarThirdtItem;
+        return NavigatorKeys.bottomNavigationBarThirdItem;
     }
   }
 
