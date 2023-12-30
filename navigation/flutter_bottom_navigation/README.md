@@ -1,6 +1,6 @@
 # flutter_bottom_navigation
 
-A new Flutter project.
+A new Flutter project. with Flutter version 3.10.1
 
 ## Getting Started
 
