@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bottom_navigation/example_3/screen2.dart';
+import 'package:flutter_bottom_navigation/example_3/widgets/screen2.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);

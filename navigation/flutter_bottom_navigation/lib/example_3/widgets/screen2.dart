@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bottom_navigation/example_3/screen3.dart';
+import 'package:flutter_bottom_navigation/example_3/widgets/screen3.dart';
 
 class Screen2 extends StatelessWidget {
   const Screen2({Key? key}) : super(key: key);

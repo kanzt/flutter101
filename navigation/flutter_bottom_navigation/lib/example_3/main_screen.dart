@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bottom_navigation/example_3/navigator_keys.dart';
-import 'package:flutter_bottom_navigation/example_3/screen2.dart';
+import 'package:flutter_bottom_navigation/example_3/widgets/screen2.dart';
 import 'package:flutter_bottom_navigation/example_3/tab1/home_page.dart';
 import 'package:flutter_bottom_navigation/example_3/tab2/calendar_page.dart';
 import 'package:flutter_bottom_navigation/example_3/tab3/profile_page.dart';
