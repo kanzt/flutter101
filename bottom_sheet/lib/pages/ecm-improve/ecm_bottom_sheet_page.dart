@@ -105,7 +105,7 @@ class _EcmBottomSheetPageState extends State<EcmBottomSheetPage> {
                               child: NotificationListener<
                                   OverscrollIndicatorNotification>(
                                 onNotification: (overscroll) {
-                                  overscroll.disallowGlow();
+                                  overscroll.disallowIndicator();
                                   return true;
                                 },
                                 child: Column(
@@ -118,7 +118,7 @@ class _EcmBottomSheetPageState extends State<EcmBottomSheetPage> {
                                       child: NotificationListener<
                                           OverscrollIndicatorNotification>(
                                         onNotification: (overscroll) {
-                                          overscroll.disallowGlow();
+                                          overscroll.disallowIndicator();
                                           return true;
                                         },
                                         child: ListView.builder(

@@ -50,7 +50,7 @@ class _BasicPersistenceBottomSheetState
                       child:
                           NotificationListener<OverscrollIndicatorNotification>(
                         onNotification: (overscroll) {
-                          overscroll.disallowGlow();
+                          overscroll.disallowIndicator();
                           return true;
                         },
                         child: ListView.builder(
