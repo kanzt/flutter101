@@ -10,13 +10,13 @@ class SendBtn extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
             gradient: const LinearGradient(colors: [
-              Color(0xFFC86DD7),
-              Color(0xFF3023AE),
+              Color(0xFF18341d),
+              Color(0xFF507d58),
             ], begin: Alignment.bottomRight, end: Alignment.topLeft),
             borderRadius: BorderRadius.circular(20.0),
             boxShadow: [
               BoxShadow(
-                  color: const Color(0xFF6078ea).withOpacity(.3),
+                  color: const Color(0xFF507d58).withOpacity(.3),
                   offset: const Offset(0.0, 8.0),
                   blurRadius: 8.0)
             ]),
@@ -28,7 +28,7 @@ class SendBtn extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text("Notify",
+                  Text("Send",
                       style: TextStyle(
                           color: Colors.white,
                           fontFamily: "Montserrat-Bold",

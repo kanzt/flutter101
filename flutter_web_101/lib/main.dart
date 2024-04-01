@@ -101,7 +101,7 @@ class LargeChild extends StatelessWidget {
           FractionallySizedBox(
             alignment: Alignment.centerRight,
             widthFactor: .6,
-            child: Image.network("assets/image_01.png", scale: .85),
+            child: Image.network("assets/image_02.png", scale: .85),
           ),
           FractionallySizedBox(
             alignment: Alignment.centerLeft,
@@ -120,12 +120,12 @@ class LargeChild extends StatelessWidget {
                           color: Color(0xFF8591B0))),
                   RichText(
                     text: const TextSpan(
-                        text: "WellCome To ",
+                        text: "WelCome To ",
                         style:
                         TextStyle(fontSize: 60, color: Color(0xFF8591B0)),
                         children: [
                           TextSpan(
-                              text: "Britu",
+                              text: "CDG",
                               style: TextStyle(
                                   fontSize: 60,
                                   fontWeight: FontWeight.bold,
@@ -134,7 +134,7 @@ class LargeChild extends StatelessWidget {
                   ),
                   const Padding(
                     padding: EdgeInsets.only(left: 12.0, top: 20),
-                    child: Text("LET’S EXPLORE THE WORLD"),
+                    child: Text("Technology for a better society"),
                   ),
                   const SizedBox(
                     height: 40,
@@ -169,11 +169,11 @@ class SmallChild extends StatelessWidget {
             ),
             RichText(
               text: const TextSpan(
-                text: 'WellCome To ',
+                text: 'WelCome To ',
                 style: TextStyle(fontSize: 40, color: Color(0xFF8591B0)),
                 children: <TextSpan>[
                   TextSpan(
-                      text: 'Britu',
+                      text: 'CDG',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 40,
@@ -183,14 +183,14 @@ class SmallChild extends StatelessWidget {
             ),
             const Padding(
               padding: EdgeInsets.only(left: 12.0, top: 20),
-              child: Text("LET’S EXPLORE THE WORLD"),
+              child: Text("Technology for a better society"),
             ),
             const SizedBox(
               height: 30,
             ),
             Center(
               child: Image.network(
-                "assets/image_01.png",
+                "assets/image_02.png",
                 scale: 1,
               ),
             ),
