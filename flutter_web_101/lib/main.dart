@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_web_101/src/presentation/util/responsive.dart';
-import 'package:flutter_web_101/src/presentation/util/responsiveLayout.dart';
-import 'package:flutter_web_101/src/presentation/widgets/navbar.dart';
-import 'package:flutter_web_101/src/presentation/widgets/search.dart';
+import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/main/presentation/widgets/navbar.dart';
+import 'package:flutter_web_101/src/main/presentation/widgets/search.dart';
+import 'package:flutter_web_101/src/res/drawable/drawable.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,11 +32,12 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     /// UI Template ที่จะมีการจัด Layout เตรียมไว้ล่วงหน้า
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[NavBar(), Body()],
+    return SafeArea(
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[NavBar(), Body()],
+          ),
         ),
       ),
     );
@@ -64,7 +65,7 @@ class LargeChild extends StatelessWidget {
           FractionallySizedBox(
             alignment: Alignment.centerRight,
             widthFactor: .6,
-            child: Image.network("assets/image_02.png", scale: .85),
+            child: Image.asset(Drawable.hero, scale: .85),
           ),
           FractionallySizedBox(
             alignment: Alignment.centerLeft,
@@ -152,8 +153,8 @@ class SmallChild extends StatelessWidget {
               height: 30,
             ),
             Center(
-              child: Image.network(
-                "assets/image_02.png",
+              child: Image.asset(
+                Drawable.hero,
                 scale: 1,
               ),
             ),

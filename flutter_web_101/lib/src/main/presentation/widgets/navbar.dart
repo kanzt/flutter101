@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_web_101/src/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/res/drawable/drawable.dart';
 
 class NavBar extends StatefulWidget {
   @override
@@ -54,8 +55,8 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
                     //     Color(0xFF507d58),
                     //   ], begin: Alignment.bottomRight, end: Alignment.topLeft),
                     // ),
-                    child: Image.network(
-                      "assets/logo.png",
+                    child: Image.asset(
+                      Drawable.logo,
                       width: 50,
                       height: 50,
                     ),
@@ -125,7 +126,7 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
                             _isNavbarOpened = !_isNavbarOpened;
                           });
                         },
-                        child: Image.network("assets/menu.png",
+                        child: Image.asset(Drawable.menu,
                             width: 26, height: 26)))
             ],
           ),

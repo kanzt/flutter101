@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_web_101/src/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
 
 import 'sendbtn.dart';
 
@@ -28,10 +28,11 @@ class Search extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               const Expanded(
-                  flex: 8,
+                  flex: 6,
                   child: TextField(
                     decoration: InputDecoration(
                         border: InputBorder.none,
+                        contentPadding: EdgeInsets.only(right: 16,),
                         hintText: 'Your Email Address'),
                   )),
               Expanded(
