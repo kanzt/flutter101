@@ -11,14 +11,13 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
   final navLinks = ["Home", "Products", "News", "Contact"];
 
   bool _isNavbarOpened = false;
+
   List<Widget> navItemLarge() {
     return navLinks.map((text) {
       return Padding(
         padding: const EdgeInsets.only(left: 18),
-        child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Text(text,
-                style: const TextStyle(fontFamily: "Montserrat-Bold"))),
+        child: Text(text,
+            style: const TextStyle(fontFamily: "Montserrat-Bold")),
       );
     }).toList();
   }
@@ -27,10 +26,8 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
     return navLinks.map((text) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Text(text,
-                style: const TextStyle(fontFamily: "Montserrat-Bold"))),
+        child: Text(text,
+            style: const TextStyle(fontFamily: "Montserrat-Bold")),
       );
     }).toList();
   }
@@ -78,77 +75,70 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
                     ...navItemLarge(),
-                    InkWell(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 20),
-                          width: 120,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF18341d),
-                                    Color(0xFF507d58),
-                                  ],
-                                  begin: Alignment.bottomRight,
-                                  end: Alignment.topLeft),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                    color:
-                                        const Color(0xFF6078ea).withOpacity(.3),
-                                    offset: const Offset(0, 8),
-                                    blurRadius: 8)
-                              ]),
-                          child: const Material(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: Text("Login",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      letterSpacing: 1,
-                                      fontFamily: "Montserrat-Bold")),
-                            ),
-                          ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 20),
+                      width: 120,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF18341d),
+                                Color(0xFF507d58),
+                              ],
+                              begin: Alignment.bottomRight,
+                              end: Alignment.topLeft),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                                color:
+                                    const Color(0xFF6078ea).withOpacity(.3),
+                                offset: const Offset(0, 8),
+                                blurRadius: 8)
+                          ]),
+                      child: const Center(
+                        child: Text(
+                          "Login",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              letterSpacing: 1,
+                              fontFamily: "Montserrat-Bold"),
                         ),
                       ),
                     ),
                   ],
                 )
               else
-                MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isNavbarOpened = !_isNavbarOpened;
-                          });
-                        },
-                        child: Image.asset(Drawable.menu,
-                            width: 26, height: 26)))
+                GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isNavbarOpened = !_isNavbarOpened;
+                      });
+                    },
+                    child:
+                        Image.asset(Drawable.menu, width: 26, height: 26))
             ],
           ),
+          //  Navbar menu for small screen
           if (ResponsiveLayout.isSmallScreen(context))
-          Visibility(
-            visible: _isNavbarOpened,
-            maintainState: true,
-            maintainAnimation: true,
-            maintainSize: true,
-            child: AnimatedSize(
-              curve: Curves.easeOut,
-              duration: const Duration(microseconds: 500),
-              child: SizedBox(
-                height: _isNavbarOpened ? 250 : 0,
-                child: Column(
-                  children: [
-                    ...navItemSmall(),
-                  ],
+            Visibility(
+              visible: _isNavbarOpened,
+              maintainState: true,
+              maintainAnimation: true,
+              maintainSize: true,
+              child: AnimatedSize(
+                curve: Curves.easeOut,
+                duration: const Duration(microseconds: 500),
+                child: SizedBox(
+                  height: _isNavbarOpened ? 250 : 0,
+                  child: Column(
+                    children: [
+                      ...navItemSmall(),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
