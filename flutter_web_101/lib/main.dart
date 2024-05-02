@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/main/presentation/widgets/basic/playground.dart';
 import 'package:flutter_web_101/src/main/presentation/widgets/navbar.dart';
 import 'package:flutter_web_101/src/main/presentation/widgets/search.dart';
 import 'package:flutter_web_101/src/res/drawable/drawable.dart';
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(),
+      // home: const Playground(),
     );
   }
 }
