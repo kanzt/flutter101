@@ -20,8 +20,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
-      // home: const Playground(),
+      // home: const MyHomePage(),
+      home: const Playground(),
     );
   }
 }

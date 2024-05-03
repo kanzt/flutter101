@@ -7,7 +7,7 @@ class Playground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildStack(),
+      body: _buildRichText(),
     );
   }
 
@@ -133,6 +133,22 @@ class Playground extends StatelessWidget {
         fontWeight: FontWeight.bold,
         fontSize: 40,
       ),
+    );
+  }
+
+  _buildRichText() {
+    return RichText(
+      text: const TextSpan(
+          text: "Hello ",
+          style: TextStyle(fontSize: 60, color: Color(0xFF8591B0)),
+          children: [
+            TextSpan(
+                text: "World",
+                style: TextStyle(
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red))
+          ]),
     );
   }
 
