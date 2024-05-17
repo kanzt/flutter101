@@ -3,6 +3,7 @@ import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart
 import 'package:flutter_web_101/src/main/presentation/widgets/basic/playground.dart';
 import 'package:flutter_web_101/src/main/presentation/widgets/navbar.dart';
 import 'package:flutter_web_101/src/main/presentation/widgets/search.dart';
+import 'package:flutter_web_101/src/res/color/color.dart';
 import 'package:flutter_web_101/src/res/drawable/drawable.dart';
 
 void main() {
@@ -20,8 +21,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      // home: const MyHomePage(),
-      home: const Playground(),
+      home: const MyHomePage(),
+      // home: const Playground(),
     );
   }
 }
@@ -78,17 +79,21 @@ class LargeChild extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const Text("Hello!",
-                      style: TextStyle(
-                          fontSize: 60,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: "Montserrat-Regular",
-                          color: Color(0xFF8591B0))),
+                  const Text(
+                    "Hello!",
+                    style: TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Montserrat-Regular",
+                        color: AppColor.text),
+                  ),
                   RichText(
                     text: const TextSpan(
                         text: "WelCome To ",
-                        style:
-                            TextStyle(fontSize: 60, color: Color(0xFF8591B0)),
+                        style: TextStyle(
+                          fontSize: 60,
+                          color: AppColor.text,
+                        ),
                         children: [
                           TextSpan(
                               text: "CDG",
@@ -129,21 +134,25 @@ class SmallChild extends StatelessWidget {
               "Hello!",
               style: TextStyle(
                   fontSize: 40,
-                  color: Color(0xFF8591B0),
+                  color: AppColor.text,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Montserrat-Regular"),
             ),
             RichText(
               text: const TextSpan(
                 text: 'WelCome To ',
-                style: TextStyle(fontSize: 40, color: Color(0xFF8591B0)),
+                style: TextStyle(
+                  fontSize: 40,
+                  color: AppColor.text,
+                ),
                 children: <TextSpan>[
                   TextSpan(
-                      text: 'CDG',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 40,
-                          color: Colors.black87)),
+                    text: 'CDG',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                        color: Colors.black87),
+                  ),
                 ],
               ),
             ),

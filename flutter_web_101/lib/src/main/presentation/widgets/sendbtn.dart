@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/res/color/color.dart';
 import 'package:flutter_web_101/src/res/drawable/drawable.dart';
 
 class SendBtn extends StatelessWidget {
@@ -9,10 +10,10 @@ class SendBtn extends StatelessWidget {
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [
-            Color(0xFF18341d),
-            Color(0xFF507d58),
-          ], begin: Alignment.bottomRight, end: Alignment.topLeft),
+          gradient: const LinearGradient(
+              colors: AppColor.gradient,
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft),
           borderRadius: BorderRadius.circular(16.0),
           boxShadow: [
             BoxShadow(
