@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_101/src/main/presentation/util/responsiveLayout.dart';
+import 'package:flutter_web_101/src/res/color/color.dart';
 import 'package:flutter_web_101/src/res/drawable/drawable.dart';
 
 class NavBar extends StatefulWidget {
@@ -16,8 +17,8 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
     return navLinks.map((text) {
       return Padding(
         padding: const EdgeInsets.only(left: 18),
-        child: Text(text,
-            style: const TextStyle(fontFamily: "Montserrat-Bold")),
+        child:
+            Text(text, style: const TextStyle(fontFamily: "Montserrat-Bold")),
       );
     }).toList();
   }
@@ -26,8 +27,8 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
     return navLinks.map((text) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Text(text,
-            style: const TextStyle(fontFamily: "Montserrat-Bold")),
+        child:
+            Text(text, style: const TextStyle(fontFamily: "Montserrat-Bold")),
       );
     }).toList();
   }
@@ -80,21 +81,19 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
                       width: 120,
                       height: 40,
                       decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF18341d),
-                                Color(0xFF507d58),
-                              ],
-                              begin: Alignment.bottomRight,
-                              end: Alignment.topLeft),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color:
-                                    const Color(0xFF6078ea).withOpacity(.3),
-                                offset: const Offset(0, 8),
-                                blurRadius: 8)
-                          ]),
+                        gradient: const LinearGradient(
+                            colors: AppColor.gradient,
+                            begin: Alignment.bottomRight,
+                            end: Alignment.topLeft),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColor.shadow.withOpacity(.3),
+                            offset: const Offset(0, 8),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
                       child: const Center(
                         child: Text(
                           "Login",
@@ -115,8 +114,7 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
                         _isNavbarOpened = !_isNavbarOpened;
                       });
                     },
-                    child:
-                        Image.asset(Drawable.menu, width: 26, height: 26))
+                    child: Image.asset(Drawable.menu, width: 26, height: 26))
             ],
           ),
           //  Navbar menu for small screen
