@@ -1,7 +1,8 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_all_sensor/src/config/app_route.dart';
-import 'package:flutter_all_sensor/src/page/cameraandmic/camera_and_mic_page.dart';
+import 'package:flutter_all_sensor/src/page/cameraandmic/camera/camera_and_mic_page.dart';
+import 'package:flutter_all_sensor/src/page/cameraandmic/image_picker/image_picker_page.dart';
 
 class IndexPage extends StatelessWidget {
   const IndexPage({super.key});
@@ -39,7 +40,23 @@ class IndexPage extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text("Camera and Mic"),
+              child: const Text("Camera and Mic (lib camera)"),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await availableCameras().then(
+                      (value) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ImagePickerPage(),
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Camera and Mic (lib image_picker)"),
             ),
           ],
         ),

@@ -2,7 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_all_sensor/src/page/cameraandmic/preview_page.dart';
+import 'package:flutter_all_sensor/src/page/cameraandmic/camera/preview_page.dart';
 
 class CameraAndMicPage extends StatefulWidget {
   const CameraAndMicPage({super.key, required this.cameras});
