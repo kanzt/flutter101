@@ -78,6 +78,14 @@ class CardProvider extends ChangeNotifier {
     return min(opacity, 1);
   }
 
+  double getScaleSize() {
+    const delta = 100;
+    final pos = max(position.dx.abs(), position.dy.abs());
+    final opacity = pos / delta;
+    print("opacity : ${opacity}");
+    return min(opacity, 2);
+  }
+
   /// Force delta = 20 เอาไว้สำหรับเวลาเราเลื่อนการ์ดไปเียง 20 ก็จะให้แสดง Stamp ของ like, dislike and superLike
   CardStatus? getStatus({bool force = false}) {
     final x = position.dx;
@@ -126,17 +134,16 @@ class CardProvider extends ChangeNotifier {
   void resetUsers() {
     _users = [
       User(
-        name: "Paper",
-        age: 26,
+        name: "Afei",
+        age: 27,
         urlImage:
-            'https://scontent.fbkk22-6.fna.fbcdn.net/v/t31.18172-8/16707286_1298873553489657_6354709073298076003_o.jpg?_nc_cat=102&ccb=1-7&_nc_sid=09cbfe&_nc_eui2=AeE-n9U1sbsjj7gw_iz658yIvYSqZhJX5Gq9hKpmElfkaossoQMoEjaKOpkKZGeLohAs20edOVWJWwglBSG8SVwL&_nc_ohc=VHKoBM2Txn4AX-Fl0Wa&_nc_ht=scontent.fbkk22-6.fna&oh=00_AfDbOZ2zSfwgU0fOhJoFQEbnMLPAfYt_AJPoxCCC7uUwgA&oe=6395FFAF',
+            'https://scontent.fbkk12-2.fna.fbcdn.net/v/t39.30808-6/414600642_7064963050236261_8868936183942602021_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=dd5e9f&_nc_eui2=AeFlDq_guCICeirXFDIquwvsrKvKaAjk68isq8poCOTryLotEA9P2gmT70kB4IlFzWRKyxRIJ-PL_MxH6F3PWWJF&_nc_ohc=F4K_gTtUIlEAX-0wkSf&_nc_ht=scontent.fbkk12-2.fna&oh=00_AfA2ekVymGpID8hmeLojtO8DaLGsBwKrMJM7ZlzY3hhATw&oe=65D0DD9C',
       ),
-      User(
-        name: "Kantaphat",
-        age: 26,
-        urlImage:
-            'https://scontent.fbkk22-6.fna.fbcdn.net/v/t31.18172-8/16707286_1298873553489657_6354709073298076003_o.jpg?_nc_cat=102&ccb=1-7&_nc_sid=09cbfe&_nc_eui2=AeE-n9U1sbsjj7gw_iz658yIvYSqZhJX5Gq9hKpmElfkaossoQMoEjaKOpkKZGeLohAs20edOVWJWwglBSG8SVwL&_nc_ohc=VHKoBM2Txn4AX-Fl0Wa&_nc_ht=scontent.fbkk22-6.fna&oh=00_AfDbOZ2zSfwgU0fOhJoFQEbnMLPAfYt_AJPoxCCC7uUwgA&oe=6395FFAF',
-      )
+      // User(
+      //   name: "Kantaphat",
+      //   age: 27,
+      //   urlImage: "https://scontent.fbkk12-3.fna.fbcdn.net/v/t31.18172-8/16707286_1298873553489657_6354709073298076003_o.jpg?_nc_cat=102&ccb=1-7&_nc_sid=be3454&_nc_eui2=AeE-n9U1sbsjj7gw_iz658yIvYSqZhJX5Gq9hKpmElfkaossoQMoEjaKOpkKZGeLohAs20edOVWJWwglBSG8SVwL&_nc_ohc=L5Q4OkHEwxIAX8bIaX8&_nc_ht=scontent.fbkk12-3.fna&oh=00_AfAkPlmOpJ7h9t6IO3v1YkwlRm05zffAQ61EUhDGhzOP2g&oe=65F4396F"
+      // )
     ].reversed.toList();
 
     notifyListeners();

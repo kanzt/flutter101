@@ -15,6 +15,7 @@ class _GeolocationPageState extends State<GeolocationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Geolocation Page')),
       body: SizedBox(
         width: double.infinity,
         height: double.infinity,

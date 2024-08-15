@@ -1,5 +1,7 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_all_sensor/src/config/app_route.dart';
+import 'package:flutter_all_sensor/src/page/cameraandmic/camera_and_mic_page.dart';
 
 class IndexPage extends StatelessWidget {
   const IndexPage({super.key});
@@ -14,12 +16,31 @@ class IndexPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton(onPressed: () {
-              Navigator.pushNamed(
-                context,
-                AppRoute.geolocationPage,
-              );
-            }, child: const Text("Geolocation")),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoute.geolocationPage,
+                );
+              },
+              child: const Text("Geolocation"),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await availableCameras().then(
+                  (value) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CameraAndMicPage(cameras: value),
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Camera and Mic"),
+            ),
           ],
         ),
       ),
