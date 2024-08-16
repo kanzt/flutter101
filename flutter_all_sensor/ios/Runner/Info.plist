@@ -51,5 +51,7 @@
     <string>Need to access microphone</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Need to access Photos</string>
+    <key>NSMotionUsageDescription</key>
+    <string>This app requires access to the barometer to provide altitude information.</string>
 </dict>
 </plist>

@@ -58,6 +58,18 @@ class IndexPage extends StatelessWidget {
               },
               child: const Text("Camera and Mic (lib image_picker)"),
             ),
+            const SizedBox(
+              height: 8,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pushNamed(
+                  context,
+                  AppRoute.sensorPlusPage,
+                );
+              },
+              child: const Text("Sensor Plus"),
+            ),
           ],
         ),
       ),
