@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tinder_clone_ui/card_provider.dart';
 import 'package:tinder_clone_ui/model/user.dart';
+import 'package:tinder_clone_ui/widget/heart_widget.dart';
 
 class TinderCard extends StatefulWidget {
   const TinderCard({Key? key, required this.user, required this.isFront})
@@ -75,6 +76,7 @@ class _TinderCardState extends State<TinderCard> {
               children: [
                 _buildCard(),
                 _buildStamps(),
+                // const HeartWidget(),
               ],
             ),
           );
@@ -173,11 +175,17 @@ class _TinderCardState extends State<TinderCard> {
     final provider = Provider.of<CardProvider>(context, listen: false);
     final status = provider.getStatus();
     final opacity = provider.getStatusOpacity();
+    final scale = provider.getScaleSize();
 
     switch (status) {
       case CardStatus.like:
         final child = buildStamp(
-            angle: -0.5, color: Colors.green, text: "LIKE", opacity: opacity);
+          angle: -0.5,
+          color: Colors.green,
+          text: "LIKE",
+          opacity: opacity,
+          scale: scale,
+        );
         return Positioned(
           child: child,
           top: 64,
@@ -201,6 +209,7 @@ class _TinderCardState extends State<TinderCard> {
             color: Colors.blue,
             text: "SUPER\nLIKE",
             opacity: opacity,
+            scale: scale,
           ),
         );
         return Positioned(
@@ -216,6 +225,7 @@ class _TinderCardState extends State<TinderCard> {
 
   buildStamp({
     double angle = 0,
+    double scale = 1,
     required MaterialColor color,
     required String text,
     required double opacity,
@@ -224,25 +234,29 @@ class _TinderCardState extends State<TinderCard> {
       opacity: opacity,
       child: Transform.rotate(
         angle: angle,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color,
-              width: 4,
+        child: Transform.scale(
+          scale: scale,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
             ),
-          ),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: color,
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-            ),
+            decoration: const BoxDecoration(
+                // borderRadius: BorderRadius.circular(12),
+                // border: Border.all(
+                //   color: color,
+                //   width: 4,
+                // ),
+                ),
+            child: const HeartWidget(),
+            // child: Text(
+            //   text,
+            //   textAlign: TextAlign.center,
+            //   style: TextStyle(
+            //     color: color,
+            //     fontSize: 48,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
           ),
         ),
       ),

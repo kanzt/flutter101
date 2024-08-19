@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
           width: 4,
         ),
         Text(
-          "Tinder",
+          "MATCH UP",
           style: TextStyle(
             fontSize: 36,
             color: Colors.white,
@@ -114,21 +114,25 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              final provider =
-                  Provider.of<CardProvider>(context, listen: false);
-              provider.disLike();
-            },
-            style: ButtonStyle(
-              foregroundColor: getColor(Colors.red, Colors.white, isDisLike),
-              backgroundColor: getColor(Colors.white, Colors.red, isDisLike),
-              side: getBorder(Colors.red, Colors.white, isDisLike),
-            ),
-            child: Icon(
-              Icons.clear,
-              color: isDisLike ? Colors.white : Colors.red,
-              size: 40,
+          SizedBox(
+            width: 70,
+            height: 70,
+            child: ElevatedButton(
+              onPressed: () {
+                final provider =
+                    Provider.of<CardProvider>(context, listen: false);
+                provider.disLike();
+              },
+              style: ButtonStyle(
+                foregroundColor: getColor(Colors.red, Colors.white, isDisLike),
+                backgroundColor: getColor(Colors.white, Colors.red, isDisLike),
+                side: getBorder(Colors.red, Colors.white, isDisLike),
+              ),
+              child: Icon(
+                Icons.clear,
+                color: isDisLike ? Colors.white : Colors.red,
+                size: 30,
+              ),
             ),
           ),
           ElevatedButton(
@@ -145,24 +149,28 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Icon(
               Icons.star,
               color: isSuperLike ? Colors.white : Colors.blue,
-              size: 40,
+              size: 60,
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              final provider =
-                  Provider.of<CardProvider>(context, listen: false);
-              provider.like();
-            },
-            style: ButtonStyle(
-              foregroundColor: getColor(Colors.teal, Colors.white, isLike),
-              backgroundColor: getColor(Colors.white, Colors.teal, isLike),
-              side: getBorder(Colors.green, Colors.white, isLike),
-            ),
-            child: Icon(
-              Icons.favorite,
-              color: isLike ? Colors.white : Colors.teal,
-              size: 40,
+          SizedBox(
+            width: 70,
+            height: 70,
+            child: ElevatedButton(
+              onPressed: () {
+                final provider =
+                    Provider.of<CardProvider>(context, listen: false);
+                provider.like();
+              },
+              style: ButtonStyle(
+                foregroundColor: getColor(Colors.teal, Colors.white, isLike),
+                backgroundColor: getColor(Colors.white, Colors.teal, isLike),
+                side: getBorder(Colors.green, Colors.white, isLike),
+              ),
+              child: Icon(
+                Icons.favorite,
+                color: isLike ? Colors.white : Colors.teal,
+                size: 30,
+              ),
             ),
           ),
         ],
