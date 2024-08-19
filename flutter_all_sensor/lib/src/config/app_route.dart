@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_all_sensor/src/page/ambient_light/ambient_light_page.dart';
 import 'package:flutter_all_sensor/src/page/geolocation/geolocation_page.dart';
 import 'package:flutter_all_sensor/src/page/index_page.dart';
 import 'package:flutter_all_sensor/src/page/sensor_plus_page/sensor_plus_page.dart';
@@ -14,5 +15,6 @@ class AppRoute {
     indexPage: (context) => const IndexPage(),
     geolocationPage: (context) => const GeolocationPage(),
     sensorPlusPage: (context) => const SensorPlusPage(),
+    ambientLightSensorPage: (context) => const AmbientLightPage(),
   };
 }

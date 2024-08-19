@@ -70,6 +70,18 @@ class IndexPage extends StatelessWidget {
               },
               child: const Text("Sensor Plus"),
             ),
+            const SizedBox(
+              height: 8,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pushNamed(
+                  context,
+                  AppRoute.ambientLightSensorPage,
+                );
+              },
+              child: const Text("Ambient Light"),
+            ),
           ],
         ),
       ),
