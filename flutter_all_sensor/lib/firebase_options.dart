@@ -21,15 +21,9 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -61,4 +55,22 @@ class DefaultFirebaseOptions {
     storageBucket: 'flutter-all-sensor.appspot.com',
     measurementId: 'G-6GMMQNDCC0',
   );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyBw5zaOo63oXPYZtH53yjly-iVVy4dBCro',
+    appId: '1:432249962446:android:981b0db5c8ea73e563b59f',
+    messagingSenderId: '432249962446',
+    projectId: 'flutter-all-sensor',
+    storageBucket: 'flutter-all-sensor.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCU_AB-lV5KhQz4aZo0_h-aZ_Or6wMgOUs',
+    appId: '1:432249962446:ios:2135cd0b0730ee2963b59f',
+    messagingSenderId: '432249962446',
+    projectId: 'flutter-all-sensor',
+    storageBucket: 'flutter-all-sensor.appspot.com',
+    iosBundleId: 'com.example.flutterAllSensor',
+  );
+
 }

@@ -1,4 +1,4 @@
-package com.example.flutter_all_sensor
+package com.example.flutterAllSensor
 
 import io.flutter.embedding.android.FlutterActivity
 
