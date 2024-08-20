@@ -31,7 +31,7 @@ class _AmbientLightPageState extends State<AmbientLightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text("Light level : $lightLevel"),
+        child: Text("Please open console to see Light level"),
       ),
     );
   }

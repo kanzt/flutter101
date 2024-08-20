@@ -1,4 +1,6 @@
 PODS:
+  - ambient_light (0.0.1):
+    - Flutter
   - camera_avfoundation (0.0.1):
     - Flutter
   - Firebase/CoreOnly (10.18.0):
@@ -34,6 +36,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - ambient_light (from `.symlinks/plugins/ambient_light/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
@@ -51,6 +54,8 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
+  ambient_light:
+    :path: ".symlinks/plugins/ambient_light/ios"
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   firebase_core:
@@ -67,6 +72,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
+  ambient_light: 408dbc2315dc964f95ab599c92cc957f9e09ead5
   camera_avfoundation: dd002b0330f4981e1bbcb46ae9b62829237459a4
   Firebase: 414ad272f8d02dfbf12662a9d43f4bba9bec2a06
   firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
