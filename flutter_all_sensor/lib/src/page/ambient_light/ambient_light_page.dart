@@ -31,7 +31,14 @@ class _AmbientLightPageState extends State<AmbientLightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text("Please open console to see Light level"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("Ambient light sensor supports only Android and iOS"),
+            Text("Please open console to see Light level"),
+          ],
+        ),
       ),
     );
   }
