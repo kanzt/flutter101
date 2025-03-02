@@ -19,4 +19,6 @@ class Palette {
     },
   );
 
+  static const primaryColor = Color(0xFFFCC75E);
+  static const lightGray = Color(0xFFF2F2F2);
 }

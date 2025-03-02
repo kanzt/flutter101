@@ -23,6 +23,8 @@ class MyApp extends StatelessWidget {
       title: 'Messiah Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: "IBMPlexSans",
+        primaryColor: Palette.primaryColor,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 8,
