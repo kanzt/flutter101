@@ -1,4 +1,4 @@
-class Resource{
+class Image{
   static const resDirectory = "lib/src/res";
 
   static const imageDirectory = "$resDirectory/images";

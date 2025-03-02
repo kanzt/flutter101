@@ -3,11 +3,12 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_messiah/model/user.dart';
-import 'package:flutter_messiah/src/res/Resource.dart';
+import 'package:flutter_messiah/src/res/images/image.dart' as res;
+import 'package:get/get.dart';
 
 enum CardStatus { like, dislike, superLike }
 
-class CardProvider extends ChangeNotifier {
+class HomePageController extends GetxController {
   bool _isDragging = false;
 
   bool get isDragging => _isDragging;
@@ -28,13 +29,13 @@ class CardProvider extends ChangeNotifier {
 
   List<User> get users => _users;
 
-  CardProvider() {
+  HomePageController() {
     resetUsers();
   }
 
   void startPosition(DragStartDetails details) {
     _isDragging = true;
-    notifyListeners();
+    update();
   }
 
   void updatePosition(DragUpdateDetails details) {
@@ -42,12 +43,12 @@ class CardProvider extends ChangeNotifier {
 
     final x = position.dx;
     _angle = 15 * x / screenSize.width;
-    notifyListeners();
+    update();
   }
 
   void endPosition() {
     _isDragging = false;
-    notifyListeners();
+    update();
 
     final status = getStatus(force: true);
 
@@ -124,29 +125,29 @@ class CardProvider extends ChangeNotifier {
     _isDragging = false;
     _position = Offset.zero;
     _angle = 0;
-    notifyListeners();
+    update();
   }
 
   void setScreenSize(Size size) {
     _screenSize = size;
-    notifyListeners();
+    update();
   }
 
   void resetUsers() {
     _users = [
       User(
-        name: "Pond",
+        name: "Developer",
         age: 27,
-        urlImage: Resource.avatarYellow,
+        urlImage: res.Image.avatarYellow,
       ),
       User(
         name: "Paper",
         age: 27,
-        urlImage: Resource.avatarGray,
+        urlImage: res.Image.avatarGray,
       )
     ].reversed.toList();
 
-    notifyListeners();
+    update();
   }
 
   void _nextCard() async {
@@ -160,20 +161,20 @@ class CardProvider extends ChangeNotifier {
     _angle = 20;
     _position += Offset(2 * screenSize.width, 0);
     _nextCard();
-    notifyListeners();
+    update();
   }
 
   void superLike() {
     _angle = 0;
     _position -= Offset(0, screenSize.height);
     _nextCard();
-    notifyListeners();
+    update();
   }
 
   void disLike() {
     _angle = -20;
     _position -= Offset(2 * screenSize.width, 0);
     _nextCard();
-    notifyListeners();
+    update();
   }
 }

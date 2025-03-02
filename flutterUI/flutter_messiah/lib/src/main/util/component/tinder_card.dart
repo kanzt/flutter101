@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_messiah/model/user.dart';
-import 'package:flutter_messiah/src/main/presentation/main/card_provider.dart';
+import 'package:flutter_messiah/src/main/presentation/main/home/home_page_controller.dart';
 import 'package:flutter_messiah/src/main/util/component/heart_widget.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 class TinderCard extends StatefulWidget {
   const TinderCard({super.key, required this.user, required this.isFront});
@@ -32,7 +32,7 @@ class _TinderCardState extends State<TinderCard> {
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) {
         final size = MediaQuery.of(context).size;
-        final provider = Provider.of<CardProvider>(context, listen: false);
+        final provider = Get.find<HomePageController>();
         provider.setScreenSize(size);
       },
     );
@@ -41,23 +41,22 @@ class _TinderCardState extends State<TinderCard> {
   Widget _buildFrontCard() {
     return GestureDetector(
       onPanStart: (details) {
-        final provider = Provider.of<CardProvider>(context, listen: false);
+        final provider = Get.find<HomePageController>();
 
         provider.startPosition(details);
       },
       onPanUpdate: (details) {
-        final provider = Provider.of<CardProvider>(context, listen: false);
+        final provider = Get.find<HomePageController>();
 
         provider.updatePosition(details);
       },
       onPanEnd: (details) {
-        final provider = Provider.of<CardProvider>(context, listen: false);
-
+        final provider = Get.find<HomePageController>();
         provider.endPosition();
       },
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints cons) {
-          final provider = Provider.of<CardProvider>(context);
+          final provider = Get.find<HomePageController>();
           final position = provider.position;
           final milliseconds = provider.isDragging ? 0 : 400;
 
@@ -182,7 +181,7 @@ class _TinderCardState extends State<TinderCard> {
   }
 
   _buildStamps() {
-    final provider = Provider.of<CardProvider>(context, listen: false);
+    final provider = Get.find<HomePageController>();
     final status = provider.getStatus();
     final opacity = provider.getStatusOpacity();
     final scale = provider.getScaleSize();
