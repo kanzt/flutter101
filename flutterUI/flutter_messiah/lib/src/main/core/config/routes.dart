@@ -24,7 +24,7 @@ class Routes {
       GetPage(
         name: mainPage,
         page: () => const MainPage(),
-        transition: Transition.noTransition,
+        transition: Transition.fadeIn,
       ),
     ];
   }

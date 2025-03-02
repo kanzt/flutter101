@@ -36,8 +36,16 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   fluttertoast: ^8.1.1
+
+  # Icon
   font_awesome_flutter: ^10.8.0
+
+  # GetX
   get: ^4.7.2
+
+  # Secure storage
+  shared_preferences: ^2.5.2
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
